@@ -534,8 +534,8 @@ app.get('/', (c) => {
         <div class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <div class="bg-white p-2 rounded-lg">
-                        <img src="/static/logo.jpg" alt="Anushka Hogar" class="h-12 w-12 object-contain">
+                    <div class="bg-gray-100 p-3 rounded-lg border border-gray-200">
+                        <img src="/static/logo.jpg" alt="Anushka Hogar" class="h-10 w-10 object-contain" style="filter: invert(1) brightness(0.9);">
                     </div>
                     <div>
                         <h1 class="text-2xl font-bold text-gray-800">Anushka Hogar</h1>
