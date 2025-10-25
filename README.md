@@ -147,8 +147,14 @@ npx wrangler d1 execute anushka-hogar-production --local --command="SELECT * FRO
 - **Dashboard**: http://localhost:3000
 - **API Base**: http://localhost:3000/api
 
-### Producción (Pendiente de deploy)
-- **URL**: Se generará después del deploy a Cloudflare Pages
+### Sandbox Environment (ACTIVO ✅)
+- **URL Pública**: https://3000-igloyhvlo0thgdvq5z280-8f57ffe2.sandbox.novita.ai
+- **Estado**: Online y funcionando
+- **Base de datos**: D1 local con datos de ejemplo cargados
+
+### Producción (Para deploy futuro)
+- **Comando**: `npm run deploy:prod`
+- **URL**: Se generará en Cloudflare Pages
 - **Formato**: https://anushka-hogar.pages.dev
 
 ## 📊 Modelos de Datos Principales
