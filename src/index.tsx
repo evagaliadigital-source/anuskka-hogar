@@ -523,19 +523,19 @@ app.get('/', (c) => {
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .tab-button.active { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
             color: white;
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-purple-50 to-blue-50 min-h-screen">
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
     <!-- Header -->
     <header class="bg-white shadow-md sticky top-0 z-50">
         <div class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <div class="bg-gradient-to-br from-purple-600 to-blue-600 p-3 rounded-xl">
-                        <i class="fas fa-home text-white text-2xl"></i>
+                    <div class="bg-white p-2 rounded-lg">
+                        <img src="/static/logo.png" alt="Anushka Hogar" class="h-12 w-12 object-contain">
                     </div>
                     <div>
                         <h1 class="text-2xl font-bold text-gray-800">Anushka Hogar</h1>
@@ -675,7 +675,7 @@ app.get('/', (c) => {
             <div class="bg-white rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">Gestión de Clientes</h2>
-                    <button onclick="showClienteForm()" class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                    <button onclick="showClienteForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
                         <i class="fas fa-plus mr-2"></i>Nuevo Cliente
                     </button>
                 </div>
@@ -688,7 +688,7 @@ app.get('/', (c) => {
             <div class="bg-white rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">Gestión de Trabajos</h2>
-                    <button onclick="showTrabajoForm()" class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                    <button onclick="showTrabajoForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
                         <i class="fas fa-plus mr-2"></i>Nuevo Trabajo
                     </button>
                 </div>
@@ -714,7 +714,7 @@ app.get('/', (c) => {
             <div class="bg-white rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">Gestión de Empleadas</h2>
-                    <button onclick="showEmpleadaForm()" class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                    <button onclick="showEmpleadaForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
                         <i class="fas fa-plus mr-2"></i>Nueva Empleada
                     </button>
                 </div>
@@ -731,7 +731,7 @@ app.get('/', (c) => {
                         <button onclick="loadStock(true)" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
                             <i class="fas fa-exclamation-circle mr-2"></i>Bajo Stock
                         </button>
-                        <button onclick="showStockForm()" class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                        <button onclick="showStockForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
                             <i class="fas fa-plus mr-2"></i>Nuevo Artículo
                         </button>
                     </div>
@@ -745,7 +745,7 @@ app.get('/', (c) => {
             <div class="bg-white rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">Facturación</h2>
-                    <button onclick="showFacturaForm()" class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                    <button onclick="showFacturaForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
                         <i class="fas fa-plus mr-2"></i>Nueva Factura
                     </button>
                 </div>

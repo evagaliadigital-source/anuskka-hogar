@@ -7,14 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 min-h-screen flex items-center justify-center">
+<body class="bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 min-h-screen flex items-center justify-center">
     
     <!-- Login Card -->
     <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
         <!-- Logo/Header -->
         <div class="text-center mb-8">
-            <div class="bg-gradient-to-br from-purple-600 to-blue-600 p-4 rounded-full inline-block mb-4">
-                <i class="fas fa-home text-white text-4xl"></i>
+            <div class="inline-block mb-4">
+                <img src="/static/logo.png" alt="Anushka Hogar" class="h-20 w-20 mx-auto object-contain">
             </div>
             <h1 class="text-3xl font-bold text-gray-800 mb-2">Anushka Hogar</h1>
             <p class="text-gray-600">Sistema de Gestión Integral</p>
@@ -30,7 +30,7 @@
         <form id="login-form" class="space-y-6">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-envelope mr-2 text-purple-600"></i>
+                    <i class="fas fa-envelope mr-2 text-gray-700"></i>
                     Email
                 </label>
                 <input 
@@ -38,7 +38,7 @@
                     id="email" 
                     name="email" 
                     required 
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-700 focus:border-transparent transition-all"
                     placeholder="tu@email.com"
                     autocomplete="email"
                 >
@@ -46,7 +46,7 @@
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-lock mr-2 text-purple-600"></i>
+                    <i class="fas fa-lock mr-2 text-gray-700"></i>
                     Contraseña
                 </label>
                 <div class="relative">
@@ -55,7 +55,7 @@
                         id="password" 
                         name="password" 
                         required 
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-700 focus:border-transparent transition-all"
                         placeholder="••••••••"
                         autocomplete="current-password"
                     >
@@ -72,7 +72,7 @@
             <button 
                 type="submit" 
                 id="login-btn"
-                class="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-lg font-semibold hover:shadow-xl transition-all transform hover:scale-105"
+                class="w-full bg-gradient-to-r from-gray-800 to-gray-900 text-white py-3 rounded-lg font-semibold hover:shadow-xl transition-all transform hover:scale-105"
             >
                 <i class="fas fa-sign-in-alt mr-2"></i>
                 Iniciar Sesión

@@ -189,7 +189,7 @@ function renderTopEmpleadas(data) {
   container.innerHTML = data.map((e, index) => `
     <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
       <div class="flex items-center space-x-4">
-        <div class="bg-gradient-to-br from-purple-600 to-blue-600 text-white font-bold w-10 h-10 rounded-full flex items-center justify-center">
+        <div class="bg-gradient-to-br from-gray-800 to-gray-900 text-white font-bold w-10 h-10 rounded-full flex items-center justify-center">
           ${index + 1}
         </div>
         <div>
@@ -272,12 +272,12 @@ async function showClienteForm(id = null) {
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
               <input type="text" name="nombre" value="${cliente.nombre}" required 
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-600">
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-700">
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Apellidos *</label>
               <input type="text" name="apellidos" value="${cliente.apellidos}" required 
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-600">
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-700">
             </div>
           </div>
           
@@ -285,42 +285,42 @@ async function showClienteForm(id = null) {
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono *</label>
               <input type="tel" name="telefono" value="${cliente.telefono}" required 
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-600">
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-700">
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
               <input type="email" name="email" value="${cliente.email || ''}" 
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-600">
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-700">
             </div>
           </div>
           
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Dirección *</label>
             <input type="text" name="direccion" value="${cliente.direccion}" required 
-                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-600">
+                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-700">
           </div>
           
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Ciudad *</label>
               <input type="text" name="ciudad" value="${cliente.ciudad}" required 
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-600">
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-700">
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Código Postal</label>
               <input type="text" name="codigo_postal" value="${cliente.codigo_postal || ''}" 
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-600">
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-700">
             </div>
           </div>
           
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
             <textarea name="notas" rows="3" 
-                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-600">${cliente.notas || ''}</textarea>
+                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-700">${cliente.notas || ''}</textarea>
           </div>
           
           <div class="flex gap-3 pt-4">
-            <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
               <i class="fas fa-save mr-2"></i>Guardar
             </button>
             <button type="button" onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -552,7 +552,7 @@ async function showTrabajoForm(id = null) {
           </div>
           
           <div class="flex gap-3 pt-4">
-            <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
               <i class="fas fa-save mr-2"></i>Guardar
             </button>
             <button type="button" onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -748,7 +748,7 @@ async function showEmpleadaForm(id = null) {
           </div>
           
           <div class="flex gap-3 pt-4">
-            <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
               <i class="fas fa-save mr-2"></i>Guardar
             </button>
             <button type="button" onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -941,7 +941,7 @@ async function showStockForm(id = null) {
           </div>
           
           <div class="flex gap-3 pt-4">
-            <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
               <i class="fas fa-save mr-2"></i>Guardar
             </button>
             <button type="button" onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -1097,7 +1097,7 @@ async function showFacturaForm() {
           </div>
           
           <div class="flex gap-3 pt-4">
-            <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
               <i class="fas fa-save mr-2"></i>Guardar
             </button>
             <button type="button" onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -1193,9 +1193,9 @@ async function loadReporte() {
           <h3 class="text-xl font-bold text-gray-800 mb-4">👷 Horas Trabajadas</h3>
           <div class="space-y-3">
             ${data.horas.map(h => `
-              <div class="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+              <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <span class="font-medium text-gray-800">${h.nombre} ${h.apellidos}</span>
-                <span class="font-bold text-purple-600">${(h.total_horas || 0).toFixed(1)}h</span>
+                <span class="font-bold text-gray-700">${(h.total_horas || 0).toFixed(1)}h</span>
               </div>
             `).join('')}
           </div>
