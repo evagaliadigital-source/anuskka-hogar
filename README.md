@@ -157,7 +157,7 @@ npx wrangler d1 execute anushka-hogar-production --local --command="SELECT * FRO
 **IMPORTANTE**: El sistema ahora requiere login
 
 ### Usuario Administrador
-- **Email**: eva@anushkahogar.com
+- **Email**: anuskka@galia.com
 - **Contraseña**: Anushka2025!
 - **Rol**: Administrador
 
