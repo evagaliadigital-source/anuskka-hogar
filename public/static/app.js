@@ -12,6 +12,37 @@ let currentData = {
 }
 
 // ============================================
+// AUTENTICACIÓN
+// ============================================
+
+// Verificar si el usuario está logueado
+function checkAuth() {
+  const user = localStorage.getItem('anushka_user')
+  if (!user) {
+    window.location.href = '/static/login.html'
+    return null
+  }
+  return JSON.parse(user)
+}
+
+// Logout
+function logout() {
+  localStorage.removeItem('anushka_user')
+  window.location.href = '/static/login.html'
+}
+
+// Cargar nombre de usuario en header
+function loadUserInfo() {
+  const user = checkAuth()
+  if (user) {
+    const userNameElement = document.querySelector('header p.font-semibold')
+    if (userNameElement) {
+      userNameElement.textContent = user.nombre
+    }
+  }
+}
+
+// ============================================
 // NAVEGACIÓN
 // ============================================
 
@@ -1258,5 +1289,10 @@ window.editStock = (id) => showStockForm(id)
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Verificar autenticación
+  checkAuth()
+  loadUserInfo()
+  
+  // Cargar dashboard
   loadDashboard()
 })

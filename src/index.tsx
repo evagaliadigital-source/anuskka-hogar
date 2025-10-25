@@ -15,6 +15,42 @@ app.use('/api/*', cors())
 app.use('/static/*', serveStatic({ root: './public' }))
 
 // ============================================
+// API ENDPOINTS - AUTENTICACIÓN
+// ============================================
+
+// Login
+app.post('/api/login', async (c) => {
+  try {
+    const { email, password } = await c.req.json()
+    
+    const usuario = await c.env.DB.prepare(`
+      SELECT * FROM usuarios WHERE email = ? AND activo = 1
+    `).bind(email).first()
+    
+    if (!usuario || usuario.password_hash !== password) {
+      return c.json({ success: false, message: 'Credenciales inválidas' }, 401)
+    }
+    
+    // Actualizar último acceso
+    await c.env.DB.prepare(`
+      UPDATE usuarios SET ultimo_acceso = datetime('now') WHERE id = ?
+    `).bind(usuario.id).run()
+    
+    return c.json({ 
+      success: true, 
+      usuario: {
+        id: usuario.id,
+        email: usuario.email,
+        nombre: usuario.nombre,
+        rol: usuario.rol
+      }
+    })
+  } catch (error) {
+    return c.json({ success: false, message: 'Error en el servidor' }, 500)
+  }
+})
+
+// ============================================
 // API ENDPOINTS - CLIENTES
 // ============================================
 
@@ -506,9 +542,14 @@ app.get('/', (c) => {
                         <p class="text-sm text-gray-600">Sistema de Gestión Integral</p>
                     </div>
                 </div>
-                <div class="text-right">
-                    <p class="text-sm text-gray-600">Bienvenida</p>
-                    <p class="font-semibold text-gray-800">Admin</p>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="text-sm text-gray-600">Bienvenida</p>
+                        <p class="font-semibold text-gray-800">Admin</p>
+                    </div>
+                    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Salir
+                    </button>
                 </div>
             </div>
         </div>
