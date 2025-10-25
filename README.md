@@ -6,6 +6,15 @@
 
 ## ✨ Características Completadas
 
+### 🔐 Sistema de Autenticación
+- Login con email y contraseña
+- Sesión persistente en localStorage
+- Protección de rutas (redirección automática)
+- Botón de logout en header
+- Página de login profesional con diseño moderno
+- Credenciales pre-cargadas para demo
+- Toggle de visibilidad de contraseña
+
 ### 📊 Panel de Control (Dashboard)
 - KPIs en tiempo real: ingresos, trabajos activos, stock bajo, horas trabajadas, satisfacción
 - Gráficos interactivos con Chart.js (trabajos por estado, ingresos diarios)
@@ -74,6 +83,7 @@
 - **HTTP Client**: Axios
 
 ### Estructura de Base de Datos
+- `usuarios` - **NUEVO** - Sistema de autenticación
 - `clientes` - Información de clientes
 - `empleadas` - Datos de empleadas
 - `trabajos` - Órdenes de trabajo
@@ -85,6 +95,7 @@
 - `evaluaciones` - Evaluaciones de empleadas
 
 ### API REST Endpoints
+**Autenticación**: POST `/api/login` - **NUEVO**
 **Clientes**: GET, POST, PUT `/api/clientes`
 **Empleadas**: GET, POST, PUT `/api/empleadas`
 **Trabajos**: GET, POST, PUT `/api/trabajos`
@@ -141,14 +152,35 @@ npm run clean-port
 npx wrangler d1 execute anushka-hogar-production --local --command="SELECT * FROM clientes"
 ```
 
+## 🔐 Credenciales de Acceso
+
+**IMPORTANTE**: El sistema ahora requiere login
+
+### Usuario Administrador
+- **Email**: eva@anushkahogar.com
+- **Contraseña**: Anushka2025!
+- **Rol**: Administrador
+
+### Página de Login
+- **URL**: /static/login.html (auto-redirige si no estás logueado)
+- **Características**:
+  - ✅ Credenciales pre-cargadas en el formulario (demo)
+  - ✅ Toggle para mostrar/ocultar contraseña
+  - ✅ Validación de email y contraseña
+  - ✅ Sesión guardada en localStorage
+  - ✅ Botón de logout en el header
+  - ✅ Protección de rutas (requiere login)
+
 ## 🌐 URLs del Proyecto
 
 ### Desarrollo Local
-- **Dashboard**: http://localhost:3000
+- **Login**: http://localhost:3000/static/login.html
+- **Dashboard**: http://localhost:3000 (requiere login)
 - **API Base**: http://localhost:3000/api
 
 ### Sandbox Environment (ACTIVO ✅)
-- **URL Pública**: https://3000-igloyhvlo0thgdvq5z280-8f57ffe2.sandbox.novita.ai
+- **URL Login**: https://3000-igloyhvlo0thgdvq5z280-8f57ffe2.sandbox.novita.ai/static/login.html
+- **URL Dashboard**: https://3000-igloyhvlo0thgdvq5z280-8f57ffe2.sandbox.novita.ai
 - **Estado**: Online y funcionando
 - **Base de datos**: D1 local con datos de ejemplo cargados
 
