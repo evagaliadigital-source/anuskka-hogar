@@ -535,7 +535,7 @@ app.get('/', (c) => {
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <div class="bg-white p-2 rounded-lg">
-                        <img src="/static/logo.png" alt="Anushka Hogar" class="h-12 w-12 object-contain">
+                        <img src="/static/logo.jpg" alt="Anushka Hogar" class="h-12 w-12 object-contain">
                     </div>
                     <div>
                         <h1 class="text-2xl font-bold text-gray-800">Anushka Hogar</h1>
