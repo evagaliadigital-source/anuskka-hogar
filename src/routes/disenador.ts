@@ -3,6 +3,8 @@ import { Hono } from 'hono'
 type Bindings = {
   DB: D1Database;
   GEMINI_API_KEY: string;
+  FAL_API_KEY: string;
+  IMAGES: R2Bucket;
 }
 
 const disenador = new Hono<{ Bindings: Bindings }>()
@@ -554,19 +556,85 @@ function usarAnalisisSimulado(c: any, proyecto_id: any) {
 // GENERACIÓN DE VISUALIZACIONES
 // ============================================
 
-// POST - Generar visualizaciones con IA
+// POST - Generar visualizaciones con IA (Flux Pro Ultra)
 disenador.post('/generar', async (c) => {
   try {
-    const { proyecto_id, tela_id, tipo_cortina, opciones } = await c.req.json()
+    const { proyecto_id, tela_nombre, tela_descripcion, tipo_cortina, opciones, imagen_original_url } = await c.req.json()
     
-    // TODO: Integrar generación de imágenes con IA
-    // Por ahora devolvemos URLs simuladas
+    if (!imagen_original_url) {
+      return c.json({ error: 'Imagen original no proporcionada' }, 400)
+    }
     
-    const imagenesSimuladas = [
-      '/static/demo/cortina-diurna.jpg',
-      '/static/demo/cortina-atardecer.jpg',
-      '/static/demo/cortina-noche.jpg'
-    ]
+    const apiKey = c.env.FAL_API_KEY
+    const tiempoInicio = Date.now()
+    
+    // Verificar API key
+    if (!apiKey || apiKey === 'your-fal-api-key-here') {
+      console.warn('⚠️ FAL_API_KEY no configurada, usando imágenes simuladas')
+      return usarImagenesSimuladas(c, proyecto_id, tipo_cortina, opciones)
+    }
+    
+    // Construir prompt optimizado para cortinas fotorealistas
+    const tiposPrompt = {
+      'ondas_francesas': 'elegant French pleat curtains with soft flowing waves',
+      'paneles_japoneses': 'modern Japanese panel curtains, minimalist and sleek',
+      'pliegues_rectos': 'classic straight pleat curtains with clean lines',
+      'estor_enrollable': 'contemporary roller blinds, smooth and modern',
+      'estor_plegable': 'Roman shade blinds with horizontal folds',
+      'otros': 'elegant custom curtains'
+    }
+    
+    const tipoDesc = tiposPrompt[tipo_cortina as keyof typeof tiposPrompt] || 'elegant curtains'
+    const forroDesc = opciones?.forro_termico ? 'with thermal lining' : ''
+    const telaDesc = tela_descripcion || tela_nombre || 'fabric'
+    
+    const prompt = `Professional interior design photograph of ${tipoDesc} ${forroDesc}. The curtains are made of ${telaDesc}. Photorealistic, high-end residential interior, natural lighting, sharp details, modern elegant style, magazine quality photography. The curtains should perfectly fit the window and complement the room's existing decor. Ultra-high quality, 8K resolution.`
+    
+    console.log('🎨 Generando con Flux Pro Ultra...')
+    console.log('📝 Prompt:', prompt)
+    
+    // Llamar a Fal.ai - Flux Pro Ultra
+    const response = await fetch('https://queue.fal.run/fal-ai/flux-pro/v1.1-ultra', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Key ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        prompt: prompt,
+        image_url: imagen_original_url,
+        num_images: 1,
+        guidance_scale: 3.5,
+        num_inference_steps: 28,
+        safety_tolerance: 2,
+        output_format: 'jpeg',
+        aspect_ratio: '16:9',
+        raw: false
+      })
+    })
+    
+    if (!response.ok) {
+      const errorData = await response.text()
+      console.error('Error de Fal.ai:', errorData)
+      return usarImagenesSimuladas(c, proyecto_id, tipo_cortina, opciones)
+    }
+    
+    const result = await response.json()
+    console.log('✅ Respuesta de Fal.ai:', result)
+    
+    // Fal.ai devuelve la imagen generada en result.images[0].url
+    const imagenGeneradaUrl = result.images?.[0]?.url
+    
+    if (!imagenGeneradaUrl) {
+      console.error('No se generó imagen')
+      return usarImagenesSimuladas(c, proyecto_id, tipo_cortina, opciones)
+    }
+    
+    // TODO: Descargar y subir a R2 para permanencia
+    // Por ahora usamos la URL de Fal.ai (expira en 24h)
+    const imagenes = [imagenGeneradaUrl]
+    
+    const tiempoTotal = ((Date.now() - tiempoInicio) / 1000).toFixed(1)
     
     // Actualizar proyecto con imágenes generadas
     if (proyecto_id) {
@@ -577,37 +645,69 @@ disenador.post('/generar', async (c) => {
             forro_termico = ?,
             motorizada = ?,
             doble_cortina = ?,
+            tela_nombre = ?,
             updated_at = datetime('now')
         WHERE id = ?
       `).bind(
-        JSON.stringify(imagenesSimuladas),
+        JSON.stringify(imagenes),
         tipo_cortina || null,
         opciones?.forro_termico ? 1 : 0,
         opciones?.motorizada ? 1 : 0,
         opciones?.doble_cortina ? 1 : 0,
+        tela_nombre || null,
         proyecto_id
       ).run()
-      
-      // Incrementar contador de uso de la tela
-      if (tela_id) {
-        await c.env.DB.prepare(`
-          UPDATE catalogo_telas 
-          SET veces_usado = veces_usado + 1 
-          WHERE id = ?
-        `).bind(tela_id).run()
-      }
     }
     
     return c.json({
       success: true,
-      imagenes: imagenesSimuladas,
-      mensaje: 'Visualizaciones generadas correctamente',
-      tiempo_generacion: 18.5
+      imagenes: imagenes,
+      mensaje: `Visualización generada con Flux Pro Ultra en ${tiempoTotal}s`,
+      tiempo_generacion: parseFloat(tiempoTotal),
+      modelo: 'flux-pro-ultra'
     })
   } catch (error) {
     console.error('Error generando visualizaciones:', error)
     return c.json({ error: 'Error al generar visualizaciones' }, 500)
   }
 })
+
+// Función auxiliar para imágenes simuladas (desarrollo sin API key)
+function usarImagenesSimuladas(c: any, proyecto_id: any, tipo_cortina: any, opciones: any) {
+  const imagenesSimuladas = [
+    'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=1200',
+    'https://images.unsplash.com/photo-1631679706909-1844bbd07221?w=1200',
+    'https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=1200'
+  ]
+  
+  // Actualizar proyecto con imágenes simuladas
+  if (proyecto_id) {
+    c.env.DB.prepare(`
+      UPDATE proyectos_diseno 
+      SET imagenes_generadas = ?,
+          tipo_cortina = ?,
+          forro_termico = ?,
+          motorizada = ?,
+          doble_cortina = ?,
+          updated_at = datetime('now')
+      WHERE id = ?
+    `).bind(
+      JSON.stringify(imagenesSimuladas),
+      tipo_cortina || null,
+      opciones?.forro_termico ? 1 : 0,
+      opciones?.motorizada ? 1 : 0,
+      opciones?.doble_cortina ? 1 : 0,
+      proyecto_id
+    ).run()
+  }
+  
+  return c.json({
+    success: true,
+    imagenes: imagenesSimuladas,
+    mensaje: '⚠️ Imágenes simuladas de Unsplash (configura FAL_API_KEY para generación real)',
+    tiempo_generacion: 0.1,
+    modelo: 'simulado'
+  })
+}
 
 export default disenador

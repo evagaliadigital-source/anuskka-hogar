@@ -4550,34 +4550,50 @@ async function generarVisualizaciones() {
   }
   
   try {
-    showLoading('Generando visualizaciones con IA... (15-20 segundos)')
+    showLoading('🎨 Generando visualización con Flux Pro Ultra... (15-30 segundos)')
     
     // Recoger opciones
-    proyectoActual.tipo_cortina = document.getElementById('tipo-cortina').value
+    proyectoActual.tipo_cortina = document.querySelector('input[name="tipo-cortina"]:checked')?.value || 'ondas_francesas'
     proyectoActual.opciones = {
-      forro_termico: document.getElementById('opt-forro').checked,
-      motorizada: document.getElementById('opt-motorizada').checked,
-      doble_cortina: document.getElementById('opt-doble').checked
+      forro_termico: document.getElementById('opt-forro')?.checked || false,
+      motorizada: document.getElementById('opt-motorizada')?.checked || false,
+      doble_cortina: document.getElementById('opt-doble')?.checked || false
     }
     
-    // Llamar a generación IA
+    console.log('📤 Enviando a generación:', {
+      proyecto_id: proyectoActual.id,
+      tela_nombre: proyectoActual.tela_seleccionada.nombre,
+      tipo_cortina: proyectoActual.tipo_cortina,
+      imagen_original_url: proyectoActual.imagen_url
+    })
+    
+    // Llamar a generación IA (Flux Pro Ultra)
     const { data } = await axios.post(`${API}/disenador/generar`, {
       proyecto_id: proyectoActual.id,
-      tela_id: proyectoActual.tela_seleccionada.id,
+      tela_nombre: proyectoActual.tela_seleccionada.nombre,
+      tela_descripcion: proyectoActual.tela_seleccionada.descripcion || null,
       tipo_cortina: proyectoActual.tipo_cortina,
-      opciones: proyectoActual.opciones
+      opciones: proyectoActual.opciones,
+      imagen_original_url: proyectoActual.imagen_url
     })
     
     proyectoActual.imagenes_generadas = data.imagenes
     
     hideLoading()
+    
+    // Mensaje diferenciado según modelo usado
+    if (data.modelo === 'simulado') {
+      showSuccess('⚠️ Visualizaciones simuladas (configura FAL_API_KEY para generación real)')
+    } else {
+      showSuccess(`✅ Visualización generada con ${data.modelo} en ${data.tiempo_generacion}s`)
+    }
+    
     mostrarResultados()
-    showSuccess('✅ Visualizaciones generadas')
     
   } catch (error) {
     console.error('Error generando visualizaciones:', error)
     hideLoading()
-    showError('❌ Error al generar visualizaciones')
+    showError('❌ Error al generar visualizaciones: ' + (error.response?.data?.error || error.message))
   }
 }
 
