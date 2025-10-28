@@ -6,13 +6,16 @@
 
 ## ✨ Características Completadas
 
-### 🔐 Sistema de Autenticación
+### 🔐 Sistema de Autenticación y Roles
+- **NUEVO**: Sistema de roles completo (Ana Ramos 👑 vs Tienda 🏪)
+- **NUEVO**: Contraseña adicional "1984" para Ana Ramos (recordable por navegador)
+- **NUEVO**: Pestañas sensibles invisibles para rol Tienda
+- **NUEVO**: Control de permisos basado en rol
 - Login con email y contraseña
-- Sesión persistente en localStorage
+- Sesión persistente en localStorage con información de rol
 - Protección de rutas (redirección automática)
 - Botón de logout en header
 - Página de login profesional con diseño moderno
-- Credenciales pre-cargadas para demo
 - Toggle de visibilidad de contraseña
 
 ### 📊 Panel de Control (Dashboard)
@@ -40,6 +43,10 @@
 
 ### 📦 Control de Stock
 - Inventario completo de materiales y herramientas
+- **NUEVO**: Sistema de categorías dinámicas con colores e iconos
+- **NUEVO**: Gestión CRUD completa de categorías
+- **NUEVO**: Filtrado por categoría en inventario
+- **NUEVO**: Creación de productos directamente desde categorías
 - Alertas automáticas de stock bajo
 - Gestión de proveedores
 - Control de cantidades mínimas
@@ -83,11 +90,12 @@
 - **HTTP Client**: Axios
 
 ### Estructura de Base de Datos
-- `usuarios` - **NUEVO** - Sistema de autenticación
+- `usuarios` - Sistema de autenticación con roles
+- `categorias` - **NUEVO** - Categorías dinámicas para stock (colores, iconos, orden)
 - `clientes` - Información de clientes
 - `empleadas` - Datos de empleadas
 - `trabajos` - Órdenes de trabajo
-- `stock` - Inventario de materiales
+- `stock` - Inventario de materiales (ahora con categoria_id)
 - `trabajo_materiales` - Materiales usados en trabajos
 - `facturas` - Facturación
 - `incidencias_clientes` - Sistema de incidencias
@@ -95,11 +103,12 @@
 - `evaluaciones` - Evaluaciones de empleadas
 
 ### API REST Endpoints
-**Autenticación**: POST `/api/login` - **NUEVO**
+**Autenticación**: POST `/api/login`
+**Categorías**: GET, POST, PUT, DELETE `/api/categorias` - **NUEVO**
 **Clientes**: GET, POST, PUT `/api/clientes`
 **Empleadas**: GET, POST, PUT `/api/empleadas`
 **Trabajos**: GET, POST, PUT `/api/trabajos`
-**Stock**: GET, POST, PUT `/api/stock`
+**Stock**: GET (con filtro categoria_id), POST, PUT `/api/stock`
 **Facturas**: GET, POST `/api/facturas`
 **Dashboard**: GET `/api/dashboard`
 **Reportes**: GET `/api/reportes/mensual`
@@ -154,22 +163,32 @@ npx wrangler d1 execute anushka-hogar-production --local --command="SELECT * FRO
 
 ## 🔐 Credenciales de Acceso
 
-**IMPORTANTE**: El sistema ahora requiere login
+**IMPORTANTE**: El sistema ahora requiere login con sistema de roles
 
-### Usuario Administrador
+### 👑 Ana Ramos (Propietaria - Acceso Total)
 - **Email**: anuskka@galia.com
 - **Contraseña**: Anushka2025!
-- **Rol**: Administrador
+- **Contraseña Adicional**: 1984 (recordable por navegador)
+- **Acceso**: 8 pestañas completas (Dashboard, Clientes, Presupuestos, Trabajos, Stock, Personal, Facturación, Reportes)
+
+### 🏪 Tienda (Acceso Limitado)
+- **Email**: anuskka@galia.com
+- **Contraseña**: Anushka2025!
+- **Sin contraseña adicional**
+- **Acceso**: 5 pestañas operativas (Dashboard, Clientes, Presupuestos, Trabajos, Stock)
+- **Pestañas ocultas**: Personal, Facturación, Reportes
 
 ### Página de Login
 - **URL**: /static/login.html (auto-redirige si no estás logueado)
 - **Características**:
-  - ✅ Credenciales pre-cargadas en el formulario (demo)
+  - ✅ Selector de rol (Ana Ramos 👑 / Tienda 🏪)
+  - ✅ Contraseña adicional solo para Ana Ramos
   - ✅ Toggle para mostrar/ocultar contraseña
-  - ✅ Validación de email y contraseña
-  - ✅ Sesión guardada en localStorage
+  - ✅ Validación de email, contraseña y rol
+  - ✅ Sesión guardada en localStorage con rol
   - ✅ Botón de logout en el header
   - ✅ Protección de rutas (requiere login)
+  - ✅ Tabs sensibles invisibles para Tienda
 
 ## 🌐 URLs del Proyecto
 
@@ -250,12 +269,16 @@ npx wrangler d1 execute anushka-hogar-production --local --command="SELECT * FRO
 
 ## 📝 Guía de Uso Rápida
 
-1. **Crear Cliente**: Ir a "Clientes" → "Nuevo Cliente" → Rellenar formulario
-2. **Crear Empleada**: Ir a "Empleadas" → "Nueva Empleada" → Rellenar datos
-3. **Programar Trabajo**: Ir a "Trabajos" → "Nuevo Trabajo" → Asignar cliente y empleada
-4. **Gestionar Stock**: Ir a "Stock" → "Nuevo Artículo" → Configurar alertas
-5. **Generar Factura**: Ir a "Facturación" → "Nueva Factura" → Asociar a trabajo
-6. **Ver Reportes**: Ir a "Reportes" → Seleccionar mes → Ver métricas
+1. **Login**: Elegir rol (Ana Ramos o Tienda) → Ingresar credenciales
+2. **Gestionar Categorías**: Ir a "Stock" → "Categorías" → Crear/Editar categorías con colores e iconos
+3. **Crear Productos desde Categoría**: En "Categorías" → Click en "Añadir Artículo" en cualquier categoría
+4. **Crear Cliente**: Ir a "Clientes" → "Nuevo Cliente" → Rellenar formulario
+5. **Crear Empleada**: Ir a "Personal" → "Nueva Empleada" → Rellenar datos (solo Ana Ramos)
+6. **Programar Trabajo**: Ir a "Trabajos" → "Nuevo Trabajo" → Asignar cliente y empleada
+7. **Gestionar Stock**: Ir a "Stock" → "Nuevo Artículo" → Seleccionar categoría → Configurar alertas
+8. **Filtrar Stock**: Usar dropdown de categorías para filtrar inventario
+9. **Generar Factura**: Ir a "Facturación" → "Nueva Factura" → Asociar a trabajo (solo Ana Ramos)
+10. **Ver Reportes**: Ir a "Reportes" → Seleccionar mes → Ver métricas (solo Ana Ramos)
 
 ## 🔐 Seguridad
 
@@ -277,6 +300,34 @@ Dashboard desarrollado para uso interno de Anushka Hogar.
 
 ---
 
-**Última actualización**: 2025-10-25  
-**Estado**: ✅ Completado - Listo para uso local  
+**Última actualización**: 2025-10-28  
+**Estado**: ✅ Completado - Sistema de roles y categorías dinámicas funcionando  
 **Próximo paso**: Deploy a producción en Cloudflare Pages
+
+---
+
+## 🆕 Cambios Recientes (28/10/2025)
+
+### Sistema de Roles Completo
+✅ Implementado sistema de roles con dos niveles de acceso  
+✅ Ana Ramos (propietaria) - Acceso total con contraseña adicional "1984"  
+✅ Tienda - Acceso limitado a 5 pestañas operativas  
+✅ Tabs sensibles invisibles para rol Tienda  
+✅ Contraseña 1984 recordable por navegador (autocomplete)
+
+### Sistema de Categorías Dinámicas
+✅ Tabla `categorias` creada con colores, iconos y orden  
+✅ 7 categorías pre-cargadas para negocio de cortinas  
+✅ CRUD completo de categorías (crear, editar, eliminar)  
+✅ Validación de eliminación (no se puede borrar si tiene productos)  
+✅ Filtro por categoría en inventario  
+✅ Badges visuales con colores e iconos en listado de stock  
+✅ **NUEVO**: Botón "Añadir Artículo" en cada tarjeta de categoría  
+✅ Formulario de productos usa categorías dinámicas desde BD  
+✅ Pre-selección de categoría al crear producto desde categoría
+
+### Mejoras de UX
+✅ Categorías visuales con colores personalizables  
+✅ Iconos Font Awesome para cada categoría  
+✅ Creación rápida de productos desde gestión de categorías  
+✅ Flujo integrado: Categorías → Añadir Artículo → Formulario con categoría preseleccionada
