@@ -1974,40 +1974,6 @@ async function loadReporte() {
 // UTILIDADES
 // ============================================
 
-function closeModal() {
-  const modals = document.querySelectorAll('.fixed.inset-0')
-  modals.forEach(modal => modal.remove())
-}
-
-function showSuccess(message) {
-  showToast(message, 'success')
-}
-
-function showError(message) {
-  showToast(message, 'error')
-}
-
-function showToast(message, type) {
-  const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500'
-  const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'
-  
-  const toast = document.createElement('div')
-  toast.className = `fixed bottom-6 right-6 ${bgColor} text-white px-6 py-4 rounded-lg shadow-2xl flex items-center space-x-3 z-50 animate-slide-up`
-  toast.innerHTML = `
-    <i class="fas ${icon} text-xl"></i>
-    <span class="font-medium">${message}</span>
-  `
-  
-  document.body.appendChild(toast)
-  
-  setTimeout(() => {
-    toast.style.opacity = '0'
-    toast.style.transform = 'translateY(20px)'
-    toast.style.transition = 'all 0.3s ease'
-    setTimeout(() => toast.remove(), 300)
-  }, 3000)
-}
-
 // Funciones stub para botones específicos
 window.viewCliente = async (id) => {
   const { data } = await axios.get(`${API}/clientes/${id}`)
@@ -4048,12 +4014,14 @@ function resetUpload() {
 
 // Analizar imagen con IA
 async function analizarImagen() {
+  console.log('🔍 analizarImagen() iniciada')
   if (!proyectoActual.imagen_file) {
     alert('❌ Selecciona una imagen primero')
     return
   }
   
   try {
+    console.log('📤 Mostrando loading...')
     showLoading('Analizando espacio con IA...')
     
     // Simular upload a R2 (en producción, aquí subirías a Cloudflare R2)
@@ -4074,24 +4042,39 @@ async function analizarImagen() {
     })
     
     proyectoActual.analisis = analisis.analisis
+    console.log('✅ Análisis recibido:', analisis.analisis)
     
     hideLoading()
+    console.log('📊 Mostrando análisis...')
     mostrarAnalisis(analisis.analisis)
     
     // Pasar al siguiente paso
-    document.getElementById('step-analisis').classList.remove('hidden')
+    console.log('👁️ Mostrando step-analisis...')
+    const stepAnalisis = document.getElementById('step-analisis')
+    if (stepAnalisis) {
+      stepAnalisis.classList.remove('hidden')
+      console.log('✅ step-analisis visible')
+    } else {
+      console.error('❌ step-analisis NO encontrado en DOM')
+    }
     
     // Scroll al análisis
     setTimeout(() => {
-      document.getElementById('step-analisis').scrollIntoView({ behavior: 'smooth', block: 'start' })
+      console.log('📜 Haciendo scroll...')
+      const step = document.getElementById('step-analisis')
+      if (step) {
+        step.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        console.log('✅ Scroll completado')
+      }
     }, 300)
     
     showSuccess('✅ Análisis completado - Ahora elige el tipo de cortina')
     
   } catch (error) {
-    console.error('Error analizando imagen:', error)
+    console.error('❌ Error analizando imagen:', error)
+    console.error('❌ Stack:', error.stack)
     hideLoading()
-    showError('❌ Error al analizar imagen')
+    showError('❌ Error al analizar imagen: ' + error.message)
   }
 }
 
