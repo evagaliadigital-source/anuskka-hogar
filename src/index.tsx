@@ -1474,6 +1474,237 @@ app.get('/', (c) => {
             </div>
         </div>
 
+        <!-- DISEÑADOR VIRTUAL TAB -->
+        <div id="disenador-tab" class="tab-content">
+            <div class="space-y-6">
+                
+                <!-- Header con instrucciones -->
+                <div class="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl shadow-lg p-8 text-white">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+                            <i class="fas fa-magic text-purple-600 text-3xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-bold">Diseñador Virtual de Cortinas</h1>
+                            <p class="text-purple-100">Visualiza cómo quedarán las cortinas en el espacio real usando IA</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-4 mt-6">
+                        <div class="bg-white/10 rounded-lg p-4 text-center">
+                            <i class="fas fa-upload text-2xl mb-2"></i>
+                            <p class="text-sm">1. Sube foto</p>
+                        </div>
+                        <div class="bg-white/10 rounded-lg p-4 text-center">
+                            <i class="fas fa-search text-2xl mb-2"></i>
+                            <p class="text-sm">2. IA analiza</p>
+                        </div>
+                        <div class="bg-white/10 rounded-lg p-4 text-center">
+                            <i class="fas fa-palette text-2xl mb-2"></i>
+                            <p class="text-sm">3. Elige tela</p>
+                        </div>
+                        <div class="bg-white/10 rounded-lg p-4 text-center">
+                            <i class="fas fa-eye text-2xl mb-2"></i>
+                            <p class="text-sm">4. Visualiza</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Galería de proyectos existentes -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">
+                            <i class="fas fa-folder-open text-purple-600 mr-2"></i>
+                            Mis Proyectos
+                        </h2>
+                        <button onclick="showNuevoProyecto()" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                            <i class="fas fa-plus mr-2"></i>Nuevo Proyecto
+                        </button>
+                    </div>
+                    <div id="proyectos-galeria" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Se carga dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Área de trabajo del proyecto (inicialmente oculta) -->
+                <div id="proyecto-workspace" class="hidden space-y-6">
+                    
+                    <!-- Paso 1: Upload de imagen -->
+                    <div id="step-upload" class="bg-white rounded-xl shadow-md p-6">
+                        <h3 class="text-xl font-bold mb-4">
+                            <i class="fas fa-upload text-purple-600 mr-2"></i>
+                            Paso 1: Sube la foto del espacio
+                        </h3>
+                        
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-purple-500 transition-all cursor-pointer" 
+                             id="upload-zone"
+                             onclick="document.getElementById('file-input').click()">
+                            <input type="file" id="file-input" accept="image/*" class="hidden" onchange="handleFileUpload(event)">
+                            <i class="fas fa-cloud-upload-alt text-6xl text-gray-400 mb-4"></i>
+                            <p class="text-xl text-gray-600 mb-2">Arrastra una imagen aquí o haz click para seleccionar</p>
+                            <p class="text-sm text-gray-500">Formatos: JPG, PNG (máx. 10MB)</p>
+                        </div>
+                        
+                        <div id="image-preview" class="hidden mt-6">
+                            <img id="preview-img" src="" alt="Preview" class="w-full max-h-96 object-contain rounded-lg">
+                            <div class="flex gap-3 mt-4">
+                                <button onclick="analizarImagen()" class="flex-1 bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700">
+                                    <i class="fas fa-magic mr-2"></i>Analizar con IA
+                                </button>
+                                <button onclick="resetUpload()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
+                                    Cambiar Imagen
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Paso 2: Análisis IA (se muestra después del análisis) -->
+                    <div id="step-analisis" class="hidden bg-white rounded-xl shadow-md p-6">
+                        <h3 class="text-xl font-bold mb-4">
+                            <i class="fas fa-brain text-purple-600 mr-2"></i>
+                            Paso 2: Análisis del Espacio
+                        </h3>
+                        <div id="analisis-resultado" class="space-y-4">
+                            <!-- Se llena dinámicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Paso 3: Selección de tela y opciones -->
+                    <div id="step-configuracion" class="hidden bg-white rounded-xl shadow-md p-6">
+                        <h3 class="text-xl font-bold mb-6">
+                            <i class="fas fa-palette text-purple-600 mr-2"></i>
+                            Paso 3: Diseña tus Cortinas
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            
+                            <!-- Columna 1: Catálogo de Telas -->
+                            <div class="lg:col-span-2">
+                                <div class="mb-4 flex gap-3">
+                                    <select id="filter-opacidad" onchange="filtrarTelas()" class="px-4 py-2 border rounded-lg">
+                                        <option value="">Todas las opacidades</option>
+                                        <option value="transparente">Transparente</option>
+                                        <option value="traslúcida">Traslúcida</option>
+                                        <option value="opaca">Opaca</option>
+                                        <option value="blackout">Blackout</option>
+                                    </select>
+                                    <select id="filter-categoria-tela" onchange="filtrarTelas()" class="px-4 py-2 border rounded-lg">
+                                        <option value="">Todas las categorías</option>
+                                        <!-- Se llena dinámicamente -->
+                                    </select>
+                                </div>
+                                
+                                <div id="catalogo-telas" class="grid grid-cols-2 gap-4 max-h-[600px] overflow-y-auto">
+                                    <!-- Se carga dinámicamente -->
+                                </div>
+                            </div>
+                            
+                            <!-- Columna 2: Opciones y Resumen -->
+                            <div class="space-y-6">
+                                
+                                <!-- Tela seleccionada -->
+                                <div id="tela-seleccionada" class="border rounded-lg p-4 bg-purple-50">
+                                    <p class="text-sm text-gray-600 mb-2">Tela seleccionada:</p>
+                                    <p id="tela-nombre" class="font-bold text-lg">Ninguna</p>
+                                    <p id="tela-precio" class="text-purple-600">-</p>
+                                </div>
+                                
+                                <!-- Tipo de cortina -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Cortina</label>
+                                    <select id="tipo-cortina" class="w-full px-4 py-2 border rounded-lg">
+                                        <option value="ondas_francesas">Ondas Francesas</option>
+                                        <option value="panel_japones">Panel Japonés</option>
+                                        <option value="pliegues_rectos">Pliegues Rectos</option>
+                                        <option value="estor">Estor Enrollable</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Opciones extra -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Opciones Extra</label>
+                                    <div class="space-y-2">
+                                        <label class="flex items-center">
+                                            <input type="checkbox" id="opt-forro" class="mr-2">
+                                            <span>Forro Térmico (+15€/m²)</span>
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" id="opt-motorizada" class="mr-2">
+                                            <span>Motorizada (+180€)</span>
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox" id="opt-doble" class="mr-2">
+                                            <span>Doble Cortina</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <!-- Resumen de precio -->
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <p class="text-sm text-gray-600 mb-2">Precio Estimado:</p>
+                                    <p id="precio-estimado" class="text-3xl font-bold text-purple-600">0€</p>
+                                    <p class="text-xs text-gray-500 mt-1">Cálculo aproximado</p>
+                                </div>
+                                
+                                <!-- Botón generar -->
+                                <button onclick="generarVisualizaciones()" id="btn-generar" disabled 
+                                        class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-4 rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <i class="fas fa-magic mr-2"></i>Generar Visualizaciones
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Paso 4: Resultados (galería de imágenes generadas) -->
+                    <div id="step-resultados" class="hidden bg-white rounded-xl shadow-md p-6">
+                        <h3 class="text-xl font-bold mb-6">
+                            <i class="fas fa-images text-purple-600 mr-2"></i>
+                            Paso 4: Visualizaciones Generadas
+                        </h3>
+                        
+                        <div class="grid grid-cols-2 gap-6 mb-6">
+                            <div class="text-center">
+                                <p class="text-sm text-gray-600 mb-2">Imagen Original</p>
+                                <img id="resultado-original" src="" alt="Original" class="w-full rounded-lg border">
+                            </div>
+                            <div class="text-center">
+                                <p class="text-sm text-gray-600 mb-2">Con Cortinas</p>
+                                <img id="resultado-generado" src="" alt="Generado" class="w-full rounded-lg border">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-4 mb-6">
+                            <button onclick="mostrarVariante(0)" class="border-2 border-purple-600 rounded-lg p-2 hover:bg-purple-50">
+                                <img id="variante-0" src="" alt="Diurna" class="w-full rounded">
+                                <p class="text-sm mt-1">☀️ Diurna</p>
+                            </button>
+                            <button onclick="mostrarVariante(1)" class="border-2 border-transparent rounded-lg p-2 hover:bg-purple-50">
+                                <img id="variante-1" src="" alt="Atardecer" class="w-full rounded">
+                                <p class="text-sm mt-1">🌅 Atardecer</p>
+                            </button>
+                            <button onclick="mostrarVariante(2)" class="border-2 border-transparent rounded-lg p-2 hover:bg-purple-50">
+                                <img id="variante-2" src="" alt="Noche" class="w-full rounded">
+                                <p class="text-sm mt-1">🌙 Noche</p>
+                            </button>
+                        </div>
+                        
+                        <div class="flex gap-3">
+                            <button onclick="generarPresupuesto()" class="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700">
+                                <i class="fas fa-file-invoice-dollar mr-2"></i>Generar Presupuesto
+                            </button>
+                            <button onclick="compartirProyecto()" class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700">
+                                <i class="fas fa-share-alt mr-2"></i>Compartir
+                            </button>
+                            <button onclick="resetProyecto()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
+                                <i class="fas fa-redo mr-2"></i>Nuevo
+                            </button>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+            </div>
+        </div>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>

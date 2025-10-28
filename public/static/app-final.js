@@ -45,8 +45,8 @@ function tienePermiso(seccion) {
     return true
   }
   
-  // Tienda solo tiene acceso a secciones operativas + consultor IA
-  const seccionesTienda = ['dashboard', 'clientes', 'presupuestos', 'trabajos', 'stock', 'consultor']
+  // Tienda solo tiene acceso a secciones operativas + consultor IA + diseñador virtual
+  const seccionesTienda = ['dashboard', 'clientes', 'presupuestos', 'trabajos', 'stock', 'consultor', 'disenador']
   return seccionesTienda.includes(seccion)
 }
 
@@ -220,6 +220,9 @@ function showTab(tabName) {
     case 'reportes':
       loadInformes()
       loadReporte()
+      break
+    case 'disenador':
+      loadProyectosDiseño()
       break
   }
 }
@@ -3928,3 +3931,531 @@ function formatMarkdown(text) {
   
   return '<div class="text-gray-800">' + html + '</div>'
 }
+
+// ============================================
+// DISEÑADOR VIRTUAL DE CORTINAS
+// ============================================
+
+let proyectoActual = {
+  id: null,
+  imagen_url: null,
+  imagen_file: null,
+  analisis: null,
+  tela_seleccionada: null,
+  tipo_cortina: 'ondas_francesas',
+  opciones: {
+    forro_termico: false,
+    motorizada: false,
+    doble_cortina: false
+  },
+  imagenes_generadas: [],
+  variante_actual: 0
+}
+
+let catalogoTelas = []
+
+// Cargar proyectos existentes
+async function loadProyectosDiseño() {
+  try {
+    const { data } = await axios.get(`${API}/disenador/proyectos`)
+    const galeria = document.getElementById('proyectos-galeria')
+    
+    if (data.length === 0) {
+      galeria.innerHTML = `
+        <div class="col-span-3 text-center py-12">
+          <i class="fas fa-folder-open text-6xl text-gray-300 mb-4"></i>
+          <p class="text-gray-500">No hay proyectos aún. ¡Crea el primero!</p>
+        </div>
+      `
+      return
+    }
+    
+    galeria.innerHTML = data.map(p => `
+      <div class="border rounded-lg overflow-hidden hover:shadow-lg transition-all cursor-pointer" onclick="abrirProyecto(${p.id})">
+        <img src="${p.imagen_original_url}" alt="${p.nombre_proyecto}" class="w-full h-48 object-cover">
+        <div class="p-4">
+          <h3 class="font-semibold text-gray-800">${p.nombre_proyecto}</h3>
+          <p class="text-sm text-gray-500">${p.cliente_nombre || 'Sin cliente'}</p>
+          <div class="flex justify-between items-center mt-2">
+            <span class="text-xs px-2 py-1 rounded-full ${
+              p.estado === 'presupuestado' ? 'bg-green-100 text-green-800' :
+              p.estado === 'compartido' ? 'bg-blue-100 text-blue-800' :
+              'bg-gray-100 text-gray-800'
+            }">${p.estado}</span>
+            <span class="text-sm text-gray-600">${new Date(p.created_at).toLocaleDateString()}</span>
+          </div>
+        </div>
+      </div>
+    `).join('')
+  } catch (error) {
+    console.error('Error cargando proyectos:', error)
+  }
+}
+
+// Mostrar formulario de nuevo proyecto
+function showNuevoProyecto() {
+  document.getElementById('proyectos-galeria').parentElement.classList.add('hidden')
+  document.getElementById('proyecto-workspace').classList.remove('hidden')
+  document.getElementById('step-upload').classList.remove('hidden')
+  
+  // Reset proyecto
+  proyectoActual = {
+    id: null,
+    imagen_url: null,
+    imagen_file: null,
+    analisis: null,
+    tela_seleccionada: null,
+    tipo_cortina: 'ondas_francesas',
+    opciones: {
+      forro_termico: false,
+      motorizada: false,
+      doble_cortina: false
+    },
+    imagenes_generadas: [],
+    variante_actual: 0
+  }
+}
+
+// Manejar upload de archivo
+async function handleFileUpload(event) {
+  const file = event.target.files[0]
+  if (!file) return
+  
+  // Validar tamaño (10MB máx)
+  if (file.size > 10 * 1024 * 1024) {
+    alert('❌ La imagen es demasiado grande (máx. 10MB)')
+    return
+  }
+  
+  // Mostrar preview
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    document.getElementById('preview-img').src = e.target.result
+    document.getElementById('image-preview').classList.remove('hidden')
+    document.getElementById('upload-zone').classList.add('hidden')
+    proyectoActual.imagen_file = file
+  }
+  reader.readAsDataURL(file)
+}
+
+// Reset upload
+function resetUpload() {
+  document.getElementById('image-preview').classList.add('hidden')
+  document.getElementById('upload-zone').classList.remove('hidden')
+  document.getElementById('file-input').value = ''
+  proyectoActual.imagen_file = null
+}
+
+// Analizar imagen con IA
+async function analizarImagen() {
+  if (!proyectoActual.imagen_file) {
+    alert('❌ Selecciona una imagen primero')
+    return
+  }
+  
+  try {
+    showLoading('Analizando espacio con IA...')
+    
+    // Simular upload a R2 (en producción, aquí subirías a Cloudflare R2)
+    const imagen_url = URL.createObjectURL(proyectoActual.imagen_file)
+    proyectoActual.imagen_url = imagen_url
+    
+    // Crear proyecto en BD
+    const { data: proyecto } = await axios.post(`${API}/disenador/proyectos`, {
+      nombre_proyecto: `Proyecto ${new Date().toLocaleDateString()}`,
+      imagen_original_url: imagen_url
+    })
+    proyectoActual.id = proyecto.proyecto_id
+    
+    // Analizar con IA
+    const { data: analisis } = await axios.post(`${API}/disenador/analizar`, {
+      imagen_url: imagen_url,
+      proyecto_id: proyectoActual.id
+    })
+    
+    proyectoActual.analisis = analisis.analisis
+    
+    hideLoading()
+    mostrarAnalisis(analisis.analisis)
+    
+    // Pasar al siguiente paso
+    document.getElementById('step-analisis').classList.remove('hidden')
+    document.getElementById('step-configuracion').classList.remove('hidden')
+    
+    // Cargar catálogo de telas
+    await loadCatalogoTelas()
+    
+    showSuccess('✅ Análisis completado')
+    
+  } catch (error) {
+    console.error('Error analizando imagen:', error)
+    hideLoading()
+    showError('❌ Error al analizar imagen')
+  }
+}
+
+// Mostrar resultado del análisis
+function mostrarAnalisis(analisis) {
+  const container = document.getElementById('analisis-resultado')
+  container.innerHTML = `
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-blue-50 rounded-lg p-4">
+        <i class="fas fa-ruler-combined text-blue-600 text-2xl mb-2"></i>
+        <p class="text-sm text-gray-600">Dimensiones</p>
+        <p class="font-bold">${analisis.ventanas[0].ancho_aprox}m x ${analisis.ventanas[0].alto_aprox}m</p>
+      </div>
+      <div class="bg-purple-50 rounded-lg p-4">
+        <i class="fas fa-paint-brush text-purple-600 text-2xl mb-2"></i>
+        <p class="text-sm text-gray-600">Estilo</p>
+        <p class="font-bold capitalize">${analisis.estilo}</p>
+      </div>
+      <div class="bg-yellow-50 rounded-lg p-4">
+        <i class="fas fa-sun text-yellow-600 text-2xl mb-2"></i>
+        <p class="text-sm text-gray-600">Luz Natural</p>
+        <p class="font-bold capitalize">${analisis.luz_natural}</p>
+      </div>
+      <div class="bg-green-50 rounded-lg p-4">
+        <i class="fas fa-palette text-green-600 text-2xl mb-2"></i>
+        <p class="text-sm text-gray-600">Colores</p>
+        <div class="flex gap-1 mt-1">
+          ${analisis.colores.map(c => `<div class="w-6 h-6 rounded-full border" style="background-color: ${c}"></div>`).join('')}
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-purple-50 border-l-4 border-purple-600 p-4 mt-4">
+      <p class="text-sm text-gray-700 mb-2"><strong>💡 Recomendaciones de GALI:</strong></p>
+      <p class="text-sm text-gray-600">
+        Para un espacio ${analisis.estilo} con ${analisis.luz_natural} luz natural, te recomendamos: 
+        <strong>${analisis.recomendaciones.join(', ')}</strong>
+      </p>
+    </div>
+  `
+}
+
+// Cargar catálogo de telas
+async function loadCatalogoTelas() {
+  try {
+    const { data } = await axios.get(`${API}/disenador/telas?disponible=true`)
+    catalogoTelas = data
+    renderCatalogoTelas(data)
+    
+    // Cargar categorías en filtro
+    const categorias = [...new Set(data.map(t => t.categoria_nombre).filter(Boolean))]
+    const filterCat = document.getElementById('filter-categoria-tela')
+    filterCat.innerHTML = '<option value="">Todas las categorías</option>' + 
+      categorias.map(c => `<option value="${c}">${c}</option>`).join('')
+    
+  } catch (error) {
+    console.error('Error cargando telas:', error)
+  }
+}
+
+// Renderizar catálogo de telas
+function renderCatalogoTelas(telas) {
+  const container = document.getElementById('catalogo-telas')
+  container.innerHTML = telas.map(t => `
+    <div class="border rounded-lg overflow-hidden cursor-pointer hover:shadow-lg transition-all ${proyectoActual.tela_seleccionada?.id === t.id ? 'ring-2 ring-purple-600' : ''}"
+         onclick="seleccionarTela(${t.id})">
+      <div class="h-32 bg-gray-200 flex items-center justify-center" style="background-color: ${t.color_hex}40">
+        <i class="fas fa-cut text-4xl" style="color: ${t.color_hex}"></i>
+      </div>
+      <div class="p-3">
+        <h4 class="font-semibold text-sm">${t.nombre}</h4>
+        <p class="text-xs text-gray-500">${t.referencia}</p>
+        <div class="flex justify-between items-center mt-2">
+          <span class="text-xs px-2 py-1 rounded-full bg-gray-100">${t.opacidad}</span>
+          <span class="text-sm font-bold text-purple-600">${t.precio_metro}€/m²</span>
+        </div>
+      </div>
+    </div>
+  `).join('')
+}
+
+// Filtrar telas
+function filtrarTelas() {
+  const opacidad = document.getElementById('filter-opacidad').value
+  const categoria = document.getElementById('filter-categoria-tela').value
+  
+  const telasFiltradas = catalogoTelas.filter(t => {
+    if (opacidad && t.opacidad !== opacidad) return false
+    if (categoria && t.categoria_nombre !== categoria) return false
+    return true
+  })
+  
+  renderCatalogoTelas(telasFiltradas)
+}
+
+// Seleccionar tela
+function seleccionarTela(telaId) {
+  const tela = catalogoTelas.find(t => t.id === telaId)
+  if (!tela) return
+  
+  proyectoActual.tela_seleccionada = tela
+  
+  // Actualizar UI
+  document.getElementById('tela-nombre').textContent = tela.nombre
+  document.getElementById('tela-precio').textContent = `${tela.precio_metro}€/m² - ${tela.opacidad}`
+  
+  // Habilitar botón de generar
+  document.getElementById('btn-generar').disabled = false
+  
+  // Actualizar precio estimado
+  calcularPrecioEstimado()
+  
+  // Re-render para mostrar selección
+  renderCatalogoTelas(catalogoTelas)
+}
+
+// Calcular precio estimado
+function calcularPrecioEstimado() {
+  if (!proyectoActual.analisis || !proyectoActual.tela_seleccionada) return
+  
+  const ventana = proyectoActual.analisis.ventanas[0]
+  const ancho = ventana.ancho_aprox
+  const alto = ventana.alto_aprox
+  
+  // Cálculo de metraje (ancho x 2.5 para caída) x (alto + 0.2 para dobladillos)
+  const metraje = (ancho * 2.5) * (alto + 0.2)
+  
+  let precioTela = metraje * proyectoActual.tela_seleccionada.precio_metro
+  
+  // Añadir extras
+  if (document.getElementById('opt-forro').checked) {
+    precioTela += metraje * 15
+  }
+  
+  if (document.getElementById('opt-motorizada').checked) {
+    precioTela += 180
+  }
+  
+  if (document.getElementById('opt-doble').checked) {
+    precioTela *= 1.8
+  }
+  
+  // Accesorios (estimado)
+  const accesorios = ancho * 45 // Rieles, ganchos, etc.
+  
+  // Confección e instalación (estimado)
+  const manoObra = 150
+  
+  const total = Math.round(precioTela + accesorios + manoObra)
+  
+  document.getElementById('precio-estimado').textContent = `${total}€`
+}
+
+// Actualizar precio al cambiar opciones
+document.addEventListener('DOMContentLoaded', () => {
+  const opciones = ['opt-forro', 'opt-motorizada', 'opt-doble']
+  opciones.forEach(id => {
+    const el = document.getElementById(id)
+    if (el) {
+      el.addEventListener('change', calcularPrecioEstimado)
+    }
+  })
+})
+
+// Generar visualizaciones con IA
+async function generarVisualizaciones() {
+  if (!proyectoActual.tela_seleccionada) {
+    alert('❌ Selecciona una tela primero')
+    return
+  }
+  
+  try {
+    showLoading('Generando visualizaciones con IA... (15-20 segundos)')
+    
+    // Recoger opciones
+    proyectoActual.tipo_cortina = document.getElementById('tipo-cortina').value
+    proyectoActual.opciones = {
+      forro_termico: document.getElementById('opt-forro').checked,
+      motorizada: document.getElementById('opt-motorizada').checked,
+      doble_cortina: document.getElementById('opt-doble').checked
+    }
+    
+    // Llamar a generación IA
+    const { data } = await axios.post(`${API}/disenador/generar`, {
+      proyecto_id: proyectoActual.id,
+      tela_id: proyectoActual.tela_seleccionada.id,
+      tipo_cortina: proyectoActual.tipo_cortina,
+      opciones: proyectoActual.opciones
+    })
+    
+    proyectoActual.imagenes_generadas = data.imagenes
+    
+    hideLoading()
+    mostrarResultados()
+    showSuccess('✅ Visualizaciones generadas')
+    
+  } catch (error) {
+    console.error('Error generando visualizaciones:', error)
+    hideLoading()
+    showError('❌ Error al generar visualizaciones')
+  }
+}
+
+// Mostrar resultados
+function mostrarResultados() {
+  document.getElementById('step-resultados').classList.remove('hidden')
+  
+  // Cargar imagen original
+  document.getElementById('resultado-original').src = proyectoActual.imagen_url
+  
+  // Cargar variantes
+  proyectoActual.imagenes_generadas.forEach((img, i) => {
+    document.getElementById(`variante-${i}`).src = img
+  })
+  
+  // Mostrar primera variante por defecto
+  mostrarVariante(0)
+  
+  // Scroll al resultado
+  document.getElementById('step-resultados').scrollIntoView({ behavior: 'smooth' })
+}
+
+// Mostrar variante específica
+function mostrarVariante(index) {
+  proyectoActual.variante_actual = index
+  document.getElementById('resultado-generado').src = proyectoActual.imagenes_generadas[index]
+  
+  // Actualizar borde de selección
+  for (let i = 0; i < 3; i++) {
+    const btn = document.getElementById(`variante-${i}`)?.parentElement
+    if (btn) {
+      if (i === index) {
+        btn.classList.add('border-purple-600')
+        btn.classList.remove('border-transparent')
+      } else {
+        btn.classList.remove('border-purple-600')
+        btn.classList.add('border-transparent')
+      }
+    }
+  }
+}
+
+// Generar presupuesto desde diseño
+async function generarPresupuesto() {
+  try {
+    showLoading('Generando presupuesto...')
+    
+    // TODO: Integrar con sistema de presupuestos
+    // Por ahora mostramos mensaje
+    
+    hideLoading()
+    showSuccess('✅ Función en desarrollo - Próximamente integrada con Presupuestos')
+    
+  } catch (error) {
+    console.error('Error generando presupuesto:', error)
+    hideLoading()
+    showError('❌ Error al generar presupuesto')
+  }
+}
+
+// Compartir proyecto
+async function compartirProyecto() {
+  const modal = `
+    <div class="space-y-4">
+      <h3 class="text-xl font-bold">Compartir Proyecto</h3>
+      <div class="space-y-3">
+        <button onclick="compartirWhatsApp()" class="w-full bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600">
+          <i class="fab fa-whatsapp mr-2"></i>Compartir por WhatsApp
+        </button>
+        <button onclick="compartirEmail()" class="w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600">
+          <i class="fas fa-envelope mr-2"></i>Enviar por Email
+        </button>
+        <button onclick="descargarImagen()" class="w-full bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600">
+          <i class="fas fa-download mr-2"></i>Descargar Imagen
+        </button>
+      </div>
+    </div>
+  `
+  showModal(modal)
+}
+
+function compartirWhatsApp() {
+  const texto = `¡Mira cómo quedarán las cortinas en tu espacio! 😍\n\nTela: ${proyectoActual.tela_seleccionada.nombre}\nPresupuesto estimado: ${document.getElementById('precio-estimado').textContent}`
+  const url = `https://wa.me/?text=${encodeURIComponent(texto)}`
+  window.open(url, '_blank')
+  closeModal()
+}
+
+function compartirEmail() {
+  showSuccess('✅ Función en desarrollo')
+  closeModal()
+}
+
+function descargarImagen() {
+  const link = document.createElement('a')
+  link.href = proyectoActual.imagenes_generadas[proyectoActual.variante_actual]
+  link.download = `cortinas-${proyectoActual.tela_seleccionada.referencia}.jpg`
+  link.click()
+  showSuccess('✅ Imagen descargada')
+  closeModal()
+}
+
+// Reset proyecto (volver al inicio)
+function resetProyecto() {
+  if (confirm('¿Quieres crear un nuevo proyecto? Se perderá el progreso actual.')) {
+    document.getElementById('proyecto-workspace').classList.add('hidden')
+    document.getElementById('proyectos-galeria').parentElement.classList.remove('hidden')
+    
+    // Reset todos los pasos
+    document.getElementById('step-upload').classList.add('hidden')
+    document.getElementById('step-analisis').classList.add('hidden')
+    document.getElementById('step-configuracion').classList.add('hidden')
+    document.getElementById('step-resultados').classList.add('hidden')
+    
+    resetUpload()
+    loadProyectosDiseño()
+  }
+}
+
+// Abrir proyecto existente
+async function abrirProyecto(proyectoId) {
+  try {
+    showLoading('Cargando proyecto...')
+    const { data } = await axios.get(`${API}/disenador/proyectos/${proyectoId}`)
+    
+    proyectoActual = {
+      id: data.id,
+      imagen_url: data.imagen_original_url,
+      analisis: data.analisis_ia,
+      tela_seleccionada: catalogoTelas.find(t => t.referencia === data.tela_referencia),
+      tipo_cortina: data.tipo_cortina || 'ondas_francesas',
+      opciones: {
+        forro_termico: data.forro_termico === 1,
+        motorizada: data.motorizada === 1,
+        doble_cortina: data.doble_cortina === 1
+      },
+      imagenes_generadas: data.imagenes_generadas || [],
+      variante_actual: 0
+    }
+    
+    // Mostrar workspace
+    document.getElementById('proyectos-galeria').parentElement.classList.add('hidden')
+    document.getElementById('proyecto-workspace').classList.remove('hidden')
+    
+    // Cargar datos en UI
+    if (data.imagenes_generadas && data.imagenes_generadas.length > 0) {
+      document.getElementById('step-resultados').classList.remove('hidden')
+      mostrarResultados()
+    } else if (data.tela_referencia) {
+      document.getElementById('step-configuracion').classList.remove('hidden')
+      await loadCatalogoTelas()
+    } else if (data.analisis_ia) {
+      document.getElementById('step-analisis').classList.remove('hidden')
+      mostrarAnalisis(data.analisis_ia)
+    }
+    
+    hideLoading()
+  } catch (error) {
+    console.error('Error cargando proyecto:', error)
+    hideLoading()
+    showError('❌ Error al cargar proyecto')
+  }
+}
+
+// Cargar proyectos al entrar al tab
+document.addEventListener('DOMContentLoaded', () => {
+  // Este código se ejecutará cuando se cargue el tab
+})
