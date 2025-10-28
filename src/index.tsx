@@ -1660,6 +1660,10 @@ app.get('/', (c) => {
                         <div id="tipo-seleccionado-info" class="hidden mt-6 p-4 bg-purple-50 rounded-lg border-2 border-purple-200">
                             <p class="text-sm text-gray-600">Tipo seleccionado:</p>
                             <p id="tipo-seleccionado-nombre" class="text-lg font-bold text-purple-600"></p>
+                            
+                            <button id="btn-continuar-telas" onclick="continuarATelas()" class="mt-4 w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                                <i class="fas fa-arrow-right mr-2"></i>Continuar: Elegir Tela
+                            </button>
                         </div>
                     </div>
 

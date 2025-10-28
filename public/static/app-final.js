@@ -4159,6 +4159,7 @@ function mostrarSeleccionTipo() {
 
 // Seleccionar tipo de cortina
 async function seleccionarTipoCortina(tipo, nombre) {
+  console.log('🎨 seleccionarTipoCortina llamada:', tipo, nombre)
   proyectoActual.tipo_cortina = tipo
   
   // Marcar visualmente la selección
@@ -4169,37 +4170,73 @@ async function seleccionarTipoCortina(tipo, nombre) {
   event.currentTarget.classList.remove('border-gray-200')
   event.currentTarget.classList.add('border-purple-600', 'bg-purple-50')
   
-  // Mostrar info de selección
+  // Mostrar info de selección con botón
   const infoDiv = document.getElementById('tipo-seleccionado-info')
   infoDiv.classList.remove('hidden')
   document.getElementById('tipo-seleccionado-nombre').textContent = nombre
   
   // Actualizar el select en el paso 4
-  document.getElementById('tipo-cortina').value = tipo
+  const selectTipo = document.getElementById('tipo-cortina')
+  if (selectTipo) {
+    selectTipo.value = tipo
+  }
   
   showSuccess(`✅ Tipo seleccionado: ${nombre}`)
+  console.log('✅ Tipo guardado en proyectoActual:', proyectoActual.tipo_cortina)
   
-  // Esperar 1 segundo y pasar al siguiente paso
-  setTimeout(async () => {
+  // Hacer scroll al botón de continuar
+  setTimeout(() => {
+    const infoDiv = document.getElementById('tipo-seleccionado-info')
+    if (infoDiv) {
+      infoDiv.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, 300)
+}
+
+// Continuar a selección de telas
+async function continuarATelas() {
+  console.log('➡️ continuarATelas() llamada')
+  
+  if (!proyectoActual.tipo_cortina) {
+    alert('❌ Selecciona un tipo de cortina primero')
+    return
+  }
+  
+  try {
+    showLoading('Cargando catálogo de telas...')
+    
     // Mostrar paso de configuración
+    console.log('👁️ Mostrando step-configuracion...')
     document.getElementById('step-configuracion').classList.remove('hidden')
     
     // Cargar catálogo de telas
+    console.log('📚 Cargando catálogo de telas...')
     await loadCatalogoTelas()
+    console.log('✅ Catálogo de telas cargado')
+    
+    hideLoading()
     
     // Scroll al catálogo
     setTimeout(() => {
+      console.log('📜 Haciendo scroll a catálogo...')
       document.getElementById('step-configuracion').scrollIntoView({ behavior: 'smooth', block: 'start' })
     }, 300)
     
     showSuccess('✅ Ahora elige la tela perfecta')
-  }, 1000)
+  } catch (error) {
+    console.error('❌ Error cargando telas:', error)
+    hideLoading()
+    showError('❌ Error al cargar catálogo de telas')
+  }
 }
 
 // Cargar catálogo de telas
 async function loadCatalogoTelas() {
+  console.log('🔄 loadCatalogoTelas() iniciada')
   try {
+    console.log('📡 Haciendo petición a:', `${API}/disenador/telas?disponible=true`)
     const { data } = await axios.get(`${API}/disenador/telas?disponible=true`)
+    console.log('📦 Telas recibidas:', data.length, 'telas')
     catalogoTelas = data
     renderCatalogoTelas(data)
     
