@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { serveStatic } from 'hono/cloudflare-workers'
 import presupuestos from './routes/presupuestos'
+import disenador from './routes/disenador'
 
 type Bindings = {
   DB: D1Database;
@@ -1044,6 +1045,7 @@ O puedes probar con preguntas como:
 // MOUNT EXTERNAL ROUTES
 // ============================================
 app.route('/api/presupuestos', presupuestos)
+app.route('/api/disenador', disenador)
 
 // ============================================
 // FRONTEND - HTML
@@ -1122,6 +1124,9 @@ app.get('/', (c) => {
             </button>
             <button onclick="showTab('consultor')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-robot mr-2"></i>Consultor IA
+            </button>
+            <button onclick="showTab('disenador')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-magic mr-2"></i>Diseñador Virtual
             </button>
         </div>
     </div>
