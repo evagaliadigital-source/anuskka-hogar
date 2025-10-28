@@ -1,6 +1,10 @@
 // API Base
 const API = '/api'
 
+// TEST: Verificar que el archivo JS carga
+console.log('✅ app-final.js CARGADO correctamente')
+console.log('🕒 Timestamp:', new Date().toISOString())
+
 // Estado global
 let currentData = {
   dashboard: null,
@@ -4490,5 +4494,14 @@ async function abrirProyecto(proyectoId) {
 
 // Cargar proyectos al entrar al tab
 document.addEventListener('DOMContentLoaded', () => {
-  // Este código se ejecutará cuando se cargue el tab
+  console.log('🚀 DOM cargado completamente')
+  console.log('🔍 Verificando función analizarImagen:', typeof window.analizarImagen)
+  
+  // Hacer la función global explícitamente
+  if (typeof analizarImagen !== 'undefined') {
+    window.analizarImagen = analizarImagen
+    console.log('✅ analizarImagen asignada a window')
+  } else {
+    console.error('❌ analizarImagen NO DEFINIDA')
+  }
 })

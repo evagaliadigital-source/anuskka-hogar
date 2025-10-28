@@ -13,8 +13,8 @@ const app = new Hono<{ Bindings: Bindings }>()
 // Enable CORS
 app.use('/api/*', cors())
 
-// Serve static files
-app.use('/static/*', serveStatic({ root: './public' }))
+// Serve static files - Cloudflare Pages sirve desde /public automáticamente
+app.use('/static/*', serveStatic({ root: './' }))
 
 // ============================================
 // API ENDPOINTS - AUTENTICACIÓN
