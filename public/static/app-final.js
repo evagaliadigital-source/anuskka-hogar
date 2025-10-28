@@ -143,6 +143,29 @@ function showToast(message, type = 'info') {
   }, 3000)
 }
 
+// Loading spinner
+function showLoading(message = 'Cargando...') {
+  console.log('📊 showLoading llamado:', message)
+  const loadingDiv = document.createElement('div')
+  loadingDiv.id = 'loading-overlay'
+  loadingDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+  loadingDiv.innerHTML = `
+    <div class="bg-white rounded-lg p-8 flex flex-col items-center">
+      <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mb-4"></div>
+      <p class="text-gray-700 font-medium">${message}</p>
+    </div>
+  `
+  document.body.appendChild(loadingDiv)
+}
+
+function hideLoading() {
+  console.log('📊 hideLoading llamado')
+  const loadingDiv = document.getElementById('loading-overlay')
+  if (loadingDiv) {
+    loadingDiv.remove()
+  }
+}
+
 // Cargar nombre de usuario en header
 function loadUserInfo() {
   const user = checkAuth()
