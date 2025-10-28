@@ -4054,7 +4054,7 @@ async function analizarImagen() {
     console.log('📤 Mostrando loading...')
     showLoading('Analizando espacio con IA (Gemini Vision)...')
     
-    // Convertir imagen a base64 para Gemini Vision
+    // 1. Convertir imagen a base64 para Gemini Vision y R2
     const imagen_base64 = await new Promise((resolve, reject) => {
       const reader = new FileReader()
       reader.onload = (e) => resolve(e.target.result)
@@ -4062,14 +4062,34 @@ async function analizarImagen() {
       reader.readAsDataURL(proyectoActual.imagen_file)
     })
     
-    // Simular upload a R2 para preview (en producción, aquí subirías a Cloudflare R2)
-    const imagen_url = URL.createObjectURL(proyectoActual.imagen_file)
-    proyectoActual.imagen_url = imagen_url
+    // 2. Subir imagen original a R2
+    showLoading('Guardando imagen original...')
+    let imagen_url = URL.createObjectURL(proyectoActual.imagen_file) // Fallback
+    let imagen_r2_key = null
     
-    // Crear proyecto en BD
+    try {
+      const { data: uploadData } = await axios.post(`${API}/uploads/imagen`, {
+        imagen_base64: imagen_base64,
+        carpeta: 'proyectos',
+        nombre_archivo: `proyecto-${Date.now()}`
+      })
+      
+      imagen_url = uploadData.url
+      imagen_r2_key = uploadData.key
+      console.log('✅ Imagen original subida a R2:', imagen_url)
+    } catch (uploadError) {
+      console.warn('⚠️ Error subiendo a R2, usando blob URL:', uploadError)
+      // Continuar con blob URL si falla R2
+    }
+    
+    proyectoActual.imagen_url = imagen_url
+    proyectoActual.imagen_r2_key = imagen_r2_key
+    
+    // 3. Crear proyecto en BD
     const { data: proyecto } = await axios.post(`${API}/disenador/proyectos`, {
       nombre_proyecto: `Proyecto ${new Date().toLocaleDateString()}`,
-      imagen_original_url: imagen_url
+      imagen_original_url: imagen_url,
+      imagen_original_r2_key: imagen_r2_key
     })
     proyectoActual.id = proyecto.proyecto_id
     console.log('✅ Proyecto creado con ID:', proyectoActual.id)
@@ -4302,22 +4322,44 @@ async function usarTelaSubida() {
   }
   
   try {
-    // Crear objeto de tela personalizada
+    showLoading('Subiendo imagen a R2...')
+    
+    // 1. Subir imagen a R2
+    let imagenUrl = proyectoActual.tela_custom_preview // Fallback
+    let imagenKey = null
+    
+    try {
+      const { data: uploadData } = await axios.post(`${API}/uploads/imagen`, {
+        imagen_base64: proyectoActual.tela_custom_preview,
+        carpeta: 'telas',
+        nombre_archivo: `tela-${nombre.toLowerCase().replace(/\s+/g, '-')}`
+      })
+      
+      imagenUrl = uploadData.url
+      imagenKey = uploadData.key
+      console.log('✅ Imagen subida a R2:', imagenUrl)
+    } catch (uploadError) {
+      console.warn('⚠️ Error subiendo a R2, usando base64:', uploadError)
+      // Continuar con base64 si falla R2
+    }
+    
+    // 2. Crear objeto de tela personalizada
     proyectoActual.tela_seleccionada = {
       id: 'custom',
       nombre: nombre,
       precio_metro: precio,
       referencia: 'CUSTOM-' + Date.now(),
       es_stock: esStock,
-      imagen_preview: proyectoActual.tela_custom_preview,
+      imagen_preview: imagenUrl,
+      imagen_r2_key: imagenKey,
       es_personalizada: true
     }
     
-    // Actualizar UI
+    // 3. Actualizar UI
     document.getElementById('tela-nombre').textContent = nombre
     document.getElementById('tela-precio').textContent = `${precio}€/m²`
     
-    // Si es de stock, crear tarea pendiente en backend
+    // 4. Si es de stock, crear tarea pendiente en backend
     if (esStock) {
       showLoading('Creando tarea pendiente...')
       
@@ -4328,7 +4370,8 @@ async function usarTelaSubida() {
         datos_tarea: {
           tela_nombre: nombre,
           tela_precio: precio,
-          imagen_url: proyectoActual.tela_custom_preview,
+          imagen_url: imagenUrl,
+          imagen_r2_key: imagenKey,
           imagen_file_name: proyectoActual.tela_custom_file.name,
           referencia: proyectoActual.tela_seleccionada.referencia
         },
@@ -4338,12 +4381,13 @@ async function usarTelaSubida() {
       
       hideLoading()
       console.log('✅ Tarea creada con ID:', data.tarea_id)
-      showSuccess(`✅ Tela "${nombre}" seleccionada. Tarea creada para añadir al stock.`)
+      showSuccess(`✅ Tela "${nombre}" seleccionada. Imagen guardada y tarea creada.`)
       
       // Actualizar contador de tareas en header (si existe)
       actualizarContadorTareas()
     } else {
-      showSuccess(`✅ Tela externa "${nombre}" seleccionada`)
+      hideLoading()
+      showSuccess(`✅ Tela externa "${nombre}" seleccionada. Imagen guardada.`)
     }
     
     // Habilitar botón de generar

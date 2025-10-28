@@ -4,10 +4,12 @@ import { serveStatic } from 'hono/cloudflare-workers'
 import presupuestos from './routes/presupuestos'
 import disenador from './routes/disenador'
 import tareas from './routes/tareas'
+import uploads from './routes/uploads'
 
 type Bindings = {
   DB: D1Database;
   GEMINI_API_KEY: string;
+  IMAGES: R2Bucket;
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -1049,6 +1051,7 @@ O puedes probar con preguntas como:
 app.route('/api/presupuestos', presupuestos)
 app.route('/api/disenador', disenador)
 app.route('/api/tareas', tareas)
+app.route('/api/uploads', uploads)
 
 // ============================================
 // FRONTEND - HTML
