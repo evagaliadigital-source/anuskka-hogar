@@ -1489,7 +1489,7 @@ app.get('/', (c) => {
                             <p class="text-purple-100">Visualiza cómo quedarán las cortinas en el espacio real usando IA</p>
                         </div>
                     </div>
-                    <div class="grid grid-cols-4 gap-4 mt-6">
+                    <div class="grid grid-cols-5 gap-3 mt-6">
                         <div class="bg-white/10 rounded-lg p-4 text-center">
                             <i class="fas fa-upload text-2xl mb-2"></i>
                             <p class="text-sm">1. Sube foto</p>
@@ -1499,12 +1499,16 @@ app.get('/', (c) => {
                             <p class="text-sm">2. IA analiza</p>
                         </div>
                         <div class="bg-white/10 rounded-lg p-4 text-center">
+                            <i class="fas fa-swatchbook text-2xl mb-2"></i>
+                            <p class="text-sm">3. Tipo cortina</p>
+                        </div>
+                        <div class="bg-white/10 rounded-lg p-4 text-center">
                             <i class="fas fa-palette text-2xl mb-2"></i>
-                            <p class="text-sm">3. Elige tela</p>
+                            <p class="text-sm">4. Elige tela</p>
                         </div>
                         <div class="bg-white/10 rounded-lg p-4 text-center">
                             <i class="fas fa-eye text-2xl mb-2"></i>
-                            <p class="text-sm">4. Visualiza</p>
+                            <p class="text-sm">5. Visualiza</p>
                         </div>
                     </div>
                 </div>
@@ -1566,13 +1570,104 @@ app.get('/', (c) => {
                         <div id="analisis-resultado" class="space-y-4">
                             <!-- Se llena dinámicamente -->
                         </div>
+                        
+                        <!-- Botón para continuar al siguiente paso -->
+                        <div class="mt-6 text-center">
+                            <button onclick="mostrarSeleccionTipo()" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                                <i class="fas fa-arrow-right mr-2"></i>Continuar: Elegir Tipo de Cortina
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Paso 3: Selección de tela y opciones -->
+                    <!-- Paso 3: Tipo de Confección -->
+                    <div id="step-tipo-cortina" class="hidden bg-white rounded-xl shadow-md p-6">
+                        <h3 class="text-xl font-bold mb-6">
+                            <i class="fas fa-swatchbook text-purple-600 mr-2"></i>
+                            Paso 3: Elige el Tipo de Cortina
+                        </h3>
+                        <p class="text-gray-600 mb-6">Selecciona el estilo de confección que mejor se adapte a tu espacio:</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            
+                            <!-- Onda Perfecta -->
+                            <div onclick="seleccionarTipoCortina('ondas_francesas', 'Onda Perfecta')" 
+                                 class="tipo-cortina-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-purple-600 hover:shadow-lg transition-all">
+                                <div class="text-5xl mb-3 text-center">🌊</div>
+                                <h4 class="font-bold text-lg mb-2 text-center">Onda Perfecta</h4>
+                                <p class="text-sm text-gray-600 mb-3">Elegancia clásica con caída ondulada suave y uniforme</p>
+                                <div class="text-xs text-purple-600 font-medium">
+                                    <i class="fas fa-check mr-1"></i>Ideal para: Salones, dormitorios principales
+                                </div>
+                            </div>
+                            
+                            <!-- Paneles Japoneses -->
+                            <div onclick="seleccionarTipoCortina('panel_japones', 'Paneles Japoneses')" 
+                                 class="tipo-cortina-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-purple-600 hover:shadow-lg transition-all">
+                                <div class="text-5xl mb-3 text-center">🎋</div>
+                                <h4 class="font-bold text-lg mb-2 text-center">Paneles Japoneses</h4>
+                                <p class="text-sm text-gray-600 mb-3">Diseño minimalista con paneles deslizantes planos</p>
+                                <div class="text-xs text-purple-600 font-medium">
+                                    <i class="fas fa-check mr-1"></i>Ideal para: Espacios modernos, grandes ventanales
+                                </div>
+                            </div>
+                            
+                            <!-- Pliegues Rectos -->
+                            <div onclick="seleccionarTipoCortina('pliegues_rectos', 'Pliegues Rectos')" 
+                                 class="tipo-cortina-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-purple-600 hover:shadow-lg transition-all">
+                                <div class="text-5xl mb-3 text-center">📏</div>
+                                <h4 class="font-bold text-lg mb-2 text-center">Pliegues Rectos</h4>
+                                <p class="text-sm text-gray-600 mb-3">Líneas verticales limpias y aspecto estructurado</p>
+                                <div class="text-xs text-purple-600 font-medium">
+                                    <i class="fas fa-check mr-1"></i>Ideal para: Oficinas, espacios contemporáneos
+                                </div>
+                            </div>
+                            
+                            <!-- Estor Enrollable -->
+                            <div onclick="seleccionarTipoCortina('estor_enrollable', 'Estor Enrollable')" 
+                                 class="tipo-cortina-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-purple-600 hover:shadow-lg transition-all">
+                                <div class="text-5xl mb-3 text-center">📜</div>
+                                <h4 class="font-bold text-lg mb-2 text-center">Estor Enrollable</h4>
+                                <p class="text-sm text-gray-600 mb-3">Solución compacta y funcional que se enrolla verticalmente</p>
+                                <div class="text-xs text-purple-600 font-medium">
+                                    <i class="fas fa-check mr-1"></i>Ideal para: Cocinas, baños, espacios reducidos
+                                </div>
+                            </div>
+                            
+                            <!-- Estor Plegable -->
+                            <div onclick="seleccionarTipoCortina('estor_plegable', 'Estor Plegable')" 
+                                 class="tipo-cortina-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-purple-600 hover:shadow-lg transition-all">
+                                <div class="text-5xl mb-3 text-center">🪗</div>
+                                <h4 class="font-bold text-lg mb-2 text-center">Estor Plegable</h4>
+                                <p class="text-sm text-gray-600 mb-3">Se recoge en pliegues horizontales tipo acordeón</p>
+                                <div class="text-xs text-purple-600 font-medium">
+                                    <i class="fas fa-check mr-1"></i>Ideal para: Ventanas pequeñas, estilo romántico
+                                </div>
+                            </div>
+                            
+                            <!-- Otros / Personalizado -->
+                            <div onclick="seleccionarTipoCortina('otros', 'Otros')" 
+                                 class="tipo-cortina-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-purple-600 hover:shadow-lg transition-all">
+                                <div class="text-5xl mb-3 text-center">✨</div>
+                                <h4 class="font-bold text-lg mb-2 text-center">Otros / Personalizado</h4>
+                                <p class="text-sm text-gray-600 mb-3">Confección especial o diseño personalizado</p>
+                                <div class="text-xs text-purple-600 font-medium">
+                                    <i class="fas fa-check mr-1"></i>Consulta con nuestro equipo
+                                </div>
+                            </div>
+                            
+                        </div>
+                        
+                        <div id="tipo-seleccionado-info" class="hidden mt-6 p-4 bg-purple-50 rounded-lg border-2 border-purple-200">
+                            <p class="text-sm text-gray-600">Tipo seleccionado:</p>
+                            <p id="tipo-seleccionado-nombre" class="text-lg font-bold text-purple-600"></p>
+                        </div>
+                    </div>
+
+                    <!-- Paso 4: Selección de tela y opciones -->
                     <div id="step-configuracion" class="hidden bg-white rounded-xl shadow-md p-6">
                         <h3 class="text-xl font-bold mb-6">
                             <i class="fas fa-palette text-purple-600 mr-2"></i>
-                            Paso 3: Diseña tus Cortinas
+                            Paso 4: Diseña tus Cortinas
                         </h3>
                         
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1608,15 +1703,20 @@ app.get('/', (c) => {
                                     <p id="tela-precio" class="text-purple-600">-</p>
                                 </div>
                                 
-                                <!-- Tipo de cortina -->
+                                <!-- Tipo de cortina (read-only, ya seleccionado en paso 3) -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Cortina</label>
-                                    <select id="tipo-cortina" class="w-full px-4 py-2 border rounded-lg">
-                                        <option value="ondas_francesas">Ondas Francesas</option>
-                                        <option value="panel_japones">Panel Japonés</option>
+                                    <select id="tipo-cortina" class="w-full px-4 py-2 border rounded-lg bg-gray-50" disabled>
+                                        <option value="ondas_francesas">Onda Perfecta</option>
+                                        <option value="panel_japones">Paneles Japoneses</option>
                                         <option value="pliegues_rectos">Pliegues Rectos</option>
-                                        <option value="estor">Estor Enrollable</option>
+                                        <option value="estor_enrollable">Estor Enrollable</option>
+                                        <option value="estor_plegable">Estor Plegable</option>
+                                        <option value="otros">Otros / Personalizado</option>
                                     </select>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        <i class="fas fa-check-circle text-green-600 mr-1"></i>Seleccionado en el paso anterior
+                                    </p>
                                 </div>
                                 
                                 <!-- Opciones extra -->
@@ -1654,11 +1754,11 @@ app.get('/', (c) => {
                         </div>
                     </div>
 
-                    <!-- Paso 4: Resultados (galería de imágenes generadas) -->
+                    <!-- Paso 5: Resultados (galería de imágenes generadas) -->
                     <div id="step-resultados" class="hidden bg-white rounded-xl shadow-md p-6">
                         <h3 class="text-xl font-bold mb-6">
                             <i class="fas fa-images text-purple-600 mr-2"></i>
-                            Paso 4: Visualizaciones Generadas
+                            Paso 5: Visualizaciones Generadas
                         </h3>
                         
                         <div class="grid grid-cols-2 gap-6 mb-6">

@@ -4080,12 +4080,13 @@ async function analizarImagen() {
     
     // Pasar al siguiente paso
     document.getElementById('step-analisis').classList.remove('hidden')
-    document.getElementById('step-configuracion').classList.remove('hidden')
     
-    // Cargar catálogo de telas
-    await loadCatalogoTelas()
+    // Scroll al análisis
+    setTimeout(() => {
+      document.getElementById('step-analisis').scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 300)
     
-    showSuccess('✅ Análisis completado')
+    showSuccess('✅ Análisis completado - Ahora elige el tipo de cortina')
     
   } catch (error) {
     console.error('Error analizando imagen:', error)
@@ -4131,6 +4132,55 @@ function mostrarAnalisis(analisis) {
       </p>
     </div>
   `
+}
+
+// Mostrar paso de selección de tipo
+function mostrarSeleccionTipo() {
+  document.getElementById('step-tipo-cortina').classList.remove('hidden')
+  
+  // Scroll al paso de tipo
+  setTimeout(() => {
+    document.getElementById('step-tipo-cortina').scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, 300)
+}
+
+// Seleccionar tipo de cortina
+async function seleccionarTipoCortina(tipo, nombre) {
+  proyectoActual.tipo_cortina = tipo
+  
+  // Marcar visualmente la selección
+  document.querySelectorAll('.tipo-cortina-card').forEach(card => {
+    card.classList.remove('border-purple-600', 'bg-purple-50')
+    card.classList.add('border-gray-200')
+  })
+  event.currentTarget.classList.remove('border-gray-200')
+  event.currentTarget.classList.add('border-purple-600', 'bg-purple-50')
+  
+  // Mostrar info de selección
+  const infoDiv = document.getElementById('tipo-seleccionado-info')
+  infoDiv.classList.remove('hidden')
+  document.getElementById('tipo-seleccionado-nombre').textContent = nombre
+  
+  // Actualizar el select en el paso 4
+  document.getElementById('tipo-cortina').value = tipo
+  
+  showSuccess(`✅ Tipo seleccionado: ${nombre}`)
+  
+  // Esperar 1 segundo y pasar al siguiente paso
+  setTimeout(async () => {
+    // Mostrar paso de configuración
+    document.getElementById('step-configuracion').classList.remove('hidden')
+    
+    // Cargar catálogo de telas
+    await loadCatalogoTelas()
+    
+    // Scroll al catálogo
+    setTimeout(() => {
+      document.getElementById('step-configuracion').scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 300)
+    
+    showSuccess('✅ Ahora elige la tela perfecta')
+  }, 1000)
 }
 
 // Cargar catálogo de telas
