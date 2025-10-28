@@ -3,9 +3,11 @@ import { cors } from 'hono/cors'
 import { serveStatic } from 'hono/cloudflare-workers'
 import presupuestos from './routes/presupuestos'
 import disenador from './routes/disenador'
+import tareas from './routes/tareas'
 
 type Bindings = {
   DB: D1Database;
+  GEMINI_API_KEY: string;
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -1046,6 +1048,7 @@ O puedes probar con preguntas como:
 // ============================================
 app.route('/api/presupuestos', presupuestos)
 app.route('/api/disenador', disenador)
+app.route('/api/tareas', tareas)
 
 // ============================================
 // FRONTEND - HTML
@@ -1116,6 +1119,10 @@ app.get('/', (c) => {
             <button onclick="showTab('facturas')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-file-invoice-dollar mr-2"></i>Facturación
             </button>
+            <button id="tareas-btn" onclick="showTab('tareas')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100 relative">
+                <i class="fas fa-clipboard-list mr-2"></i>Tareas
+                <span id="tareas-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">0</span>
+            </button>
             <button onclick="showTab('personal')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-user-tie mr-2"></i>Personal
             </button>
@@ -1174,14 +1181,15 @@ app.get('/', (c) => {
                     </div>
                 </div>
                 
-                <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="bg-white rounded-xl shadow-md p-6 cursor-pointer hover:shadow-lg transition-all" onclick="switchTab('tareas-tab', 'tareas-btn')">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm text-gray-600">Completados Este Mes</p>
-                            <p class="text-2xl font-bold text-green-600" id="kpi-completados">0</p>
+                            <p class="text-sm text-gray-600">Tareas Pendientes</p>
+                            <p class="text-2xl font-bold text-red-600" id="kpi-tareas">0</p>
+                            <p class="text-xs text-gray-500 mt-1" id="kpi-tareas-detalle">0 telas custom</p>
                         </div>
-                        <div class="bg-green-100 p-3 rounded-full">
-                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                        <div class="bg-red-100 p-3 rounded-full">
+                            <i class="fas fa-clipboard-list text-red-600 text-xl"></i>
                         </div>
                     </div>
                 </div>
@@ -1471,6 +1479,83 @@ app.get('/', (c) => {
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- TAREAS PENDIENTES TAB -->
+        <div id="tareas-tab" class="tab-content">
+            <div class="space-y-6">
+                
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-red-600 to-pink-600 rounded-xl shadow-lg p-8 text-white">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+                                <i class="fas fa-clipboard-list text-red-600 text-3xl"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-3xl font-bold">Tareas Pendientes</h1>
+                                <p class="text-red-100 mt-2">Gestiona recordatorios y tareas del negocio</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-red-100">Total pendientes</p>
+                            <p class="text-4xl font-bold" id="tareas-header-count">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtros -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex flex-wrap gap-4 items-center">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+                            <select id="filtro-estado-tareas" onchange="loadTareas()" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+                                <option value="pendiente">Pendientes</option>
+                                <option value="todas">Todas</option>
+                                <option value="completada">Completadas</option>
+                                <option value="cancelada">Canceladas</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
+                            <select id="filtro-tipo-tareas" onchange="loadTareas()" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+                                <option value="">Todos</option>
+                                <option value="añadir_tela_stock">Añadir telas al stock</option>
+                                <option value="revisar_presupuesto">Revisar presupuestos</option>
+                                <option value="seguimiento_cliente">Seguimiento clientes</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Prioridad</label>
+                            <select id="filtro-prioridad-tareas" onchange="loadTareas()" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+                                <option value="">Todas</option>
+                                <option value="1">🔥 Alta</option>
+                                <option value="2">🟡 Media</option>
+                                <option value="3">🟢 Baja</option>
+                            </select>
+                        </div>
+                        <div class="ml-auto">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">&nbsp;</label>
+                            <button onclick="showNuevaTarea()" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-all">
+                                <i class="fas fa-plus mr-2"></i>Nueva Tarea
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de tareas -->
+                <div id="tareas-lista" class="space-y-4">
+                    <!-- Se llena dinámicamente -->
+                </div>
+
+                <!-- Empty state -->
+                <div id="tareas-empty" class="hidden text-center py-12">
+                    <i class="fas fa-check-circle text-6xl text-green-300 mb-4"></i>
+                    <p class="text-gray-500 text-lg">🎉 ¡No hay tareas pendientes!</p>
+                    <p class="text-gray-400">Todo está al día</p>
+                </div>
+
             </div>
         </div>
 

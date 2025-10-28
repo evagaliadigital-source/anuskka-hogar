@@ -4281,7 +4281,7 @@ function handleTelaUpload(event) {
 }
 
 // Usar tela subida
-function usarTelaSubida() {
+async function usarTelaSubida() {
   const nombre = document.getElementById('tela-nombre-input').value.trim()
   const precio = parseFloat(document.getElementById('tela-precio-input').value)
   const esStock = document.getElementById('tela-es-stock').checked
@@ -4301,43 +4301,65 @@ function usarTelaSubida() {
     return
   }
   
-  // Crear objeto de tela personalizada
-  proyectoActual.tela_seleccionada = {
-    id: 'custom',
-    nombre: nombre,
-    precio_metro: precio,
-    referencia: 'CUSTOM-' + Date.now(),
-    es_stock: esStock,
-    imagen_preview: proyectoActual.tela_custom_preview,
-    es_personalizada: true
-  }
-  
-  // Actualizar UI
-  document.getElementById('tela-nombre').textContent = nombre
-  document.getElementById('tela-precio').textContent = `${precio}€/m²`
-  
-  // Si es de stock, crear tarea pendiente
-  if (esStock) {
-    showSuccess(`✅ Tela "${nombre}" seleccionada. Se creará tarea para añadir al stock.`)
-    // TODO: Crear tarea en sistema de tareas
-    console.log('⚠️ TAREA PENDIENTE: Añadir tela al stock:', {
+  try {
+    // Crear objeto de tela personalizada
+    proyectoActual.tela_seleccionada = {
+      id: 'custom',
       nombre: nombre,
-      precio: precio,
-      imagen: proyectoActual.tela_custom_file.name
-    })
-  } else {
-    showSuccess(`✅ Tela externa "${nombre}" seleccionada`)
+      precio_metro: precio,
+      referencia: 'CUSTOM-' + Date.now(),
+      es_stock: esStock,
+      imagen_preview: proyectoActual.tela_custom_preview,
+      es_personalizada: true
+    }
+    
+    // Actualizar UI
+    document.getElementById('tela-nombre').textContent = nombre
+    document.getElementById('tela-precio').textContent = `${precio}€/m²`
+    
+    // Si es de stock, crear tarea pendiente en backend
+    if (esStock) {
+      showLoading('Creando tarea pendiente...')
+      
+      const { data } = await axios.post(`${API}/tareas`, {
+        tipo: 'añadir_tela_stock',
+        titulo: `Añadir tela "${nombre}" al catálogo`,
+        descripcion: `Tela personalizada subida desde proyecto. Revisar y añadir al stock con todas las especificaciones.`,
+        datos_tarea: {
+          tela_nombre: nombre,
+          tela_precio: precio,
+          imagen_url: proyectoActual.tela_custom_preview,
+          imagen_file_name: proyectoActual.tela_custom_file.name,
+          referencia: proyectoActual.tela_seleccionada.referencia
+        },
+        prioridad: 2, // Media
+        proyecto_id: proyectoActual.id
+      })
+      
+      hideLoading()
+      console.log('✅ Tarea creada con ID:', data.tarea_id)
+      showSuccess(`✅ Tela "${nombre}" seleccionada. Tarea creada para añadir al stock.`)
+      
+      // Actualizar contador de tareas en header (si existe)
+      actualizarContadorTareas()
+    } else {
+      showSuccess(`✅ Tela externa "${nombre}" seleccionada`)
+    }
+    
+    // Habilitar botón de generar
+    document.getElementById('btn-generar').disabled = false
+    
+    // Ocultar form
+    toggleSubirTela()
+    cancelarTelaSubida()
+    
+    // Calcular precio
+    calcularPrecioEstimado()
+  } catch (error) {
+    console.error('Error creando tarea:', error)
+    hideLoading()
+    showError('⚠️ Tela seleccionada pero no se pudo crear la tarea. Anótala manualmente.')
   }
-  
-  // Habilitar botón de generar
-  document.getElementById('btn-generar').disabled = false
-  
-  // Ocultar form
-  toggleSubirTela()
-  cancelarTelaSubida()
-  
-  // Calcular precio
-  calcularPrecioEstimado()
 }
 
 // Cancelar subida de tela
@@ -4703,4 +4725,239 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('❌ Botón #btn-analizar NO encontrado')
     }
   }, 1000)
+})
+
+// ============================================
+// TAREAS PENDIENTES
+// ============================================
+
+// Actualizar contador de tareas pendientes
+async function actualizarContadorTareas() {
+  try {
+    const { data } = await axios.get(`${API}/tareas/contador`)
+    
+    // Actualizar KPI en dashboard
+    document.getElementById('kpi-tareas').textContent = data.total_pendientes || 0
+    document.getElementById('kpi-tareas-detalle').textContent = `${data.telas_pendientes || 0} telas custom`
+    
+    // Actualizar badge en tab
+    const badge = document.getElementById('tareas-badge')
+    if (data.total_pendientes > 0) {
+      badge.textContent = data.total_pendientes
+      badge.classList.remove('hidden')
+    } else {
+      badge.classList.add('hidden')
+    }
+    
+    // Actualizar header de tareas
+    const headerCount = document.getElementById('tareas-header-count')
+    if (headerCount) {
+      headerCount.textContent = data.total_pendientes || 0
+    }
+  } catch (error) {
+    console.error('Error actualizando contador de tareas:', error)
+  }
+}
+
+// Cargar tareas con filtros
+async function loadTareas() {
+  try {
+    const estado = document.getElementById('filtro-estado-tareas').value
+    const tipo = document.getElementById('filtro-tipo-tareas').value
+    const prioridad = document.getElementById('filtro-prioridad-tareas').value
+    
+    let url = `${API}/tareas?estado=${estado}`
+    if (tipo) url += `&tipo=${tipo}`
+    if (prioridad) url += `&prioridad=${prioridad}`
+    
+    const { data } = await axios.get(url)
+    
+    const lista = document.getElementById('tareas-lista')
+    const empty = document.getElementById('tareas-empty')
+    
+    if (data.length === 0) {
+      lista.innerHTML = ''
+      empty.classList.remove('hidden')
+      return
+    }
+    
+    empty.classList.add('hidden')
+    
+    lista.innerHTML = data.map(t => {
+      const prioridadBadge = {
+        1: '<span class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">🔥 Alta</span>',
+        2: '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">🟡 Media</span>',
+        3: '<span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">🟢 Baja</span>'
+      }
+      
+      const estadoBadge = {
+        'pendiente': '<span class="px-3 py-1 bg-orange-100 text-orange-800 text-sm rounded-full">⏳ Pendiente</span>',
+        'en_proceso': '<span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">🔄 En Proceso</span>',
+        'completada': '<span class="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">✅ Completada</span>',
+        'cancelada': '<span class="px-3 py-1 bg-gray-100 text-gray-800 text-sm rounded-full">❌ Cancelada</span>'
+      }
+      
+      const tipoIcon = {
+        'añadir_tela_stock': '<i class="fas fa-fabric text-purple-600"></i>',
+        'revisar_presupuesto': '<i class="fas fa-file-invoice text-orange-600"></i>',
+        'seguimiento_cliente': '<i class="fas fa-phone text-blue-600"></i>'
+      }
+      
+      let detalleHTML = ''
+      if (t.tipo === 'añadir_tela_stock' && t.datos_tarea) {
+        const datos = t.datos_tarea
+        detalleHTML = `
+          <div class="mt-3 p-3 bg-gray-50 rounded-lg flex items-center gap-4">
+            ${datos.imagen_url ? `<img src="${datos.imagen_url}" class="w-20 h-20 object-cover rounded-lg border-2 border-purple-200">` : ''}
+            <div class="flex-1">
+              <p class="text-sm text-gray-600"><strong>Nombre:</strong> ${datos.tela_nombre}</p>
+              <p class="text-sm text-gray-600"><strong>Precio:</strong> ${datos.tela_precio}€/m²</p>
+              <p class="text-sm text-gray-600"><strong>Referencia:</strong> ${datos.referencia}</p>
+            </div>
+            ${t.estado === 'pendiente' ? `
+              <button onclick="completarTareaTela(${t.id})" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all">
+                <i class="fas fa-check mr-2"></i>Añadir al Catálogo
+              </button>
+            ` : ''}
+          </div>
+        `
+      }
+      
+      return `
+        <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex items-start gap-3 flex-1">
+              <div class="mt-1">
+                ${tipoIcon[t.tipo] || '<i class="fas fa-tasks text-gray-600"></i>'}
+              </div>
+              <div class="flex-1">
+                <h3 class="text-lg font-bold text-gray-800">${t.titulo}</h3>
+                ${t.descripcion ? `<p class="text-sm text-gray-600 mt-1">${t.descripcion}</p>` : ''}
+                ${t.nombre_proyecto ? `<p class="text-xs text-gray-500 mt-2"><i class="fas fa-project-diagram mr-1"></i>${t.nombre_proyecto}</p>` : ''}
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-2">
+              ${estadoBadge[t.estado]}
+              ${prioridadBadge[t.prioridad]}
+            </div>
+          </div>
+          
+          ${detalleHTML}
+          
+          <div class="mt-4 flex items-center justify-between text-xs text-gray-500">
+            <span><i class="far fa-calendar mr-1"></i>Creada: ${new Date(t.created_at).toLocaleString('es-ES')}</span>
+            ${t.completada_en ? `<span><i class="fas fa-check-circle mr-1"></i>Completada: ${new Date(t.completada_en).toLocaleString('es-ES')}</span>` : ''}
+          </div>
+          
+          ${t.estado === 'pendiente' && t.tipo !== 'añadir_tela_stock' ? `
+            <div class="mt-4 flex gap-2">
+              <button onclick="marcarTareaCompletada(${t.id})" class="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-all">
+                <i class="fas fa-check mr-2"></i>Completar
+              </button>
+              <button onclick="cancelarTarea(${t.id})" class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition-all">
+                <i class="fas fa-times mr-2"></i>Cancelar
+              </button>
+            </div>
+          ` : ''}
+        </div>
+      `
+    }).join('')
+    
+  } catch (error) {
+    console.error('Error cargando tareas:', error)
+    showError('Error al cargar tareas')
+  }
+}
+
+// Completar tarea de añadir tela al stock
+async function completarTareaTela(tareaId) {
+  try {
+    // Obtener datos de la tarea
+    const { data: tarea } = await axios.get(`${API}/tareas/${tareaId}`)
+    const datos = tarea.datos_tarea
+    
+    // Mostrar formulario para completar datos
+    const nombre = prompt('Confirma el nombre de la tela:', datos.tela_nombre)
+    if (!nombre) return
+    
+    const precio = parseFloat(prompt('Confirma el precio por m²:', datos.tela_precio))
+    if (!precio) return
+    
+    const composicion = prompt('Composición de la tela (ej: 100% Lino):', '100% Poliéster')
+    const opacidad = prompt('Opacidad (traslúcida/opaca/blackout):', 'traslúcida')
+    
+    showLoading('Añadiendo tela al catálogo...')
+    
+    // Llamar endpoint especial para completar tarea de tela
+    const { data } = await axios.post(`${API}/tareas/${tareaId}/completar-tela`, {
+      nombre: nombre,
+      precio_metro: precio,
+      composicion: composicion,
+      opacidad: opacidad,
+      completada_por: 'Ana Ramos'
+    })
+    
+    hideLoading()
+    showSuccess(`✅ Tela "${nombre}" añadida al catálogo correctamente`)
+    
+    // Recargar tareas
+    loadTareas()
+    actualizarContadorTareas()
+    
+  } catch (error) {
+    console.error('Error completando tarea:', error)
+    hideLoading()
+    showError('Error al añadir tela al catálogo')
+  }
+}
+
+// Marcar tarea como completada
+async function marcarTareaCompletada(tareaId) {
+  try {
+    if (!confirm('¿Marcar esta tarea como completada?')) return
+    
+    await axios.put(`${API}/tareas/${tareaId}`, {
+      estado: 'completada',
+      completada_por: 'Ana Ramos'
+    })
+    
+    showSuccess('✅ Tarea completada')
+    loadTareas()
+    actualizarContadorTareas()
+  } catch (error) {
+    console.error('Error completando tarea:', error)
+    showError('Error al completar tarea')
+  }
+}
+
+// Cancelar tarea
+async function cancelarTarea(tareaId) {
+  try {
+    if (!confirm('¿Cancelar esta tarea?')) return
+    
+    await axios.put(`${API}/tareas/${tareaId}`, {
+      estado: 'cancelada'
+    })
+    
+    showSuccess('Tarea cancelada')
+    loadTareas()
+    actualizarContadorTareas()
+  } catch (error) {
+    console.error('Error cancelando tarea:', error)
+    showError('Error al cancelar tarea')
+  }
+}
+
+// Mostrar formulario nueva tarea (placeholder)
+function showNuevaTarea() {
+  alert('Función en desarrollo: Crear nueva tarea manual')
+  // TODO: Implementar modal con formulario completo
+}
+
+// Actualizar contador al cargar dashboard
+document.addEventListener('DOMContentLoaded', () => {
+  actualizarContadorTareas()
+  
+  // Actualizar cada 30 segundos
+  setInterval(actualizarContadorTareas, 30000)
 })
