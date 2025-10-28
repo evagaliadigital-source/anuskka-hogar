@@ -5020,4 +5020,31 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Actualizar cada 30 segundos
   setInterval(actualizarContadorTareas, 30000)
+  
+  // Event listener para botón "Continuar: Elegir Tela"
+  setTimeout(() => {
+    const btnContinuarTelas = document.getElementById('btn-continuar-telas')
+    if (btnContinuarTelas) {
+      console.log('✅ Botón #btn-continuar-telas encontrado, añadiendo event listener')
+      btnContinuarTelas.addEventListener('click', function(e) {
+        e.preventDefault()
+        console.log('🖱️ CLICK DETECTADO en btn-continuar-telas')
+        continuarATelas()
+      })
+    } else {
+      console.warn('⚠️ Botón #btn-continuar-telas NO encontrado')
+    }
+  }, 1000)
+  
+  // Hacer funciones globales
+  window.continuarATelas = continuarATelas
+  window.seleccionarTipoCortina = seleccionarTipoCortina
+  window.toggleSubirTela = toggleSubirTela
+  window.handleTelaUpload = handleTelaUpload
+  window.usarTelaSubida = usarTelaSubida
+  window.cancelarTelaSubida = cancelarTelaSubida
+  window.generarVisualizaciones = generarVisualizaciones
+  window.loadTareas = loadTareas
+  
+  console.log('✅ Todas las funciones del Diseñador Virtual están globales')
 })
