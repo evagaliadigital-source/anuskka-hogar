@@ -68,6 +68,77 @@
                 </div>
             </div>
 
+            <!-- Selector de Rol -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-3">
+                    <i class="fas fa-user-shield mr-2 text-gray-700"></i>
+                    Tipo de Acceso
+                </label>
+                <div class="grid grid-cols-2 gap-4">
+                    <label class="relative cursor-pointer">
+                        <input 
+                            type="radio" 
+                            name="rol" 
+                            value="duena" 
+                            id="rol-duena"
+                            checked
+                            class="peer sr-only"
+                            onchange="togglePasswordAnaRamos()"
+                        >
+                        <div class="border-2 border-gray-300 rounded-lg p-4 text-center transition-all peer-checked:border-purple-600 peer-checked:bg-purple-50 hover:border-purple-400">
+                            <i class="fas fa-crown text-2xl text-purple-600 mb-2"></i>
+                            <p class="font-semibold text-gray-800">Ana Ramos</p>
+                            <p class="text-xs text-gray-500 mt-1">Acceso completo</p>
+                        </div>
+                    </label>
+                    
+                    <label class="relative cursor-pointer">
+                        <input 
+                            type="radio" 
+                            name="rol" 
+                            value="tienda" 
+                            id="rol-tienda"
+                            class="peer sr-only"
+                            onchange="togglePasswordAnaRamos()"
+                        >
+                        <div class="border-2 border-gray-300 rounded-lg p-4 text-center transition-all peer-checked:border-teal-600 peer-checked:bg-teal-50 hover:border-teal-400">
+                            <i class="fas fa-store text-2xl text-teal-600 mb-2"></i>
+                            <p class="font-semibold text-gray-800">Tienda</p>
+                            <p class="text-xs text-gray-500 mt-1">Acceso operativo</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Contraseña adicional para Ana Ramos -->
+            <div id="password-ana-ramos-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-key mr-2 text-gray-700"></i>
+                    Contraseña de Ana Ramos
+                </label>
+                <div class="relative">
+                    <input 
+                        type="password" 
+                        id="password-ana-ramos" 
+                        name="password_ana_ramos" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all"
+                        placeholder="Contraseña especial"
+                        autocomplete="ana-ramos-password"
+                    >
+                    <button 
+                        type="button" 
+                        onclick="togglePasswordAnaRamosVisibility()" 
+                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                        <i id="eye-icon-ana" class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <p class="text-xs text-purple-600 mt-1">
+                    <i class="fas fa-shield-alt mr-1"></i>
+                    Solo Ana Ramos necesita esta contraseña
+                </p>
+            </div>
+
             <button 
                 type="submit" 
                 id="login-btn"
@@ -78,22 +149,8 @@
             </button>
         </form>
 
-        <!-- Credentials Info -->
-        <div class="mt-8 pt-6 border-t border-gray-200">
-            <div class="bg-blue-50 rounded-lg p-4">
-                <p class="text-sm font-semibold text-blue-800 mb-2">
-                    <i class="fas fa-info-circle mr-2"></i>
-                    Credenciales de Acceso
-                </p>
-                <div class="space-y-1 text-sm text-blue-700">
-                    <p><strong>Email:</strong> anuskka@galia.com</p>
-                    <p><strong>Contraseña:</strong> Anushka2025!</p>
-                </div>
-            </div>
-        </div>
-
         <!-- Footer -->
-        <div class="text-center mt-6 text-sm text-gray-500">
+        <div class="text-center mt-8 text-sm text-gray-500">
             <p>© 2025 Anushka Hogar. Sistema seguro.</p>
         </div>
     </div>
@@ -116,6 +173,38 @@
             }
         }
 
+        // Toggle password Ana Ramos visibility
+        function togglePasswordAnaRamosVisibility() {
+            const passwordInput = document.getElementById('password-ana-ramos');
+            const eyeIcon = document.getElementById('eye-icon-ana');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+            }
+        }
+
+        // Mostrar/ocultar campo de contraseña Ana Ramos según rol
+        function togglePasswordAnaRamos() {
+            const rol = document.querySelector('input[name="rol"]:checked').value;
+            const container = document.getElementById('password-ana-ramos-container');
+            const passwordInput = document.getElementById('password-ana-ramos');
+            
+            if (rol === 'duena') {
+                container.style.display = 'block';
+                passwordInput.required = true;
+            } else {
+                container.style.display = 'none';
+                passwordInput.required = false;
+                passwordInput.value = ''; // Limpiar el campo
+            }
+        }
+
         // Show error message
         function showError(message) {
             const errorDiv = document.getElementById('error-message');
@@ -134,7 +223,17 @@
             
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const rol = document.querySelector('input[name="rol"]:checked').value;
+            const passwordAnaRamos = document.getElementById('password-ana-ramos').value;
             const loginBtn = document.getElementById('login-btn');
+
+            // Validar contraseña de Ana Ramos si eligió ese rol
+            if (rol === 'duena') {
+                if (passwordAnaRamos !== '1984') {
+                    showError('❌ Contraseña de Ana Ramos incorrecta');
+                    return;
+                }
+            }
             
             // Disable button
             loginBtn.disabled = true;
@@ -144,8 +243,10 @@
                 const response = await axios.post('/api/login', { email, password });
                 
                 if (response.data.success) {
-                    // Save user in localStorage
-                    localStorage.setItem('anushka_user', JSON.stringify(response.data.usuario));
+                    // Save user in localStorage WITH ROL
+                    const userData = response.data.usuario;
+                    userData.rol = rol; // Añadir el rol seleccionado
+                    localStorage.setItem('anushka_user', JSON.stringify(userData));
                     
                     // Redirect to dashboard
                     window.location.href = '/';
@@ -168,10 +269,10 @@
             window.location.href = '/';
         }
 
-        // Auto-fill credentials on load for demo (remove in production)
+        // Inicializar al cargar la página
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('email').value = 'anuskka@galia.com';
-            document.getElementById('password').value = 'Anushka2025!';
+            // Inicializar visibilidad del campo Ana Ramos
+            togglePasswordAnaRamos();
         });
     </script>
 </body>

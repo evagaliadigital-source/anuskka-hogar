@@ -6,13 +6,13 @@ let currentData = {
   dashboard: null,
   clientes: [],
   trabajos: [],
-  personal: [],
+  empleadas: [],
   stock: [],
   facturas: []
 }
 
 // ============================================
-// AUTENTICACIÓN Y SISTEMA DE ROLES
+// AUTENTICACIÓN
 // ============================================
 
 // Verificar si el usuario está logueado
@@ -25,35 +25,9 @@ function checkAuth() {
   return JSON.parse(user)
 }
 
-// Obtener rol del usuario actual
-function getUserRole() {
-  const user = checkAuth()
-  return user ? user.rol : null
-}
-
-// Verificar si el usuario es dueña
-function isDuena() {
-  return getUserRole() === 'duena'
-}
-
-// Verificar si el usuario tiene permiso para una sección
-function tienePermiso(seccion) {
-  const rol = getUserRole()
-  
-  // Ana Ramos (dueña) tiene acceso a TODO
-  if (rol === 'duena') {
-    return true
-  }
-  
-  // Tienda solo tiene acceso a secciones operativas + consultor IA
-  const seccionesTienda = ['dashboard', 'clientes', 'presupuestos', 'trabajos', 'stock', 'consultor']
-  return seccionesTienda.includes(seccion)
-}
-
 // Logout
 function logout() {
   localStorage.removeItem('anushka_user')
-  sessionStorage.clear() // Limpiar también las contraseñas guardadas
   window.location.href = '/static/login.html'
 }
 
@@ -145,13 +119,7 @@ function loadUserInfo() {
   if (user) {
     const userNameElement = document.querySelector('header p.font-semibold')
     if (userNameElement) {
-      if (user.rol === 'duena') {
-        // Para Ana Ramos: solo mostrar "Ana Ramos 👑"
-        userNameElement.textContent = 'Ana Ramos 👑'
-      } else {
-        // Para Tienda: mostrar "Tienda 🏪"
-        userNameElement.textContent = 'Tienda 🏪'
-      }
+      userNameElement.textContent = user.nombre
     }
   }
 }
@@ -162,13 +130,6 @@ function loadUserInfo() {
 
 function showTab(tabName) {
   console.log('🔄 showTab called:', tabName)
-  
-  // VERIFICAR PERMISOS ANTES DE CAMBIAR DE TAB
-  if (!tienePermiso(tabName)) {
-    showToast(`❌ No tienes permiso para acceder a ${tabName}`, 'error')
-    console.log(`🚫 Acceso denegado a: ${tabName}`)
-    return
-  }
   
   // Ocultar todos los tabs
   document.querySelectorAll('.tab-content').forEach(tab => {
@@ -208,8 +169,8 @@ function showTab(tabName) {
     case 'trabajos':
       loadTrabajos()
       break
-    case 'personal':
-      loadPersonal()
+    case 'empleadas':
+      loadEmpleadas()
       break
     case 'stock':
       loadStock()
@@ -218,18 +179,10 @@ function showTab(tabName) {
       loadFacturas()
       break
     case 'reportes':
-      loadInformes()
       loadReporte()
       break
   }
 }
-
-// ============================================
-// SISTEMA DE PERMISOS POR ROL
-// ============================================
-// Las secciones sensibles (Personal, Facturación, Reportes) 
-// solo son accesibles para usuarios con rol 'duena'.
-// El sistema de permisos se maneja en tienePermiso() y ocultarPestanasSegunRol()
 
 // ============================================
 // DASHBOARD
@@ -240,16 +193,21 @@ async function loadDashboard() {
     const { data } = await axios.get(`${API}/dashboard`)
     currentData.dashboard = data
     
-    // Actualizar KPIs principales
+    // Actualizar KPIs
+    document.getElementById('kpi-ingresos').textContent = `€${(data.ingresos || 0).toFixed(2)}`
     document.getElementById('kpi-trabajos').textContent = data.trabajos_activos || 0
-    document.getElementById('kpi-presupuestos').textContent = data.presupuestos_pendientes || 0
-    document.getElementById('kpi-fases').textContent = data.fases_en_proceso || 0
-    document.getElementById('kpi-completados').textContent = data.trabajos_completados_mes || 0
+    document.getElementById('kpi-stock').textContent = data.stock_bajo || 0
+    document.getElementById('kpi-horas').textContent = `${(data.horas_semanales || 0).toFixed(1)}h`
+    document.getElementById('kpi-satisfaccion').textContent = `${(data.satisfaccion_promedio || 0).toFixed(1)} ⭐`
     
-    // Gráficos enfocados en operaciones
+    // Gráfico de trabajos por estado
     renderChartTrabajos(data.trabajos_por_estado)
-    renderChartFases(data.fases_resumen)
-    renderChartPresupuestos(data.presupuestos_por_estado)
+    
+    // Gráfico de ingresos
+    renderChartIngresos(data.ingresos_diarios)
+    
+    // Top empleadas (COMENTADO - sección eliminada del dashboard)
+    // renderTopEmpleadas(data.top_empleadas)
     
   } catch (error) {
     console.error('Error cargando dashboard:', error)
@@ -259,8 +217,6 @@ async function loadDashboard() {
 
 // Variable global para guardar instancias de charts
 let chartTrabajosInstance = null
-let chartFasesInstance = null
-let chartPresupuestosInstance = null
 let chartIngresosInstance = null
 
 function renderChartTrabajos(data) {
@@ -303,96 +259,6 @@ function renderChartTrabajos(data) {
   
   chartTrabajosInstance = new Chart(ctx, {
     type: 'doughnut',
-    data: {
-      labels: labels,
-      datasets: [{
-        data: values,
-        backgroundColor: ['#fbbf24', '#3b82f6', '#10b981', '#ef4444']
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      plugins: {
-        legend: { position: 'bottom' }
-      }
-    }
-  })
-}
-
-function renderChartFases(data) {
-  const ctx = document.getElementById('chartFases')
-  if (!ctx) return
-  
-  if (typeof Chart === 'undefined') return
-  
-  if (chartFasesInstance) {
-    chartFasesInstance.destroy()
-    chartFasesInstance = null
-  }
-  
-  if (!data || data.length === 0) return
-  
-  const labels = data.map(d => {
-    const fases = {
-      'mediciones': '📏 Mediciones',
-      'pedidos': '📦 Pedidos',
-      'confeccion': '✂️ Confección',
-      'instalacion': '🔨 Instalación'
-    }
-    return fases[d.fase] || d.fase
-  })
-  const values = data.map(d => d.total)
-  
-  chartFasesInstance = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Trabajos en esta fase',
-        data: values,
-        backgroundColor: ['#3b82f6', '#8b5cf6', '#ec4899']
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1 } }
-      },
-      plugins: {
-        legend: { display: false }
-      }
-    }
-  })
-}
-
-function renderChartPresupuestos(data) {
-  const ctx = document.getElementById('chartPresupuestos')
-  if (!ctx) return
-  
-  if (typeof Chart === 'undefined') return
-  
-  if (chartPresupuestosInstance) {
-    chartPresupuestosInstance.destroy()
-    chartPresupuestosInstance = null
-  }
-  
-  if (!data || data.length === 0) return
-  
-  const labels = data.map(d => {
-    const estados = {
-      'pendiente': 'Pendiente',
-      'enviado': 'Enviado',
-      'aceptado': 'Aceptado',
-      'rechazado': 'Rechazado'
-    }
-    return estados[d.estado] || d.estado
-  })
-  const values = data.map(d => d.total)
-  
-  chartPresupuestosInstance = new Chart(ctx, {
-    type: 'pie',
     data: {
       labels: labels,
       datasets: [{
@@ -465,17 +331,6 @@ function renderChartIngresos(data) {
   })
 }
 
-// Cargar informes (incluye gráfica de ingresos)
-async function loadInformes() {
-  try {
-    const { data } = await axios.get(`${API}/dashboard`)
-    // Renderizar gráfica de ingresos
-    renderChartIngresos(data.ingresos_diarios)
-  } catch (error) {
-    console.error('Error cargando informes:', error)
-  }
-}
-
 // FUNCIÓN DESHABILITADA - Sección "Top Empleadas del Mes" eliminada del dashboard
 /*
 function renderTopEmpleadas(data) {
@@ -541,14 +396,11 @@ async function loadClientes() {
               <td class="px-6 py-4 text-sm text-gray-900">${c.direccion}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${c.ciudad}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <button onclick="viewCliente(${c.id})" class="text-blue-600 hover:text-blue-800 mr-3" title="Ver detalles">
+                <button onclick="viewCliente(${c.id})" class="text-blue-600 hover:text-blue-800 mr-3">
                   <i class="fas fa-eye"></i>
                 </button>
-                <button onclick="editCliente(${c.id})" class="text-green-600 hover:text-green-800 mr-3" title="Editar">
+                <button onclick="editCliente(${c.id})" class="text-green-600 hover:text-green-800">
                   <i class="fas fa-edit"></i>
-                </button>
-                <button onclick="showClientePresupuestos(${c.id})" class="text-purple-600 hover:text-purple-800" title="Ver presupuestos">
-                  <i class="fas fa-file-alt"></i>
                 </button>
               </td>
             </tr>
@@ -710,11 +562,8 @@ async function loadTrabajos() {
                 ${getEstadoBadge(t.estado)}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">€${t.precio_cliente.toFixed(2)}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
-                <button onclick="viewTrabajo(${t.id})" class="text-blue-600 hover:text-blue-800" title="Ver detalles">
-                  <i class="fas fa-eye"></i>
-                </button>
-                <button onclick="editTrabajo(${t.id})" class="text-green-600 hover:text-green-800" title="Editar">
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <button onclick="editTrabajo(${t.id})" class="text-green-600 hover:text-green-800">
                   <i class="fas fa-edit"></i>
                 </button>
               </td>
@@ -739,213 +588,11 @@ function getEstadoBadge(estado) {
   return badges[estado] || estado
 }
 
-async function viewTrabajo(id) {
-  try {
-    const { data: trabajo } = await axios.get(`${API}/trabajos/${id}`)
-    const { data: fases } = await axios.get(`${API}/trabajos/${id}/fases`)
-    const { data: personalList } = await axios.get(`${API}/personal`)
-    
-    // Calcular progreso
-    const fasesCompletadas = fases.filter(f => f.estado === 'completado').length
-    const progresoPercent = (fasesCompletadas / fases.length) * 100
-    
-    const faseIcons = {
-      mediciones: '📏',
-      pedidos: '📦',
-      confeccion: '✂️',
-      instalacion: '🔨'
-    }
-    
-    const faseLabels = {
-      mediciones: 'Mediciones',
-      pedidos: 'Pedidos',
-      confeccion: 'Confección',
-      instalacion: 'Instalación'
-    }
-    
-    const html = `
-      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) closeModal()">
-        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-          <div class="flex justify-between items-start mb-6">
-            <h3 class="text-2xl font-bold text-gray-800">
-              <i class="fas fa-briefcase text-teal-600 mr-2"></i>
-              Detalles del Trabajo
-            </h3>
-            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-              <i class="fas fa-times text-2xl"></i>
-            </button>
-          </div>
-          
-          ${trabajo.presupuesto_id ? `
-            <div class="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
-              <p class="text-sm text-purple-700">
-                <i class="fas fa-link mr-2"></i>
-                <strong>Generado desde presupuesto</strong>
-                <button onclick="closeModal(); showTab('presupuestos'); setTimeout(() => viewPresupuesto(${trabajo.presupuesto_id}), 300)" 
-                        class="ml-2 text-purple-600 hover:text-purple-800 underline">
-                  Ver presupuesto original
-                </button>
-              </p>
-            </div>
-          ` : ''}
-          
-          <!-- TIMELINE DE FASES -->
-          <div class="mb-6 bg-gradient-to-r from-teal-50 to-blue-50 p-6 rounded-lg border border-teal-200">
-            <h4 class="font-bold text-gray-800 mb-4 flex items-center justify-between">
-              <span><i class="fas fa-tasks mr-2 text-teal-600"></i>Fases del Trabajo</span>
-              <span class="text-sm font-normal text-gray-600">${progresoPercent.toFixed(0)}% Completado</span>
-            </h4>
-            
-            <!-- Barra de progreso -->
-            <div class="mb-6 bg-gray-200 rounded-full h-3 overflow-hidden">
-              <div class="bg-gradient-to-r from-teal-500 to-green-500 h-full transition-all duration-500" style="width: ${progresoPercent}%"></div>
-            </div>
-            
-            <!-- Timeline con control manual -->
-            <div class="space-y-3">
-              ${fases.map((fase, idx) => `
-                <div class="bg-white border-2 rounded-lg p-4 transition-all hover:shadow-md
-                  ${fase.estado === 'completado' ? 'border-green-500' : 'border-gray-200'}">
-                  <div class="flex items-start gap-4">
-                    <!-- Checkbox manual -->
-                    <div class="flex-shrink-0 pt-1">
-                      <input type="checkbox" 
-                             id="fase-${fase.id}"
-                             ${fase.estado === 'completado' ? 'checked' : ''}
-                             onchange="toggleFase(${id}, ${fase.id}, '${fase.fase}', this.checked)"
-                             class="w-6 h-6 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 cursor-pointer">
-                    </div>
-                    
-                    <!-- Icon decorativo -->
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-xl
-                      ${fase.estado === 'completado' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'}">
-                      ${faseIcons[fase.fase]}
-                    </div>
-                    
-                    <!-- Contenido -->
-                    <div class="flex-1">
-                      <div class="flex items-center justify-between mb-2">
-                        <label for="fase-${fase.id}" class="font-bold text-gray-800 cursor-pointer hover:text-teal-600">
-                          ${faseLabels[fase.fase]}
-                        </label>
-                        ${fase.estado === 'completado' ? 
-                          `<span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded">✓ Hecha</span>` :
-                          `<span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded">Pendiente</span>`
-                        }
-                      </div>
-                      
-                      <!-- Selector de personal asignado -->
-                      <div class="mb-2">
-                        <label class="text-xs text-gray-600 mb-1 block">
-                          <i class="fas fa-user mr-1"></i>Personal asignado:
-                        </label>
-                        <select 
-                          id="personal-fase-${fase.id}" 
-                          onchange="asignarPersonalAFase(${id}, ${fase.id}, this.value)"
-                          class="w-full text-sm px-3 py-1.5 border rounded bg-white focus:ring-2 focus:ring-teal-500">
-                          <option value="">Sin asignar</option>
-                          ${personalList.map(p => `
-                            <option value="${p.id}" ${fase.personal_id == p.id ? 'selected' : ''}>
-                              ${p.nombre} ${p.apellidos}
-                            </option>
-                          `).join('')}
-                        </select>
-                        ${fase.personal_nombre ? `
-                          <p class="text-xs text-teal-600 mt-1">
-                            <i class="fas fa-check-circle mr-1"></i>Asignado a: ${fase.personal_nombre} ${fase.personal_apellidos}
-                          </p>
-                        ` : ''}
-                      </div>
-                      
-                      ${fase.fecha_completado ? `
-                        <p class="text-xs text-gray-500 mb-2">
-                          <i class="far fa-calendar-check mr-1"></i>
-                          Completado: ${new Date(fase.fecha_completado).toLocaleDateString('es-ES')} a las ${new Date(fase.fecha_completado).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}
-                        </p>
-                      ` : ''}
-                      
-                      ${fase.notas ? `
-                        <p class="text-sm text-gray-600 bg-gray-50 p-2 rounded border border-gray-200 mt-2">
-                          <i class="far fa-sticky-note mr-1 text-gray-400"></i>${fase.notas}
-                        </p>
-                      ` : ''}
-                      
-                      <!-- Botón para agregar/editar notas -->
-                      <button onclick="editarNotasFase(${id}, ${fase.id}, '${fase.fase}', \`${fase.notas || ''}\`)" 
-                              class="mt-2 text-xs text-teal-600 hover:text-teal-700 hover:underline">
-                        <i class="fas fa-edit mr-1"></i>${fase.notas ? 'Editar notas' : 'Agregar notas'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-          
-          <div class="grid grid-cols-2 gap-4 mb-6">
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-600 mb-1">Cliente</p>
-              <p class="font-semibold text-gray-900">${trabajo.cliente_nombre} ${trabajo.cliente_apellidos}</p>
-            </div>
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-600 mb-1">Estado</p>
-              ${getEstadoBadge(trabajo.estado)}
-            </div>
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-600 mb-1">Fecha Programada</p>
-              <p class="font-semibold text-gray-900">${new Date(trabajo.fecha_programada).toLocaleString('es-ES')}</p>
-            </div>
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-600 mb-1">Empleada Asignada</p>
-              <p class="font-semibold text-gray-900">
-                ${trabajo.empleada_nombre ? `${trabajo.empleada_nombre} ${trabajo.empleada_apellidos}` : '<span class="text-gray-400">Sin asignar</span>'}
-              </p>
-            </div>
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-600 mb-1">Tipo de Servicio</p>
-              <p class="font-semibold text-gray-900">${trabajo.tipo_servicio.replace('_', ' ')}</p>
-            </div>
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-600 mb-1">Precio Cliente</p>
-              <p class="font-semibold text-green-600 text-xl">€${trabajo.precio_cliente.toFixed(2)}</p>
-            </div>
-          </div>
-          
-          ${trabajo.descripcion ? `
-            <div class="mb-4">
-              <h4 class="font-semibold text-gray-700 mb-2">Descripción</h4>
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <pre class="text-sm text-gray-700 whitespace-pre-wrap font-sans">${trabajo.descripcion}</pre>
-              </div>
-            </div>
-          ` : ''}
-          
-          <div class="flex gap-3 mt-6">
-            <button onclick="closeModal(); editTrabajo(${id})" 
-                    class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-lg hover:shadow-lg font-medium">
-              <i class="fas fa-edit mr-2"></i>Editar Trabajo
-            </button>
-            <button onclick="closeModal()" 
-                    class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium">
-              Cerrar
-            </button>
-          </div>
-        </div>
-      </div>
-    `
-    
-    document.body.insertAdjacentHTML('beforeend', html)
-  } catch (error) {
-    console.error('Error al cargar trabajo:', error)
-    showToast('Error al cargar detalles del trabajo', 'error')
-  }
-}
-
 async function showTrabajoForm(id = null) {
-  // Cargar clientes y personal para los selects
-  const [clientesRes, personalRes] = await Promise.all([
+  // Cargar clientes y empleadas para los selects
+  const [clientesRes, empleadasRes] = await Promise.all([
     axios.get(`${API}/clientes`),
-    axios.get(`${API}/personal`)
+    axios.get(`${API}/empleadas`)
   ])
   
   const isEdit = id !== null
@@ -986,10 +633,10 @@ async function showTrabajoForm(id = null) {
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Personal Asignado</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Empleada</label>
               <select name="empleada_id" class="w-full px-4 py-2 border rounded-lg">
                 <option value="">Sin asignar</option>
-                ${personalRes.data.map(e => `
+                ${empleadasRes.data.map(e => `
                   <option value="${e.id}" ${trabajo.empleada_id == e.id ? 'selected' : ''}>
                     ${e.nombre} ${e.apellidos}
                   </option>
@@ -1031,9 +678,9 @@ async function showTrabajoForm(id = null) {
                      required class="w-full px-4 py-2 border rounded-lg">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Duración (horas)</label>
-              <input type="number" step="0.5" name="duracion_horas" value="${trabajo.duracion_estimada ? (trabajo.duracion_estimada / 60).toFixed(1) : ''}" 
-                     class="w-full px-4 py-2 border rounded-lg" placeholder="Ej: 2.5">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Duración (min)</label>
+              <input type="number" name="duracion_estimada" value="${trabajo.duracion_estimada}" 
+                     class="w-full px-4 py-2 border rounded-lg">
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Prioridad</label>
@@ -1084,12 +731,6 @@ async function showTrabajoForm(id = null) {
     const formData = new FormData(e.target)
     const data = Object.fromEntries(formData)
     
-    // Convertir horas a minutos para el backend
-    if (data.duracion_horas) {
-      data.duracion_estimada = Math.round(parseFloat(data.duracion_horas) * 60)
-      delete data.duracion_horas
-    }
-    
     // Convertir valores vacíos a null
     if (!data.empleada_id) data.empleada_id = null
     
@@ -1110,185 +751,15 @@ async function showTrabajoForm(id = null) {
 }
 
 // ============================================
-// PERSONAL
+// EMPLEADAS
 // ============================================
 
-// Función para controlar las sub-pestañas de Personal
-function showPersonalSubTab(subtab) {
-  // Remover clase active de todos los botones
-  document.querySelectorAll('.personal-subtab').forEach(btn => {
-    btn.classList.remove('active', 'bg-gradient-to-r', 'from-gray-800', 'to-gray-900', 'text-white')
-    btn.classList.add('text-gray-700', 'hover:bg-gray-100')
-  })
-  
-  // Ocultar todos los contenidos
-  document.querySelectorAll('.personal-subtab-content').forEach(content => {
-    content.style.display = 'none'
-  })
-  
-  // Activar botón seleccionado
-  const btn = document.getElementById(`personal-subtab-${subtab}`)
-  btn.classList.add('active', 'bg-gradient-to-r', 'from-gray-800', 'to-gray-900', 'text-white')
-  btn.classList.remove('text-gray-700', 'hover:bg-gray-100')
-  
-  // Mostrar contenido correspondiente
-  const content = document.getElementById(`personal-subtab-${subtab}-content`)
-  content.style.display = 'block'
-  
-  // Cargar datos según sub-tab
-  if (subtab === 'nuevo') {
-    showPersonalFormInContainer()
-  } else if (subtab === 'gestion') {
-    loadPersonalLista()
-  }
-}
-
-// Cargar pestaña Personal (llamada desde showTab)
-async function loadPersonal() {
-  // Por defecto mostrar sub-tab de Nuevo Personal
-  showPersonalSubTab('nuevo')
-}
-
-// Mostrar formulario en el contenedor de Nuevo Personal
-async function showPersonalFormInContainer() {
-  const container = document.getElementById('personal-form-container')
-  
-  container.innerHTML = `
-    <form id="personal-form-inline" class="space-y-4">
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
-          <input type="text" name="nombre" required 
-                 class="w-full px-4 py-2 border rounded-lg">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Apellidos *</label>
-          <input type="text" name="apellidos" required 
-                 class="w-full px-4 py-2 border rounded-lg">
-        </div>
-      </div>
-      
-      <div class="grid grid-cols-3 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono *</label>
-          <input type="tel" name="telefono" required 
-                 class="w-full px-4 py-2 border rounded-lg">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">DNI *</label>
-          <input type="text" name="dni" required 
-                 class="w-full px-4 py-2 border rounded-lg">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <input type="email" name="email" 
-                 class="w-full px-4 py-2 border rounded-lg">
-        </div>
-      </div>
-      
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Contratación</label>
-          <input type="date" name="fecha_contratacion" 
-                 class="w-full px-4 py-2 border rounded-lg">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Salario/Hora (€)</label>
-          <input type="number" name="salario_hora" step="0.01" 
-                 class="w-full px-4 py-2 border rounded-lg">
-        </div>
-      </div>
-      
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Especialidades</label>
-        <div class="grid grid-cols-3 gap-3">
-          <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
-            <input type="checkbox" name="especialidades" value="corte" class="rounded text-teal-600">
-            <span class="text-sm">✂️ Corte</span>
-          </label>
-          <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
-            <input type="checkbox" name="especialidades" value="confeccion" class="rounded text-teal-600">
-            <span class="text-sm">🧵 Confección</span>
-          </label>
-          <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
-            <input type="checkbox" name="especialidades" value="ventas" class="rounded text-teal-600">
-            <span class="text-sm">💼 Ventas</span>
-          </label>
-          <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
-            <input type="checkbox" name="especialidades" value="atencion_cliente" class="rounded text-teal-600">
-            <span class="text-sm">📞 Atención al Cliente</span>
-          </label>
-          <label class="flex items-center space-x-2 bg-green-50 p-3 rounded border-2 border-green-300 hover:bg-green-100 cursor-pointer">
-            <input type="checkbox" name="especialidades" value="instalacion" class="rounded text-green-600">
-            <span class="text-sm font-semibold">🔨 Instalación</span>
-          </label>
-          <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
-            <input type="checkbox" name="especialidades" value="plancha" class="rounded text-teal-600">
-            <span class="text-sm">👔 Plancha</span>
-          </label>
-          <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
-            <input type="checkbox" name="especialidades" value="apoyo" class="rounded text-teal-600">
-            <span class="text-sm">🤝 Apoyo</span>
-          </label>
-        </div>
-      </div>
-      
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
-        <textarea name="notas" rows="3" 
-                  class="w-full px-4 py-2 border rounded-lg"></textarea>
-      </div>
-      
-      <div class="flex gap-3 pt-4">
-        <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
-          <i class="fas fa-save mr-2"></i>Guardar Personal
-        </button>
-        <button type="button" onclick="showPersonalFormInContainer()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
-          Limpiar
-        </button>
-      </div>
-    </form>
-  `
-  
-  // Event listener para el formulario inline
-  document.getElementById('personal-form-inline').addEventListener('submit', async (e) => {
-    e.preventDefault()
-    const formData = new FormData(e.target)
-    const data = Object.fromEntries(formData)
-    
-    // Procesar especialidades (checkboxes múltiples)
-    data.especialidades = Array.from(e.target.querySelectorAll('input[name="especialidades"]:checked'))
-      .map(cb => cb.value)
-    
-    try {
-      await axios.post(`${API}/personal`, data)
-      showToast('✓ Personal añadido correctamente', 'success')
-      showPersonalFormInContainer() // Limpiar formulario
-      // Si está en sub-tab gestión, recargar lista
-      const gestionVisible = document.getElementById('personal-subtab-gestion-content').style.display !== 'none'
-      if (gestionVisible) {
-        loadPersonalLista()
-      }
-    } catch (error) {
-      console.error(error)
-      showToast('❌ Error al guardar personal', 'error')
-    }
-  })
-}
-
-// Cargar lista de personal en sub-tab Gestión
-async function loadPersonalLista() {
+async function loadEmpleadas() {
   try {
-    const { data } = await axios.get(`${API}/personal`)
-    currentData.personal = data
+    const { data } = await axios.get(`${API}/empleadas`)
+    currentData.empleadas = data
     
-    const container = document.getElementById('personal-lista')
-    
-    if (!data || data.length === 0) {
-      container.innerHTML = '<p class="text-center text-gray-500 py-8">No hay personal registrado</p>'
-      return
-    }
-    
+    const container = document.getElementById('empleadas-lista')
     container.innerHTML = `
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         ${data.map(e => `
@@ -1298,21 +769,21 @@ async function loadPersonalLista() {
                 <h3 class="text-lg font-bold text-gray-800">${e.nombre} ${e.apellidos}</h3>
                 <p class="text-sm text-gray-600">${e.telefono}</p>
               </div>
-              ${e.calificacion ? `<div class="text-yellow-600 font-semibold">${e.calificacion.toFixed(1)} ⭐</div>` : ''}
+              <div class="text-yellow-600 font-semibold">${e.calificacion.toFixed(1)} ⭐</div>
             </div>
             
             <div class="space-y-2 mb-4">
               <p class="text-sm"><span class="font-medium">Email:</span> ${e.email || 'N/A'}</p>
               <p class="text-sm"><span class="font-medium">DNI:</span> ${e.dni}</p>
-              ${e.salario_hora ? `<p class="text-sm"><span class="font-medium">Salario/hora:</span> €${e.salario_hora.toFixed(2)}</p>` : ''}
-              ${e.fecha_contratacion ? `<p class="text-sm"><span class="font-medium">Contratada:</span> ${new Date(e.fecha_contratacion).toLocaleDateString('es-ES')}</p>` : ''}
+              <p class="text-sm"><span class="font-medium">Salario/hora:</span> €${e.salario_hora.toFixed(2)}</p>
+              <p class="text-sm"><span class="font-medium">Contratada:</span> ${new Date(e.fecha_contratacion).toLocaleDateString('es-ES')}</p>
             </div>
             
             <div class="flex gap-2">
-              <button onclick="viewPersonal(${e.id})" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+              <button onclick="viewEmpleada(${e.id})" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
                 <i class="fas fa-eye mr-2"></i>Ver
               </button>
-              <button onclick="editPersonal(${e.id})" class="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+              <button onclick="editEmpleada(${e.id})" class="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
                 <i class="fas fa-edit mr-2"></i>Editar
               </button>
             </div>
@@ -1321,50 +792,49 @@ async function loadPersonalLista() {
       </div>
     `
   } catch (error) {
-    console.error('Error cargando personal:', error)
-    showToast('❌ Error al cargar personal', 'error')
+    console.error('Error cargando empleadas:', error)
+    showError('Error al cargar empleadas')
   }
 }
 
-// Mostrar formulario de edición de personal en modal
-async function showPersonalForm(id = null) {
+async function showEmpleadaForm(id = null) {
   const isEdit = id !== null
-  let personal = {
+  let empleada = {
     nombre: '',
     apellidos: '',
     telefono: '',
     email: '',
     dni: '',
-    fecha_contratacion: '',
-    salario_hora: '',
+    fecha_contratacion: new Date().toISOString().slice(0, 10),
+    salario_hora: 12.00,
     especialidades: [],
     notas: ''
   }
   
   if (isEdit) {
-    const { data } = await axios.get(`${API}/personal/${id}`)
-    personal = data.personal
+    const { data } = await axios.get(`${API}/empleadas/${id}`)
+    empleada = data.empleada
     try {
-      personal.especialidades = JSON.parse(personal.especialidades || '[]')
+      empleada.especialidades = JSON.parse(empleada.especialidades || '[]')
     } catch {
-      personal.especialidades = []
+      empleada.especialidades = []
     }
   }
   
   const html = `
     <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <h3 class="text-2xl font-bold mb-6">${isEdit ? 'Editar' : 'Nuevo'} Personal</h3>
-        <form id="personal-form" class="space-y-4">
+        <h3 class="text-2xl font-bold mb-6">${isEdit ? 'Editar' : 'Nueva'} Empleada</h3>
+        <form id="empleada-form" class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
-              <input type="text" name="nombre" value="${personal.nombre}" required 
+              <input type="text" name="nombre" value="${empleada.nombre}" required 
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Apellidos *</label>
-              <input type="text" name="apellidos" value="${personal.apellidos}" required 
+              <input type="text" name="apellidos" value="${empleada.apellidos}" required 
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
           </div>
@@ -1372,71 +842,61 @@ async function showPersonalForm(id = null) {
           <div class="grid grid-cols-3 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono *</label>
-              <input type="tel" name="telefono" value="${personal.telefono}" required 
+              <input type="tel" name="telefono" value="${empleada.telefono}" required 
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">DNI *</label>
-              <input type="text" name="dni" value="${personal.dni}" required 
+              <input type="text" name="dni" value="${empleada.dni}" required 
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input type="email" name="email" value="${personal.email || ''}" 
+              <input type="email" name="email" value="${empleada.email || ''}" 
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
           </div>
           
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Contratación</label>
-              <input type="date" name="fecha_contratacion" value="${personal.fecha_contratacion || ''}" 
+              <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Contratación *</label>
+              <input type="date" name="fecha_contratacion" value="${empleada.fecha_contratacion}" required 
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Salario/Hora (€)</label>
-              <input type="number" name="salario_hora" value="${personal.salario_hora || ''}" step="0.01" 
+              <label class="block text-sm font-medium text-gray-700 mb-1">Salario/Hora (€) *</label>
+              <input type="number" name="salario_hora" value="${empleada.salario_hora}" required step="0.01" 
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
           </div>
           
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Especialidades</label>
-            <div class="grid grid-cols-3 gap-3">
-              <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
-                <input type="checkbox" name="especialidades" value="corte" 
-                       ${personal.especialidades.includes('corte') ? 'checked' : ''} class="rounded text-teal-600">
-                <span class="text-sm">✂️ Corte</span>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="flex items-center space-x-2">
+                <input type="checkbox" name="especialidades" value="limpieza" 
+                       ${empleada.especialidades.includes('limpieza') ? 'checked' : ''} class="rounded">
+                <span class="text-sm">Limpieza</span>
               </label>
-              <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
-                <input type="checkbox" name="especialidades" value="confeccion" 
-                       ${personal.especialidades.includes('confeccion') ? 'checked' : ''} class="rounded text-teal-600">
-                <span class="text-sm">🧵 Confección</span>
-              </label>
-              <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
-                <input type="checkbox" name="especialidades" value="ventas" 
-                       ${personal.especialidades.includes('ventas') ? 'checked' : ''} class="rounded text-teal-600">
-                <span class="text-sm">💼 Ventas</span>
-              </label>
-              <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
-                <input type="checkbox" name="especialidades" value="atencion_cliente" 
-                       ${personal.especialidades.includes('atencion_cliente') ? 'checked' : ''} class="rounded text-teal-600">
-                <span class="text-sm">📞 Atención al Cliente</span>
-              </label>
-              <label class="flex items-center space-x-2 bg-green-50 p-3 rounded border-2 border-green-300 hover:bg-green-100 cursor-pointer">
-                <input type="checkbox" name="especialidades" value="instalacion" 
-                       ${personal.especialidades.includes('instalacion') ? 'checked' : ''} class="rounded text-green-600">
-                <span class="text-sm font-semibold">🔨 Instalación</span>
-              </label>
-              <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
+              <label class="flex items-center space-x-2">
                 <input type="checkbox" name="especialidades" value="plancha" 
-                       ${personal.especialidades.includes('plancha') ? 'checked' : ''} class="rounded text-teal-600">
-                <span class="text-sm">👔 Plancha</span>
+                       ${empleada.especialidades.includes('plancha') ? 'checked' : ''} class="rounded">
+                <span class="text-sm">Plancha</span>
               </label>
-              <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
-                <input type="checkbox" name="especialidades" value="apoyo" 
-                       ${personal.especialidades.includes('apoyo') ? 'checked' : ''} class="rounded text-teal-600">
-                <span class="text-sm">🤝 Apoyo</span>
+              <label class="flex items-center space-x-2">
+                <input type="checkbox" name="especialidades" value="cocina" 
+                       ${empleada.especialidades.includes('cocina') ? 'checked' : ''} class="rounded">
+                <span class="text-sm">Cocina</span>
+              </label>
+              <label class="flex items-center space-x-2">
+                <input type="checkbox" name="especialidades" value="mantenimiento" 
+                       ${empleada.especialidades.includes('mantenimiento') ? 'checked' : ''} class="rounded">
+                <span class="text-sm">Mantenimiento</span>
+              </label>
+              <label class="flex items-center space-x-2">
+                <input type="checkbox" name="especialidades" value="organizacion" 
+                       ${empleada.especialidades.includes('organizacion') ? 'checked' : ''} class="rounded">
+                <span class="text-sm">Organización</span>
               </label>
             </div>
           </div>
@@ -1444,7 +904,7 @@ async function showPersonalForm(id = null) {
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
             <textarea name="notas" rows="3" 
-                      class="w-full px-4 py-2 border rounded-lg">${personal.notas || ''}</textarea>
+                      class="w-full px-4 py-2 border rounded-lg">${empleada.notas || ''}</textarea>
           </div>
           
           <div class="flex gap-3 pt-4">
@@ -1462,7 +922,7 @@ async function showPersonalForm(id = null) {
   
   document.body.insertAdjacentHTML('beforeend', html)
   
-  document.getElementById('personal-form').addEventListener('submit', async (e) => {
+  document.getElementById('empleada-form').addEventListener('submit', async (e) => {
     e.preventDefault()
     const formData = new FormData(e.target)
     const data = Object.fromEntries(formData)
@@ -1473,16 +933,16 @@ async function showPersonalForm(id = null) {
     
     try {
       if (isEdit) {
-        await axios.put(`${API}/personal/${id}`, data)
+        await axios.put(`${API}/empleadas/${id}`, data)
       } else {
-        await axios.post(`${API}/personal`, data)
+        await axios.post(`${API}/empleadas`, data)
       }
       closeModal()
-      loadPersonalLista()
-      showToast('✓ Personal guardado correctamente', 'success')
+      loadEmpleadas()
+      showSuccess('Empleada guardada correctamente')
     } catch (error) {
       console.error(error)
-      showToast('❌ Error al guardar personal', 'error')
+      showError('Error al guardar empleada')
     }
   })
 }
@@ -1493,29 +953,8 @@ async function showPersonalForm(id = null) {
 
 async function loadStock(bajoStock = false) {
   try {
-    // Cargar categorías para el filtro
-    await loadCategorias()
-    const filterSelect = document.getElementById('filter-categoria')
-    if (filterSelect && filterSelect.options.length === 1) {
-      categoriasCache.forEach(cat => {
-        const option = document.createElement('option')
-        option.value = cat.id
-        option.textContent = cat.nombre
-        filterSelect.appendChild(option)
-      })
-    }
-    
-    // Construir URL con filtros
-    let url = `${API}/stock`
-    const params = []
-    if (bajoStock) params.push('bajo_stock=true')
-    
-    const categoriaId = filterSelect?.value
-    if (categoriaId) params.push(`categoria_id=${categoriaId}`)
-    
-    if (params.length > 0) url += '?' + params.join('&')
-    
-    const { data } = await axios.get(url)
+    const params = bajoStock ? '?bajo_stock=true' : ''
+    const { data } = await axios.get(`${API}/stock${params}`)
     currentData.stock = data
     
     const container = document.getElementById('stock-lista')
@@ -1541,15 +980,7 @@ async function loadStock(bajoStock = false) {
                   <div class="font-medium text-gray-900">${s.nombre}</div>
                   ${s.descripcion ? `<div class="text-sm text-gray-500">${s.descripcion}</div>` : ''}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  ${s.categoria_nombre ? `
-                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm" 
-                          style="background-color: ${s.categoria_color}20; color: ${s.categoria_color}">
-                      <i class="fas ${s.categoria_icono}"></i>
-                      ${s.categoria_nombre}
-                    </span>
-                  ` : '<span class="text-gray-400">Sin categoría</span>'}
-                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${s.categoria}</td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span class="text-sm font-medium ${bajoCantidad ? 'text-red-600' : 'text-gray-900'}">
                     ${s.cantidad_actual} ${s.unidad}
@@ -1572,18 +1003,17 @@ async function loadStock(bajoStock = false) {
     `
   } catch (error) {
     console.error('Error cargando stock:', error)
-    showToast('Error al cargar stock', 'error')
+    showError('Error al cargar stock')
   }
 }
 
-async function showStockForm(id = null, preselectedCategoriaId = null) {
+async function showStockForm(id = null) {
   const isEdit = id !== null
   let stock = {
     nombre: '',
     descripcion: '',
     categoria: '',
-    categoria_id: preselectedCategoriaId || null,
-    unidad: 'unidades',
+    unidad: '',
     cantidad_actual: 0,
     cantidad_minima: 10,
     precio_unitario: 0,
@@ -1596,32 +1026,26 @@ async function showStockForm(id = null, preselectedCategoriaId = null) {
     stock = data.find(s => s.id === id)
   }
   
-  // Cargar categorías dinámicamente
-  await loadCategorias()
-  
   const html = `
     <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <h3 class="text-2xl font-bold mb-6">
-          <i class="fas ${isEdit ? 'fa-edit' : 'fa-plus'} text-teal-600 mr-2"></i>
-          ${isEdit ? 'Editar' : 'Nuevo'} Artículo
-        </h3>
+        <h3 class="text-2xl font-bold mb-6">${isEdit ? 'Editar' : 'Nuevo'} Artículo</h3>
         <form id="stock-form" class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
               <input type="text" name="nombre" value="${stock.nombre}" required 
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
+                     class="w-full px-4 py-2 border rounded-lg">
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Categoría *</label>
-              <select name="categoria_id" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
+              <select name="categoria" required class="w-full px-4 py-2 border rounded-lg">
                 <option value="">Seleccionar</option>
-                ${categoriasCache.map(cat => `
-                  <option value="${cat.id}" ${stock.categoria_id == cat.id ? 'selected' : ''}>
-                    ${cat.nombre}
-                  </option>
-                `).join('')}
+                <option value="limpieza" ${stock.categoria === 'limpieza' ? 'selected' : ''}>Limpieza</option>
+                <option value="mantenimiento" ${stock.categoria === 'mantenimiento' ? 'selected' : ''}>Mantenimiento</option>
+                <option value="proteccion" ${stock.categoria === 'proteccion' ? 'selected' : ''}>Protección</option>
+                <option value="herramientas" ${stock.categoria === 'herramientas' ? 'selected' : ''}>Herramientas</option>
+                <option value="consumibles" ${stock.categoria === 'consumibles' ? 'selected' : ''}>Consumibles</option>
               </select>
             </div>
           </div>
@@ -2013,12 +1437,11 @@ window.viewCliente = async (id) => {
 
 window.editCliente = (id) => showClienteForm(id)
 window.editTrabajo = (id) => showTrabajoForm(id)
-window.viewPersonal = async (id) => {
-  const { data } = await axios.get(`${API}/personal/${id}`)
-  const calificacion = data.personal.calificacion ? `\nCalificación: ${data.personal.calificacion} ⭐` : ''
-  alert(`Personal: ${data.personal.nombre} ${data.personal.apellidos}${calificacion}\nTrabajos: ${data.trabajos.length}\nHoras registradas: ${data.horas.length}`)
+window.viewEmpleada = async (id) => {
+  const { data } = await axios.get(`${API}/empleadas/${id}`)
+  alert(`Empleada: ${data.empleada.nombre} ${data.empleada.apellidos}\n\nCalificación: ${data.empleada.calificacion} ⭐\nTrabajos: ${data.trabajos.length}\nHoras registradas: ${data.horas.length}`)
 }
-window.editPersonal = (id) => showPersonalForm(id)
+window.editEmpleada = (id) => showEmpleadaForm(id)
 window.editStock = (id) => showStockForm(id)
 
 // ============================================
@@ -2030,33 +1453,9 @@ document.addEventListener('DOMContentLoaded', () => {
   checkAuth()
   loadUserInfo()
   
-  // Ocultar pestañas según rol
-  ocultarPestanasSegunRol()
-  
   // Cargar dashboard
   loadDashboard()
 })
-
-// Ocultar pestañas según rol del usuario
-function ocultarPestanasSegunRol() {
-  const rol = getUserRole()
-  
-  if (rol === 'tienda') {
-    // Ocultar pestañas sensibles para tienda
-    const pestanasSensibles = ['personal', 'facturas', 'reportes']
-    
-    pestanasSensibles.forEach(tab => {
-      const button = document.querySelector(`button[onclick="showTab('${tab}')"]`)
-      if (button) {
-        button.style.display = 'none'
-      }
-    })
-    
-    console.log('🏪 Modo Tienda: Pestañas sensibles ocultas')
-  } else if (rol === 'duena') {
-    console.log('👑 Modo Ana Ramos: Acceso completo')
-  }
-}
 
 // ============================================
 // PRESUPUESTOS
@@ -2109,11 +1508,7 @@ async function loadPresupuestos() {
           ${presupuestos.map(p => `
             <tr class="hover:bg-gray-50">
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${p.numero_presupuesto}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <a href="#" onclick="event.preventDefault(); showClienteInfo(${p.cliente_id})" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">
-                  ${p.cliente_nombre} ${p.cliente_apellidos}
-                </a>
-              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${p.cliente_nombre} ${p.cliente_apellidos}</td>
               <td class="px-6 py-4 text-sm text-gray-900">${p.titulo}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(p.fecha_emision).toLocaleDateString()}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">€${parseFloat(p.total).toFixed(2)}</td>
@@ -2124,22 +1519,9 @@ async function loadPresupuestos() {
                 <button onclick="viewPresupuesto(${p.id})" class="text-blue-600 hover:text-blue-800" title="Ver detalles">
                   <i class="fas fa-eye"></i>
                 </button>
-                <button onclick="editPresupuesto(${p.id})" class="text-orange-600 hover:text-orange-800" title="Editar">
-                  <i class="fas fa-edit"></i>
-                </button>
                 <button onclick="downloadPresupuestoPDF(${p.id})" class="text-green-600 hover:text-green-800" title="Descargar PDF">
                   <i class="fas fa-file-pdf"></i>
                 </button>
-                ${p.estado === 'aceptado' && !p.trabajo_id ? `
-                  <button onclick="convertirPresupuestoATrabajo(${p.id})" class="text-teal-600 hover:text-teal-800" title="Convertir a Trabajo">
-                    <i class="fas fa-tasks"></i>
-                  </button>
-                ` : ''}
-                ${p.trabajo_id ? `
-                  <button onclick="showTab('trabajos'); setTimeout(() => viewTrabajo(${p.trabajo_id}), 300)" class="text-purple-600 hover:text-purple-800" title="Ver Trabajo">
-                    <i class="fas fa-check-circle"></i>
-                  </button>
-                ` : ''}
                 <button onclick="deletePresupuesto(${p.id})" class="text-red-600 hover:text-red-800" title="Eliminar">
                   <i class="fas fa-trash"></i>
                 </button>
@@ -2245,7 +1627,7 @@ async function viewPresupuesto(id) {
 }
 
 // Mostrar formulario de nuevo presupuesto
-async function showPresupuestoForm(presupuestoId = null, preselectedClienteId = null) {
+async function showPresupuestoForm() {
   // Cargar clientes para el selector
   const clientesResponse = await fetch(`${API}/clientes`)
   const clientes = await clientesResponse.json()
@@ -2265,7 +1647,7 @@ async function showPresupuestoForm(presupuestoId = null, preselectedClienteId = 
           <label class="block text-sm font-medium text-gray-700 mb-2">Cliente *</label>
           <select id="presupuesto-cliente" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-800">
             <option value="">Seleccionar cliente...</option>
-            ${clientes.map(c => `<option value="${c.id}" ${preselectedClienteId && c.id === preselectedClienteId ? 'selected' : ''}>${c.nombre} ${c.apellidos}</option>`).join('')}
+            ${clientes.map(c => `<option value="${c.id}">${c.nombre} ${c.apellidos}</option>`).join('')}
           </select>
         </div>
         <div>
@@ -2389,161 +1771,6 @@ async function showPresupuestoForm(presupuestoId = null, preselectedClienteId = 
       </div>
     </form>
   `, 'max-w-6xl')
-}
-
-// Editar presupuesto existente
-async function editPresupuesto(id) {
-  try {
-    const response = await fetch(`${API}/presupuestos/${id}`)
-    const presupuesto = await response.json()
-    const clientesResponse = await fetch(`${API}/clientes`)
-    const clientes = await clientesResponse.json()
-    const lineas = presupuesto.lineas || []
-    presupuestoLineas = {
-      telas: lineas.filter(l => l.tipo === 'tela').map(l => ({concepto: l.concepto, metros: l.cantidad, precio: l.precio_unitario})),
-      materiales: lineas.filter(l => l.tipo === 'material').map(l => ({concepto: l.concepto, cantidad: l.cantidad, precio: l.precio_unitario})),
-      confeccion: lineas.filter(l => l.tipo === 'confeccion').map(l => ({concepto: l.concepto, horas: l.cantidad, precio: l.precio_unitario})),
-      instalacion: lineas.filter(l => l.tipo === 'instalacion').map(l => ({concepto: l.concepto, horas: l.cantidad, precio: l.precio_unitario}))
-    }
-    showModal(`
-      <form onsubmit="updatePresupuesto(event, ${id})" class="space-y-6">
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-          <p class="text-sm text-blue-800"><i class="fas fa-info-circle mr-2"></i>Editando presupuesto <strong>${presupuesto.numero_presupuesto}</strong></p>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Cliente *</label>
-            <select id="presupuesto-cliente" required class="w-full px-4 py-2 border rounded-lg">
-              ${clientes.map(c => `<option value="${c.id}" ${c.id === presupuesto.cliente_id ? 'selected' : ''}>${c.nombre} ${c.apellidos}</option>`).join('')}
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
-            <select id="presupuesto-estado" class="w-full px-4 py-2 border rounded-lg">
-              <option value="pendiente" ${presupuesto.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
-              <option value="enviado" ${presupuesto.estado === 'enviado' ? 'selected' : ''}>Enviado</option>
-              <option value="aceptado" ${presupuesto.estado === 'aceptado' ? 'selected' : ''}>Aceptado</option>
-              <option value="rechazado" ${presupuesto.estado === 'rechazado' ? 'selected' : ''}>Rechazado</option>
-            </select>
-          </div>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Título *</label>
-          <input type="text" id="presupuesto-titulo" required value="${presupuesto.titulo || ''}" class="w-full px-4 py-2 border rounded-lg">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
-          <textarea id="presupuesto-descripcion" rows="3" class="w-full px-4 py-2 border rounded-lg">${presupuesto.descripcion || ''}</textarea>
-        </div>
-        <div class="border rounded-lg p-4 bg-gray-50">
-          <div class="flex justify-between items-center mb-3">
-            <h4 class="font-semibold text-gray-700">🧵 Telas</h4>
-            <button type="button" onclick="addLineaTela()" class="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900"><i class="fas fa-plus mr-1"></i>Añadir</button>
-          </div>
-          <div id="telas-container"></div>
-        </div>
-        <div class="border rounded-lg p-4 bg-gray-50">
-          <div class="flex justify-between items-center mb-3">
-            <h4 class="font-semibold text-gray-700">🔩 Materiales</h4>
-            <button type="button" onclick="addLineaMaterial()" class="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900"><i class="fas fa-plus mr-1"></i>Añadir</button>
-          </div>
-          <div id="materiales-container"></div>
-        </div>
-        <div class="border rounded-lg p-4 bg-gray-50">
-          <div class="flex justify-between items-center mb-3">
-            <h4 class="font-semibold text-gray-700">✂️ Confección</h4>
-            <button type="button" onclick="addLineaConfeccion()" class="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900"><i class="fas fa-plus mr-1"></i>Añadir</button>
-          </div>
-          <div id="confeccion-container"></div>
-        </div>
-        <div class="border rounded-lg p-4 bg-gray-50">
-          <div class="flex justify-between items-center mb-3">
-            <h4 class="font-semibold text-gray-700">🔧 Instalación</h4>
-            <button type="button" onclick="addLineaInstalacion()" class="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900"><i class="fas fa-plus mr-1"></i>Añadir</button>
-          </div>
-          <div id="instalacion-container"></div>
-        </div>
-        <div class="border-t pt-4 space-y-2">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Descuento (%)</label>
-              <input type="number" id="presupuesto-descuento" value="${presupuesto.descuento_porcentaje || 0}" min="0" max="100" step="0.1" oninput="calcularTotalesPresupuesto()" class="w-full px-4 py-2 border rounded-lg">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">IVA (%)</label>
-              <input type="number" id="presupuesto-iva" value="${presupuesto.porcentaje_iva || 21}" min="0" max="100" step="0.1" oninput="calcularTotalesPresupuesto()" class="w-full px-4 py-2 border rounded-lg">
-            </div>
-          </div>
-          <div class="bg-green-50 p-4 rounded-lg">
-            <div class="flex justify-between text-gray-700"><span>Subtotal:</span><span id="total-subtotal" class="font-semibold">€0.00</span></div>
-            <div class="flex justify-between text-gray-700"><span>Descuento:</span><span id="total-descuento" class="font-semibold text-red-600">€0.00</span></div>
-            <div class="flex justify-between text-gray-700"><span>IVA:</span><span id="total-iva" class="font-semibold">€0.00</span></div>
-            <div class="flex justify-between text-xl font-bold text-gray-900 border-t mt-2 pt-2"><span>TOTAL:</span><span id="total-final" class="text-green-600">€0.00</span></div>
-          </div>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Forma de Pago</label>
-          <input type="text" id="presupuesto-forma-pago" value="${presupuesto.forma_pago || ''}" placeholder="Ej: 50% Señal + 50% Final" class="w-full px-4 py-2 border rounded-lg">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Notas</label>
-          <textarea id="presupuesto-notas" rows="2" class="w-full px-4 py-2 border rounded-lg">${presupuesto.notas || ''}</textarea>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Condiciones</label>
-          <textarea id="presupuesto-condiciones" rows="3" class="w-full px-4 py-2 border rounded-lg">${presupuesto.condiciones || ''}</textarea>
-        </div>
-        <div class="flex gap-3 justify-end">
-          <button type="button" onclick="closeModal()" class="px-6 py-2 border rounded-lg hover:bg-gray-50">Cancelar</button>
-          <button type="submit" class="px-6 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-lg hover:shadow-lg"><i class="fas fa-save mr-2"></i>Actualizar Presupuesto</button>
-        </div>
-      </form>
-    `, 'max-w-6xl')
-    renderLineasTelas()
-    renderLineasMateriales()
-    renderLineasConfeccion()
-    renderLineasInstalacion()
-    calcularTotalesPresupuesto()
-  } catch (error) {
-    console.error('Error cargando presupuesto:', error)
-    alert('Error al cargar presupuesto para editar')
-  }
-}
-
-async function updatePresupuesto(event, id) {
-  event.preventDefault()
-  const lineas = []
-  presupuestoLineas.telas.forEach(l => { if (l.concepto && l.metros && l.precio) lineas.push({tipo: 'tela', concepto: l.concepto, metros: parseFloat(l.metros), precio: parseFloat(l.precio)}) })
-  presupuestoLineas.materiales.forEach(l => { if (l.concepto && l.cantidad && l.precio) lineas.push({tipo: 'material', concepto: l.concepto, cantidad: parseFloat(l.cantidad), precio: parseFloat(l.precio)}) })
-  presupuestoLineas.confeccion.forEach(l => { if (l.concepto && l.horas && l.precio) lineas.push({tipo: 'confeccion', concepto: l.concepto, horas: parseFloat(l.horas), precio: parseFloat(l.precio)}) })
-  presupuestoLineas.instalacion.forEach(l => { if (l.concepto && l.horas && l.precio) lineas.push({tipo: 'instalacion', concepto: l.concepto, horas: parseFloat(l.horas), precio: parseFloat(l.precio)}) })
-  if (lineas.length === 0) { alert('Debe añadir al menos una línea al presupuesto'); return }
-  const data = {
-    cliente_id: parseInt(document.getElementById('presupuesto-cliente').value),
-    estado: document.getElementById('presupuesto-estado').value,
-    titulo: document.getElementById('presupuesto-titulo').value,
-    descripcion: document.getElementById('presupuesto-descripcion').value,
-    descuento_porcentaje: parseFloat(document.getElementById('presupuesto-descuento').value || 0),
-    porcentaje_iva: parseFloat(document.getElementById('presupuesto-iva').value || 21),
-    forma_pago: document.getElementById('presupuesto-forma-pago').value,
-    notas: document.getElementById('presupuesto-notas').value,
-    condiciones: document.getElementById('presupuesto-condiciones').value,
-    lineas: lineas
-  }
-  try {
-    const response = await fetch(`${API}/presupuestos/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
-    const result = await response.json()
-    if (result.success) {
-      showToast('Presupuesto actualizado correctamente', 'success')
-      closeModal()
-      loadPresupuestos()
-    } else {
-      alert('Error al actualizar: ' + (result.message || 'Error desconocido'))
-    }
-  } catch (error) {
-    console.error('Error:', error)
-    alert('Error al actualizar presupuesto')
-  }
 }
 
 // Funciones para añadir líneas
@@ -2843,25 +2070,7 @@ async function deletePresupuesto(id) {
   }
 }
 
-// Helper: Cargar imagen como base64
-function loadImage(url) {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.crossOrigin = 'Anonymous'
-    img.onload = () => {
-      const canvas = document.createElement('canvas')
-      canvas.width = img.width
-      canvas.height = img.height
-      const ctx = canvas.getContext('2d')
-      ctx.drawImage(img, 0, 0)
-      resolve(canvas.toDataURL('image/jpeg'))
-    }
-    img.onerror = reject
-    img.src = url
-  })
-}
-
-// Descargar PDF con diseño premium
+// Descargar PDF (placeholder - implementar según necesidades)
 async function downloadPresupuestoPDF(id) {
   try {
     // Obtener datos del presupuesto
@@ -2879,111 +2088,136 @@ async function downloadPresupuestoPDF(id) {
     const { jsPDF } = window.jspdf
     const doc = new jsPDF()
     
-    // Configuración de colores minimalistas
-    const primaryColor = [45, 55, 72] // gray-800
-    const secondaryColor = [113, 128, 150] // gray-500
-    const accentColor = [56, 178, 172] // teal-500
-    const lightGray = [247, 250, 252] // gray-50
-    const darkGray = [26, 32, 44] // gray-900
+    // Configuración de colores
+    const primaryColor = [31, 41, 55] // gray-800
+    const secondaryColor = [107, 114, 128] // gray-500
+    const accentColor = [34, 197, 94] // green-500
     
-    let yPos = 10
+    let yPos = 20
     
     // ====================================
-    // HEADER COMPACTO Y LIMPIO
+    // HEADER - Logo y datos de empresa
     // ====================================
     
-    // Logo de Anushka Hogar (más pequeño)
-    try {
-      const logoImg = await loadImage('/static/logo.jpg')
-      doc.addImage(logoImg, 'JPEG', 20, yPos, 28, 20)
-    } catch (e) {
-      console.warn('No se pudo cargar el logo:', e)
-      // Fallback: texto estilizado
-      doc.setFillColor(...primaryColor)
-      doc.rect(20, yPos, 28, 20, 'F')
-      doc.setTextColor(255, 255, 255)
-      doc.setFontSize(10)
-      doc.setFont(undefined, 'bold')
-      doc.text('ANUSHKA', 34, yPos + 11, { align: 'center' })
-      doc.setFontSize(7)
-      doc.text('HOGAR', 34, yPos + 16, { align: 'center' })
-    }
-    
-    // Datos de empresa (compactos)
-    doc.setTextColor(...primaryColor)
-    doc.setFontSize(8)
+    // Logo (si existe) - Placeholder por ahora
+    doc.setFillColor(...primaryColor)
+    doc.rect(20, yPos, 40, 15, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(14)
     doc.setFont(undefined, 'bold')
-    doc.text('Anushka Hogar', 190, yPos + 2, { align: 'right' })
-    doc.setFontSize(7)
-    doc.setFont(undefined, 'normal')
-    doc.setTextColor(...secondaryColor)
-    doc.text('Av. de Monelos 109, 15008 A Coruña', 190, yPos + 7, { align: 'right' })
-    doc.text('Tel: 666777888', 190, yPos + 11, { align: 'right' })
+    doc.text('ANUSHKA', 40, yPos + 9, { align: 'center' })
+    doc.setFontSize(8)
+    doc.text('HOGAR', 40, yPos + 13, { align: 'center' })
     
-    yPos += 22
-    
-    // ====================================
-    // TÍTULO Y DATOS COMPACTOS
-    // ====================================
-    doc.setDrawColor(...secondaryColor)
-    doc.setLineWidth(0.3)
-    doc.line(20, yPos, 190, yPos)
-    yPos += 5
-    
-    // Título presupuesto
+    // Datos de empresa
     doc.setTextColor(...primaryColor)
-    doc.setFontSize(11)
+    doc.setFontSize(9)
+    doc.setFont(undefined, 'normal')
+    doc.text('Anushka Hogar', 170, yPos + 2, { align: 'right' })
+    doc.setFontSize(8)
+    doc.setTextColor(...secondaryColor)
+    doc.text('Av. de Monelos 109', 170, yPos + 7, { align: 'right' })
+    doc.text('15008 A Coruña', 170, yPos + 11, { align: 'right' })
+    
+    yPos += 25
+    
+    // ====================================
+    // TÍTULO DEL DOCUMENTO
+    // ====================================
+    doc.setDrawColor(...primaryColor)
+    doc.setLineWidth(0.5)
+    doc.line(20, yPos, 190, yPos)
+    yPos += 8
+    
+    doc.setTextColor(...primaryColor)
+    doc.setFontSize(16)
     doc.setFont(undefined, 'bold')
     doc.text('PRESUPUESTO', 20, yPos)
     
-    doc.setFontSize(10)
+    doc.setFontSize(12)
     doc.setTextColor(...accentColor)
     doc.text(data.numero_presupuesto, 190, yPos, { align: 'right' })
     
-    yPos += 6
+    yPos += 10
     
-    // Cliente y fecha en una línea compacta
-    doc.setFontSize(8)
-    doc.setFont(undefined, 'normal')
+    // ====================================
+    // INFORMACIÓN DEL CLIENTE
+    // ====================================
+    doc.setFontSize(10)
+    doc.setFont(undefined, 'bold')
     doc.setTextColor(...primaryColor)
-    doc.text(`Cliente: ${data.cliente_nombre} ${data.cliente_apellidos}`, 20, yPos)
+    doc.text('CLIENTE', 20, yPos)
     
+    yPos += 6
+    doc.setFont(undefined, 'normal')
+    doc.setFontSize(9)
+    doc.text(`${data.cliente_nombre} ${data.cliente_apellidos}`, 20, yPos)
+    yPos += 5
     doc.setTextColor(...secondaryColor)
-    doc.text(`Fecha: ${new Date(data.fecha_emision).toLocaleDateString('es-ES')}`, 190, yPos, { align: 'right' })
+    doc.text(data.cliente_direccion || '', 20, yPos)
+    yPos += 5
+    doc.text(`${data.cliente_ciudad || ''} - ${data.cliente_codigo_postal || ''}`, 20, yPos)
+    yPos += 5
+    doc.text(`Tel: ${data.cliente_telefono || ''} | Email: ${data.cliente_email || ''}`, 20, yPos)
     
-    yPos += 4
-    
-    // Dirección compacta
-    doc.setFontSize(7)
-    doc.text(`${data.cliente_direccion || ''}, ${data.cliente_ciudad || ''} - Tel: ${data.cliente_telefono || '666777888'} | Email: ${data.cliente_email || '-'}`, 20, yPos)
+    // Fecha y estado
+    yPos -= 15
+    doc.setTextColor(...primaryColor)
+    doc.setFont(undefined, 'bold')
+    doc.text('FECHA:', 130, yPos)
+    doc.setFont(undefined, 'normal')
+    doc.text(new Date(data.fecha_emision).toLocaleDateString('es-ES'), 150, yPos)
     
     yPos += 5
+    doc.setFont(undefined, 'bold')
+    doc.text('ESTADO:', 130, yPos)
+    doc.setFont(undefined, 'normal')
+    const estados = {
+      'pendiente': 'Pendiente',
+      'enviado': 'Enviado',
+      'aceptado': 'Aceptado',
+      'rechazado': 'Rechazado'
+    }
+    doc.text(estados[data.estado] || data.estado, 150, yPos)
     
-    // Título del trabajo
-    if (data.titulo) {
-      doc.setFontSize(9)
-      doc.setFont(undefined, 'bold')
-      doc.setTextColor(...primaryColor)
-      doc.text(data.titulo, 20, yPos)
-      yPos += 5
+    yPos += 15
+    
+    // ====================================
+    // TÍTULO DEL PRESUPUESTO
+    // ====================================
+    doc.setFontSize(11)
+    doc.setFont(undefined, 'bold')
+    doc.setTextColor(...primaryColor)
+    doc.text(data.titulo || 'Presupuesto', 20, yPos)
+    yPos += 7
+    
+    if (data.descripcion) {
+      doc.setFontSize(8)
+      doc.setFont(undefined, 'normal')
+      doc.setTextColor(...secondaryColor)
+      const splitDesc = doc.splitTextToSize(data.descripcion, 170)
+      doc.text(splitDesc, 20, yPos)
+      yPos += splitDesc.length * 4 + 5
     }
     
     // ====================================
     // LÍNEAS DEL PRESUPUESTO
     // ====================================
     
-    // Función helper para crear tabla minimalista y compacta
+    // Función helper para crear tabla
     const createTable = (title, items, unit) => {
       if (items.length === 0) return
       
-      // Título de sección simple y limpio
-      doc.setFontSize(9)
+      // Título de sección
+      doc.setFillColor(240, 240, 240)
+      doc.rect(20, yPos, 170, 8, 'F')
+      doc.setFontSize(10)
       doc.setFont(undefined, 'bold')
       doc.setTextColor(...primaryColor)
-      doc.text(title.toUpperCase(), 20, yPos)
-      yPos += 5
+      doc.text(title, 22, yPos + 5.5)
+      yPos += 10
       
-      // Tabla compacta con diseño minimalista
+      // Tabla
       const tableData = items.map(item => [
         item.concepto,
         item.cantidad.toFixed(2),
@@ -2994,114 +2228,115 @@ async function downloadPresupuestoPDF(id) {
       
       doc.autoTable({
         startY: yPos,
-        head: [['Concepto', 'Cant.', 'Unidad', 'Precio', 'Subtotal']],
+        head: [['Concepto', 'Cantidad', 'Unidad', 'Precio', 'Subtotal']],
         body: tableData,
         theme: 'plain',
         styles: {
-          fontSize: 7,
-          cellPadding: 2,
-          lineColor: [230, 230, 230],
-          lineWidth: 0.1
+          fontSize: 8,
+          cellPadding: 3
         },
         headStyles: {
-          fillColor: lightGray,
-          textColor: primaryColor,
-          fontStyle: 'bold',
-          halign: 'center',
-          fontSize: 7
+          fillColor: primaryColor,
+          textColor: [255, 255, 255],
+          fontStyle: 'bold'
         },
         columnStyles: {
-          0: { cellWidth: 90, halign: 'left' },
-          1: { cellWidth: 18, halign: 'right' },
-          2: { cellWidth: 18, halign: 'center' },
+          0: { cellWidth: 85 },
+          1: { cellWidth: 20, halign: 'right' },
+          2: { cellWidth: 20, halign: 'center' },
           3: { cellWidth: 22, halign: 'right' },
-          4: { cellWidth: 24, halign: 'right', fontStyle: 'bold' }
+          4: { cellWidth: 25, halign: 'right' }
         },
         margin: { left: 20, right: 20 }
       })
       
-      yPos = doc.lastAutoTable.finalY + 5
+      yPos = doc.lastAutoTable.finalY + 8
     }
     
     // Telas
     if (telas.length > 0) {
-      createTable('Telas', telas, 'metros')
+      createTable('🧵 TELAS', telas, 'metros')
     }
     
     // Materiales
     if (materiales.length > 0) {
-      createTable('Materiales', materiales, 'ud')
+      if (yPos > 240) {
+        doc.addPage()
+        yPos = 20
+      }
+      createTable('🔧 MATERIALES', materiales, 'ud')
     }
     
     // Confección
     if (confeccion.length > 0) {
-      createTable('Confeccion', confeccion, 'horas')
+      if (yPos > 240) {
+        doc.addPage()
+        yPos = 20
+      }
+      createTable('✂️ CONFECCIÓN', confeccion, 'horas')
     }
     
     // Instalación
     if (instalacion.length > 0) {
-      createTable('Instalacion', instalacion, 'horas')
+      if (yPos > 240) {
+        doc.addPage()
+        yPos = 20
+      }
+      createTable('🔨 INSTALACIÓN', instalacion, 'horas')
     }
     
     // ====================================
-    // TOTALES COMPACTOS
+    // TOTALES
     // ====================================
     
-    yPos += 3
+    // Verificar espacio para totales
+    if (yPos > 230) {
+      doc.addPage()
+      yPos = 20
+    }
     
-    // Caja de totales minimalista
-    const boxX = 125
-    const boxY = yPos
-    const boxWidth = 65
-    
-    // Línea superior
-    doc.setDrawColor(...secondaryColor)
-    doc.setLineWidth(0.2)
-    doc.line(boxX, boxY, boxX + boxWidth, boxY)
-    
-    yPos += 4
+    yPos += 5
     
     // Subtotal
-    doc.setFontSize(7)
+    doc.setFontSize(9)
     doc.setFont(undefined, 'normal')
     doc.setTextColor(...secondaryColor)
-    doc.text('Subtotal:', boxX + 2, yPos, { align: 'left' })
+    doc.text('Subtotal:', 140, yPos, { align: 'right' })
     doc.setTextColor(...primaryColor)
-    doc.text(`€${data.subtotal.toFixed(2)}`, boxX + boxWidth - 2, yPos, { align: 'right' })
-    yPos += 4
+    doc.text(`€${data.subtotal.toFixed(2)}`, 190, yPos, { align: 'right' })
+    yPos += 6
     
-    // Descuento (si existe)
+    // Descuento
     if (data.descuento_porcentaje > 0) {
       doc.setTextColor(...secondaryColor)
-      doc.text(`Descuento (${data.descuento_porcentaje}%):`, boxX + 2, yPos, { align: 'left' })
-      doc.setTextColor(220, 38, 38)
-      doc.text(`-€${data.descuento_importe.toFixed(2)}`, boxX + boxWidth - 2, yPos, { align: 'right' })
-      yPos += 4
+      doc.text(`Descuento (${data.descuento_porcentaje}%):`, 140, yPos, { align: 'right' })
+      doc.setTextColor(...accentColor)
+      doc.text(`-€${data.descuento_importe.toFixed(2)}`, 190, yPos, { align: 'right' })
+      yPos += 6
     }
     
     // IVA
     doc.setTextColor(...secondaryColor)
-    doc.text(`IVA (${data.porcentaje_iva}%):`, boxX + 2, yPos, { align: 'left' })
+    doc.text(`IVA (${data.porcentaje_iva}%):`, 140, yPos, { align: 'right' })
     doc.setTextColor(...primaryColor)
-    doc.text(`€${data.importe_iva.toFixed(2)}`, boxX + boxWidth - 2, yPos, { align: 'right' })
-    yPos += 4
+    doc.text(`€${data.importe_iva.toFixed(2)}`, 190, yPos, { align: 'right' })
+    yPos += 8
     
     // Línea separadora
-    doc.setDrawColor(...accentColor)
+    doc.setDrawColor(...primaryColor)
     doc.setLineWidth(0.5)
-    doc.line(boxX, yPos, boxX + boxWidth, yPos)
-    yPos += 5
+    doc.line(120, yPos, 190, yPos)
+    yPos += 8
     
     // TOTAL FINAL
     doc.setFillColor(...accentColor)
-    doc.rect(boxX, yPos - 4, boxWidth, 8, 'F')
-    
-    doc.setFontSize(9)
+    doc.rect(120, yPos - 6, 70, 10, 'F')
+    doc.setFontSize(12)
     doc.setFont(undefined, 'bold')
     doc.setTextColor(255, 255, 255)
-    doc.text('TOTAL:', boxX + 2, yPos, { align: 'left' })
-    doc.setFontSize(11)
-    doc.text(`€${data.total.toFixed(2)}`, boxX + boxWidth - 2, yPos, { align: 'right' })
+    doc.text('TOTAL:', 140, yPos, { align: 'right' })
+    doc.setFontSize(14)
+    doc.text(`€${data.total.toFixed(2)}`, 188, yPos, { align: 'right' })
     
     yPos += 15
     
@@ -3153,30 +2388,21 @@ async function downloadPresupuestoPDF(id) {
     }
     
     // ====================================
-    // PIE DE PÁGINA MINIMALISTA
+    // PIE DE PÁGINA (en todas las páginas)
     // ====================================
     const pageCount = doc.internal.getNumberOfPages()
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i)
-      
-      // Línea superior simple
-      doc.setDrawColor(...secondaryColor)
-      doc.setLineWidth(0.2)
-      doc.line(20, 285, 190, 285)
-      
-      // Texto del pie de página compacto
-      doc.setFontSize(6)
-      doc.setFont(undefined, 'normal')
+      doc.setFontSize(7)
       doc.setTextColor(...secondaryColor)
       doc.text(
-        `Anushka Hogar - Av. de Monelos 109, 15008 A Coruña - Tel: 666777888`,
+        `Página ${i} de ${pageCount}`,
         105,
-        289,
+        287,
         { align: 'center' }
       )
-      
       doc.text(
-        `Página ${i} de ${pageCount}`,
+        'Anushka Hogar - Av. de Monelos 109, 15008 A Coruña',
         105,
         292,
         { align: 'center' }
@@ -3195,736 +2421,4 @@ async function downloadPresupuestoPDF(id) {
     console.error('Error al generar PDF:', error)
     showToast('Error al generar el PDF', 'error')
   }
-}
-
-// ============================================
-// NAVEGACIÓN BIDIRECCIONAL CLIENTES ↔ PRESUPUESTOS
-// ============================================
-
-// Ver presupuestos de un cliente específico
-async function showClientePresupuestos(clienteId) {
-  try {
-    // Obtener datos del cliente
-    const clienteResponse = await axios.get(`${API}/clientes/${clienteId}`)
-    const cliente = clienteResponse.data.cliente
-    
-    // Obtener presupuestos del cliente
-    const presupuestosResponse = await axios.get(`${API}/presupuestos?cliente_id=${clienteId}`)
-    const presupuestos = presupuestosResponse.data
-    
-    const estadoColor = {
-      pendiente: 'bg-yellow-100 text-yellow-800',
-      enviado: 'bg-blue-100 text-blue-800',
-      aceptado: 'bg-green-100 text-green-800',
-      rechazado: 'bg-red-100 text-red-800'
-    }
-    
-    const html = `
-      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) closeModal()">
-        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-5xl w-full max-h-[90vh] overflow-y-auto">
-          <div class="flex justify-between items-start mb-6">
-            <div>
-              <h3 class="text-2xl font-bold text-gray-800">
-                <i class="fas fa-file-alt text-purple-600 mr-2"></i>
-                Presupuestos de ${cliente.nombre} ${cliente.apellidos}
-              </h3>
-              <p class="text-sm text-gray-600 mt-1">
-                <i class="fas fa-phone mr-1"></i>${cliente.telefono}
-                ${cliente.email ? `<span class="ml-3"><i class="fas fa-envelope mr-1"></i>${cliente.email}</span>` : ''}
-              </p>
-            </div>
-            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-              <i class="fas fa-times text-2xl"></i>
-            </button>
-          </div>
-          
-          ${presupuestos.length === 0 ? `
-            <div class="text-center py-12">
-              <i class="fas fa-inbox text-gray-300 text-6xl mb-4"></i>
-              <p class="text-gray-500 text-lg mb-6">Este cliente no tiene presupuestos aún</p>
-              <button onclick="closeModal(); showPresupuestoForm(null, ${clienteId})" 
-                      class="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-6 py-3 rounded-lg hover:shadow-lg">
-                <i class="fas fa-plus mr-2"></i>Crear Primer Presupuesto
-              </button>
-            </div>
-          ` : `
-            <div class="mb-4">
-              <button onclick="closeModal(); showPresupuestoForm(null, ${clienteId})" 
-                      class="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-4 py-2 rounded-lg hover:shadow-lg text-sm">
-                <i class="fas fa-plus mr-2"></i>Nuevo Presupuesto
-              </button>
-            </div>
-            
-            <div class="overflow-x-auto">
-              <table class="min-w-full bg-white border rounded-lg">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Número</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Título</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                  ${presupuestos.map(p => `
-                    <tr class="hover:bg-gray-50">
-                      <td class="px-4 py-3 text-sm font-medium text-gray-900">${p.numero_presupuesto}</td>
-                      <td class="px-4 py-3 text-sm text-gray-900">${p.titulo}</td>
-                      <td class="px-4 py-3 text-sm text-gray-500">${new Date(p.fecha_emision).toLocaleDateString()}</td>
-                      <td class="px-4 py-3 text-sm font-semibold text-green-600">€${parseFloat(p.total).toFixed(2)}</td>
-                      <td class="px-4 py-3">
-                        <span class="px-2 py-1 text-xs font-semibold rounded-full ${estadoColor[p.estado]}">${p.estado}</span>
-                      </td>
-                      <td class="px-4 py-3 text-sm space-x-2">
-                        <button onclick="event.stopPropagation(); viewPresupuesto(${p.id})" 
-                                class="text-blue-600 hover:text-blue-800" title="Ver detalles">
-                          <i class="fas fa-eye"></i>
-                        </button>
-                        <button onclick="event.stopPropagation(); closeModal(); editPresupuesto(${p.id})" 
-                                class="text-orange-600 hover:text-orange-800" title="Editar">
-                          <i class="fas fa-edit"></i>
-                        </button>
-                        <button onclick="event.stopPropagation(); downloadPresupuestoPDF(${p.id})" 
-                                class="text-green-600 hover:text-green-800" title="Descargar PDF">
-                          <i class="fas fa-file-pdf"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-            
-            <div class="mt-6 p-4 bg-gray-50 rounded-lg">
-              <div class="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <p class="text-2xl font-bold text-gray-800">${presupuestos.length}</p>
-                  <p class="text-sm text-gray-600">Total Presupuestos</p>
-                </div>
-                <div>
-                  <p class="text-2xl font-bold text-green-600">
-                    €${presupuestos.reduce((sum, p) => sum + parseFloat(p.total), 0).toFixed(2)}
-                  </p>
-                  <p class="text-sm text-gray-600">Valor Total</p>
-                </div>
-                <div>
-                  <p class="text-2xl font-bold text-teal-600">
-                    ${presupuestos.filter(p => p.estado === 'aceptado').length}
-                  </p>
-                  <p class="text-sm text-gray-600">Aceptados</p>
-                </div>
-              </div>
-            </div>
-          `}
-        </div>
-      </div>
-    `
-    
-    document.body.insertAdjacentHTML('beforeend', html)
-  } catch (error) {
-    console.error('Error al cargar presupuestos del cliente:', error)
-    showToast('Error al cargar presupuestos del cliente', 'error')
-  }
-}
-
-// Ver información del cliente desde presupuestos
-async function showClienteInfo(clienteId) {
-  try {
-    const response = await axios.get(`${API}/clientes/${clienteId}`)
-    const cliente = response.data.cliente
-    
-    // Obtener cantidad de presupuestos del cliente
-    const presupuestosResponse = await axios.get(`${API}/presupuestos?cliente_id=${clienteId}`)
-    const presupuestos = presupuestosResponse.data
-    
-    const html = `
-      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) closeModal()">
-        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <div class="flex justify-between items-start mb-6">
-            <h3 class="text-2xl font-bold text-gray-800">
-              <i class="fas fa-user text-blue-600 mr-2"></i>
-              Información del Cliente
-            </h3>
-            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-              <i class="fas fa-times text-2xl"></i>
-            </button>
-          </div>
-          
-          <div class="space-y-4 mb-6">
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <h4 class="text-lg font-bold text-gray-800 mb-3">
-                ${cliente.nombre} ${cliente.apellidos}
-              </h4>
-              <div class="space-y-2 text-sm">
-                ${cliente.telefono ? `
-                  <p><i class="fas fa-phone w-5 text-gray-400"></i> ${cliente.telefono}</p>
-                ` : ''}
-                ${cliente.email ? `
-                  <p><i class="fas fa-envelope w-5 text-gray-400"></i> ${cliente.email}</p>
-                ` : ''}
-                ${cliente.direccion ? `
-                  <p><i class="fas fa-map-marker-alt w-5 text-gray-400"></i> ${cliente.direccion}</p>
-                ` : ''}
-                ${cliente.ciudad ? `
-                  <p><i class="fas fa-city w-5 text-gray-400"></i> ${cliente.ciudad} ${cliente.codigo_postal ? `(${cliente.codigo_postal})` : ''}</p>
-                ` : ''}
-              </div>
-            </div>
-            
-            ${cliente.notas ? `
-              <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                <p class="text-sm font-medium text-gray-700 mb-1">
-                  <i class="fas fa-sticky-note text-yellow-600 mr-2"></i>Notas
-                </p>
-                <p class="text-sm text-gray-600">${cliente.notas}</p>
-              </div>
-            ` : ''}
-            
-            <div class="bg-teal-50 p-4 rounded-lg border border-teal-200">
-              <p class="text-sm font-medium text-gray-700 mb-2">
-                <i class="fas fa-chart-line text-teal-600 mr-2"></i>Resumen de Presupuestos
-              </p>
-              <div class="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <p class="text-2xl font-bold text-gray-800">${presupuestos.length}</p>
-                  <p class="text-xs text-gray-600">Total presupuestos</p>
-                </div>
-                <div>
-                  <p class="text-2xl font-bold text-green-600">${presupuestos.filter(p => p.estado === 'aceptado').length}</p>
-                  <p class="text-xs text-gray-600">Aceptados</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="flex gap-3">
-            <button onclick="closeModal(); showClientePresupuestos(${clienteId})" 
-                    class="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-lg hover:shadow-lg font-medium">
-              <i class="fas fa-file-alt mr-2"></i>Ver Todos los Presupuestos
-            </button>
-            <button onclick="closeModal(); showPresupuestoForm(null, ${clienteId})" 
-                    class="flex-1 bg-gradient-to-r from-teal-500 to-teal-600 text-white px-6 py-3 rounded-lg hover:shadow-lg font-medium">
-              <i class="fas fa-plus mr-2"></i>Nuevo Presupuesto
-            </button>
-          </div>
-          
-          <button onclick="closeModal()" 
-                  class="w-full mt-3 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium">
-            Cerrar
-          </button>
-        </div>
-      </div>
-    `
-    
-    document.body.insertAdjacentHTML('beforeend', html)
-  } catch (error) {
-    console.error('Error al cargar información del cliente:', error)
-    showToast('Error al cargar información del cliente', 'error')
-  }
-}
-
-// ============================================
-// CONVERTIR PRESUPUESTO A TRABAJO
-// ============================================
-
-async function convertirPresupuestoATrabajo(presupuestoId) {
-  if (!confirm('¿Convertir este presupuesto aceptado en un trabajo?\n\nSe creará un trabajo pendiente con todas las fases del presupuesto.')) {
-    return
-  }
-  
-  try {
-    const response = await axios.post(`${API}/presupuestos/${presupuestoId}/convertir-a-trabajo`)
-    
-    if (response.data.success) {
-      showToast('¡Trabajo creado correctamente!', 'success')
-      loadPresupuestos()
-      
-      // Preguntar si quiere ir al trabajo
-      if (confirm('¿Quieres ver el trabajo creado?')) {
-        showTab('trabajos')
-        setTimeout(() => {
-          viewTrabajo(response.data.trabajo_id)
-        }, 500)
-      }
-    }
-  } catch (error) {
-    console.error('Error al convertir presupuesto:', error)
-    const mensaje = error.response?.data?.error || 'Error al convertir presupuesto a trabajo'
-    showToast(mensaje, 'error')
-  }
-}
-
-// ============================================
-// GESTIÓN DE FASES DE TRABAJO (CONTROL MANUAL)
-// ============================================
-
-// Toggle manual de fase (checkbox)
-async function toggleFase(trabajoId, faseId, nombreFase, checked) {
-  try {
-    const nuevoEstado = checked ? 'completado' : 'pendiente'
-    
-    await axios.put(`${API}/trabajos/${faseId}/fases/${faseId}`, {
-      estado: nuevoEstado,
-      notas: '' // Las notas se mantienen
-    })
-    
-    showToast(checked ? `✓ ${nombreFase} marcada como completada` : `${nombreFase} marcada como pendiente`, 'success')
-    
-    // Recargar modal para actualizar UI
-    closeModal()
-    setTimeout(() => viewTrabajo(trabajoId), 300)
-    
-    // Recargar lista de trabajos
-    if (document.querySelector('.tab-button[onclick*="trabajos"]')?.classList.contains('active')) {
-      loadTrabajos()
-    }
-  } catch (error) {
-    console.error('Error al cambiar estado de fase:', error)
-    showToast('Error al actualizar la fase', 'error')
-    // Revertir checkbox
-    const checkbox = document.getElementById(`fase-${faseId}`)
-    if (checkbox) checkbox.checked = !checked
-  }
-}
-
-// Editar notas de una fase
-async function editarNotasFase(trabajoId, faseId, nombreFase, notasActuales) {
-  const notas = prompt(`Notas para "${nombreFase}":`, notasActuales)
-  
-  if (notas === null) return // Usuario canceló
-  
-  try {
-    // Obtener estado actual de la fase
-    const { data: fases } = await axios.get(`${API}/trabajos/${trabajoId}/fases`)
-    const fase = fases.find(f => f.id === faseId)
-    
-    await axios.put(`${API}/trabajos/${trabajoId}/fases/${faseId}`, {
-      estado: fase.estado,
-      notas: notas
-    })
-    
-    showToast('Notas actualizadas correctamente', 'success')
-    
-    // Recargar modal
-    closeModal()
-    setTimeout(() => viewTrabajo(trabajoId), 300)
-  } catch (error) {
-    console.error('Error al actualizar notas:', error)
-    showToast('Error al guardar las notas', 'error')
-  }
-}
-
-// Asignar personal a una fase
-async function asignarPersonalAFase(trabajoId, faseId, personalId) {
-  try {
-    // Obtener estado actual de la fase
-    const { data: fases } = await axios.get(`${API}/trabajos/${trabajoId}/fases`)
-    const fase = fases.find(f => f.id === faseId)
-    
-    if (!fase) {
-      showToast('Error: Fase no encontrada', 'error')
-      return
-    }
-    
-    await axios.put(`${API}/trabajos/${trabajoId}/fases/${faseId}`, {
-      estado: fase.estado,
-      notas: fase.notas,
-      personal_id: personalId || null
-    })
-    
-    if (personalId) {
-      showToast('✓ Personal asignado correctamente', 'success')
-    } else {
-      showToast('Personal removido de la fase', 'success')
-    }
-    
-    // Recargar modal
-    closeModal()
-    setTimeout(() => viewTrabajo(trabajoId), 300)
-  } catch (error) {
-    console.error('Error al asignar personal:', error)
-    showToast('Error al asignar personal a la fase', 'error')
-  }
-}
-
-// ============================================
-// GESTIÓN DE CATEGORÍAS
-// ============================================
-
-let categoriasCache = []
-
-async function loadCategorias() {
-  try {
-    const { data } = await axios.get(`${API}/categorias`)
-    categoriasCache = data
-    return data
-  } catch (error) {
-    console.error('Error cargando categorías:', error)
-    return []
-  }
-}
-
-async function showGestionCategorias() {
-  await loadCategorias()
-  
-  showModal(`
-    <div class="space-y-6">
-      <div class="flex justify-between items-center">
-        <h3 class="text-xl font-bold">
-          <i class="fas fa-tags text-teal-600 mr-2"></i>
-          Gestión de Categorías
-        </h3>
-        <button onclick="showCategoriaForm()" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">
-          <i class="fas fa-plus mr-2"></i>Nueva Categoría
-        </button>
-      </div>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="categorias-grid">
-        ${categoriasCache.map(cat => `
-          <div class="border rounded-lg p-4 hover:shadow-md transition-shadow" style="border-left: 4px solid ${cat.color}">
-            <div class="flex justify-between items-start mb-2">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background-color: ${cat.color}20">
-                  <i class="fas ${cat.icono} text-xl" style="color: ${cat.color}"></i>
-                </div>
-                <div>
-                  <h4 class="font-semibold text-gray-900">${cat.nombre}</h4>
-                  <p class="text-xs text-gray-500">Orden: ${cat.orden}</p>
-                </div>
-              </div>
-              <div class="flex gap-2">
-                <button onclick="editCategoria(${cat.id})" class="text-blue-600 hover:text-blue-800">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button onclick="deleteCategoria(${cat.id}, '${cat.nombre}')" class="text-red-600 hover:text-red-800">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </div>
-            </div>
-            ${cat.descripcion ? `<p class="text-sm text-gray-600 mt-2">${cat.descripcion}</p>` : ''}
-            
-            <div class="mt-3 pt-3 border-t border-gray-200">
-              <button onclick="closeModal(); setTimeout(() => showStockForm(null, ${cat.id}), 300)" 
-                      class="w-full px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors text-sm font-medium">
-                <i class="fas fa-plus mr-2"></i>Añadir Artículo en ${cat.nombre}
-              </button>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `, 'max-w-4xl')
-}
-
-async function showCategoriaForm(id = null) {
-  const isEdit = id !== null
-  let categoria = {
-    nombre: '',
-    descripcion: '',
-    color: '#6B7280',
-    icono: 'fa-box',
-    orden: 0
-  }
-  
-  if (isEdit) {
-    categoria = categoriasCache.find(c => c.id === id)
-  }
-  
-  showModal(`
-    <h3 class="text-xl font-bold mb-6">
-      <i class="fas ${isEdit ? 'fa-edit' : 'fa-plus'} text-teal-600 mr-2"></i>
-      ${isEdit ? 'Editar' : 'Nueva'} Categoría
-    </h3>
-    <form id="categoria-form" class="space-y-4">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
-        <input type="text" name="nombre" value="${categoria.nombre}" required 
-               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
-      </div>
-      
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-        <textarea name="descripcion" rows="2" 
-                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">${categoria.descripcion || ''}</textarea>
-      </div>
-      
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
-          <input type="color" name="color" value="${categoria.color}" 
-                 class="w-full h-10 px-2 py-1 border rounded-lg cursor-pointer">
-        </div>
-        
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Orden</label>
-          <input type="number" name="orden" value="${categoria.orden}" min="0"
-                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
-        </div>
-      </div>
-      
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Icono (FontAwesome)</label>
-        <div class="grid grid-cols-6 gap-2">
-          ${['fa-box', 'fa-cut', 'fa-grip-lines', 'fa-paperclip', 'fa-layer-group', 'fa-scissors', 
-             'fa-tools', 'fa-ruler', 'fa-paint-brush', 'fa-store', 'fa-tag', 'fa-shopping-bag'].map(icon => `
-            <button type="button" onclick="selectIcon('${icon}')" 
-                    class="icon-selector p-3 border rounded-lg hover:bg-gray-50 ${categoria.icono === icon ? 'bg-teal-50 border-teal-500' : ''}"
-                    data-icon="${icon}">
-              <i class="fas ${icon} text-xl"></i>
-            </button>
-          `).join('')}
-        </div>
-        <input type="hidden" name="icono" id="selected-icon" value="${categoria.icono}">
-      </div>
-      
-      <div class="flex justify-end gap-3 mt-6">
-        <button type="button" onclick="closeModal()" 
-                class="px-6 py-2 border rounded-lg hover:bg-gray-50">
-          Cancelar
-        </button>
-        <button type="submit" 
-                class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">
-          <i class="fas ${isEdit ? 'fa-save' : 'fa-plus'} mr-2"></i>
-          ${isEdit ? 'Guardar' : 'Crear'}
-        </button>
-      </div>
-    </form>
-  `, 'max-w-2xl')
-  
-  // Handler para el formulario
-  document.getElementById('categoria-form').addEventListener('submit', async (e) => {
-    e.preventDefault()
-    const formData = new FormData(e.target)
-    const data = Object.fromEntries(formData.entries())
-    
-    try {
-      if (isEdit) {
-        await axios.put(`${API}/categorias/${id}`, data)
-        showToast('✓ Categoría actualizada correctamente', 'success')
-      } else {
-        await axios.post(`${API}/categorias`, data)
-        showToast('✓ Categoría creada correctamente', 'success')
-      }
-      closeModal()
-      showGestionCategorias()
-    } catch (error) {
-      console.error('Error guardando categoría:', error)
-      showToast('Error al guardar la categoría', 'error')
-    }
-  })
-}
-
-function selectIcon(icon) {
-  document.getElementById('selected-icon').value = icon
-  document.querySelectorAll('.icon-selector').forEach(btn => {
-    btn.classList.remove('bg-teal-50', 'border-teal-500')
-  })
-  event.target.closest('.icon-selector').classList.add('bg-teal-50', 'border-teal-500')
-}
-
-async function editCategoria(id) {
-  closeModal()
-  setTimeout(() => showCategoriaForm(id), 300)
-}
-
-async function deleteCategoria(id, nombre) {
-  if (!confirm(`¿Eliminar la categoría "${nombre}"?\n\nNota: Solo se puede eliminar si no tiene productos asociados.`)) {
-    return
-  }
-  
-  try {
-    const response = await axios.delete(`${API}/categorias/${id}`)
-    showToast('✓ Categoría eliminada correctamente', 'success')
-    showGestionCategorias()
-  } catch (error) {
-    if (error.response && error.response.data && error.response.data.message) {
-      showToast(error.response.data.message, 'error')
-    } else {
-      showToast('Error al eliminar la categoría', 'error')
-    }
-  }
-}
-
-// ============================================
-// CONSULTOR IA - GALI
-// ============================================
-
-// Enviar mensaje al chat
-async function sendMessage() {
-  const input = document.getElementById('chat-input')
-  const message = input.value.trim()
-  
-  if (!message) return
-  
-  // Limpiar input
-  input.value = ''
-  
-  // Mostrar mensaje del usuario
-  addMessageToChat('user', message)
-  
-  // Mostrar indicador de "escribiendo..."
-  addTypingIndicator()
-  
-  try {
-    // Obtener contexto del sistema
-    const context = {
-      clientes_total: currentData.clientes.length,
-      trabajos_activos: currentData.trabajos.filter(t => t.estado === 'pendiente' || t.estado === 'en_proceso').length,
-      stock_bajo: currentData.stock.filter(s => s.cantidad_actual <= s.cantidad_minima).length
-    }
-    
-    // Llamar a la API
-    const response = await axios.post(`${API}/chat`, {
-      message: message,
-      context: context
-    })
-    
-    // Eliminar indicador de escribiendo
-    removeTypingIndicator()
-    
-    // Mostrar respuesta de GALI
-    if (response.data.success) {
-      addMessageToChat('gali', response.data.response)
-    } else {
-      addMessageToChat('gali', 'Lo siento, hubo un error. Por favor intenta de nuevo.')
-    }
-    
-  } catch (error) {
-    console.error('Error en chat:', error)
-    removeTypingIndicator()
-    addMessageToChat('gali', 'Lo siento, hubo un error de conexión. Por favor intenta de nuevo.')
-  }
-  
-  // Scroll al final
-  scrollChatToBottom()
-}
-
-// Enviar pregunta rápida (botones predefinidos)
-function sendQuickQuestion(question) {
-  const input = document.getElementById('chat-input')
-  input.value = question
-  sendMessage()
-}
-
-// Añadir mensaje al chat
-function addMessageToChat(sender, text) {
-  const chatMessages = document.getElementById('chat-messages')
-  
-  const messageDiv = document.createElement('div')
-  messageDiv.className = 'mb-4 animate-fade-in'
-  
-  if (sender === 'user') {
-    messageDiv.innerHTML = `
-      <div class="flex items-start gap-3 justify-end">
-        <div class="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg p-4 shadow-sm max-w-xl">
-          <p class="text-white">${escapeHtml(text)}</p>
-        </div>
-        <div class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
-          <i class="fas fa-user text-white"></i>
-        </div>
-      </div>
-    `
-  } else {
-    // Convertir markdown básico a HTML
-    const formattedText = formatMarkdown(text)
-    
-    messageDiv.innerHTML = `
-      <div class="flex items-start gap-3">
-        <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-          <i class="fas fa-robot text-white"></i>
-        </div>
-        <div class="bg-white rounded-lg p-4 shadow-sm max-w-3xl">
-          ${formattedText}
-        </div>
-      </div>
-    `
-  }
-  
-  chatMessages.appendChild(messageDiv)
-}
-
-// Añadir indicador de "escribiendo..."
-function addTypingIndicator() {
-  const chatMessages = document.getElementById('chat-messages')
-  
-  const typingDiv = document.createElement('div')
-  typingDiv.id = 'typing-indicator'
-  typingDiv.className = 'mb-4'
-  typingDiv.innerHTML = `
-    <div class="flex items-start gap-3">
-      <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-        <i class="fas fa-robot text-white"></i>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow-sm">
-        <div class="flex gap-1">
-          <div class="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style="animation-delay: 0ms"></div>
-          <div class="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style="animation-delay: 150ms"></div>
-          <div class="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style="animation-delay: 300ms"></div>
-        </div>
-      </div>
-    </div>
-  `
-  
-  chatMessages.appendChild(typingDiv)
-  scrollChatToBottom()
-}
-
-// Eliminar indicador de "escribiendo..."
-function removeTypingIndicator() {
-  const indicator = document.getElementById('typing-indicator')
-  if (indicator) {
-    indicator.remove()
-  }
-}
-
-// Scroll al final del chat
-function scrollChatToBottom() {
-  const chatMessages = document.getElementById('chat-messages')
-  chatMessages.scrollTop = chatMessages.scrollHeight
-}
-
-// Escapar HTML para evitar XSS
-function escapeHtml(text) {
-  const div = document.createElement('div')
-  div.textContent = text
-  return div.innerHTML
-}
-
-// Formatear markdown básico a HTML
-function formatMarkdown(text) {
-  let html = escapeHtml(text)
-  
-  // Negritas: **texto** o __texto__
-  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-  html = html.replace(/__(.+?)__/g, '<strong>$1</strong>')
-  
-  // Cursiva: *texto* o _texto_
-  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>')
-  html = html.replace(/_(.+?)_/g, '<em>$1</em>')
-  
-  // Saltos de línea
-  html = html.replace(/\n\n/g, '</p><p class="mt-3">')
-  html = html.replace(/\n/g, '<br>')
-  
-  // Enlaces: [texto](url)
-  html = html.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" class="text-purple-600 underline">$1</a>')
-  
-  // Listas con viñetas: - item o * item
-  html = html.replace(/^[\-\*] (.+)$/gm, '<li class="ml-4">$1</li>')
-  html = html.replace(/(<li.*<\/li>)/s, '<ul class="list-disc list-inside space-y-1 text-gray-700 my-2">$1</ul>')
-  
-  // Listas numeradas: 1. item
-  html = html.replace(/^\d+\. (.+)$/gm, '<li class="ml-4">$1</li>')
-  
-  // Títulos: ## Título
-  html = html.replace(/^## (.+)$/gm, '<h3 class="text-lg font-bold text-gray-900 mt-3 mb-2">$1</h3>')
-  
-  // Código inline: `código`
-  html = html.replace(/`(.+?)`/g, '<code class="bg-gray-100 px-2 py-1 rounded text-sm text-purple-600">$1</code>')
-  
-  // Emojis y iconos (mantener tal cual)
-  
-  return '<div class="text-gray-800">' + html + '</div>'
 }

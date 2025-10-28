@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Presupuestos</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
+        .test { margin: 10px 0; padding: 10px; background: #000; border: 1px solid #0f0; }
+        .pass { color: #0f0; }
+        .fail { color: #f00; }
+        .info { color: #ff0; }
+    </style>
+</head>
+<body>
+    <h1>🔍 TEST DIAGNÓSTICO - PRESUPUESTOS</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results')
+        
+        function addTest(name, status, message) {
+            const div = document.createElement('div')
+            div.className = 'test'
+            const statusClass = status ? 'pass' : 'fail'
+            const statusIcon = status ? '✅' : '❌'
+            div.innerHTML = `
+                <strong>${statusIcon} ${name}</strong><br>
+                <span class="${statusClass}">${message}</span>
+            `
+            results.appendChild(div)
+        }
+        
+        async function runTests() {
+            // Test 1: API Endpoint
+            try {
+                const response = await fetch('/api/presupuestos')
+                const status = response.status
+                if (status === 200) {
+                    const data = await response.json()
+                    addTest('API GET /api/presupuestos', true, `HTTP ${status} - ${data.length} presupuestos encontrados`)
+                } else {
+                    addTest('API GET /api/presupuestos', false, `HTTP ${status} - API no responde correctamente`)
+                }
+            } catch (error) {
+                addTest('API GET /api/presupuestos', false, `Error: ${error.message}`)
+            }
+            
+            // Test 2: Script loading
+            const scripts = Array.from(document.querySelectorAll('script')).map(s => s.src)
+            const hasAppV2 = scripts.some(s => s.includes('app-v2.js'))
+            addTest('Script app-v2.js', hasAppV2, hasAppV2 ? 'app-v2.js está cargado' : 'app-v2.js NO está cargado')
+            
+            const hasJsPDF = scripts.some(s => s.includes('jspdf'))
+            addTest('Library jsPDF', hasJsPDF, hasJsPDF ? 'jsPDF está cargado' : 'jsPDF NO está cargado')
+            
+            // Test 3: Funciones JavaScript
+            setTimeout(() => {
+                const hasLoadPresupuestos = typeof loadPresupuestos === 'function'
+                addTest('Function loadPresupuestos()', hasLoadPresupuestos, hasLoadPresupuestos ? 'Función existe' : 'Función NO existe')
+                
+                const hasViewPresupuesto = typeof viewPresupuesto === 'function'
+                addTest('Function viewPresupuesto()', hasViewPresupuesto, hasViewPresupuesto ? 'Función existe' : 'Función NO existe')
+                
+                const hasShowModal = typeof showModal === 'function'
+                addTest('Function showModal()', hasShowModal, hasShowModal ? 'Función existe' : 'Función NO existe')
+                
+                const hasDownloadPDF = typeof downloadPresupuestoPDF === 'function'
+                addTest('Function downloadPresupuestoPDF()', hasDownloadPDF, hasDownloadPDF ? 'Función existe' : 'Función NO existe')
+                
+                // Test 4: HTML Elements
+                const presupuestosTab = document.getElementById('presupuestos-tab')
+                addTest('HTML Element #presupuestos-tab', !!presupuestosTab, presupuestosTab ? 'Tab content existe' : 'Tab content NO existe')
+                
+                const presupuestosList = document.getElementById('presupuestos-lista')
+                addTest('HTML Element #presupuestos-lista', !!presupuestosList, presupuestosList ? 'Lista container existe' : 'Lista container NO existe')
+                
+                const presupuestosButton = document.querySelector('button[onclick*="presupuestos"]')
+                addTest('HTML Button presupuestos', !!presupuestosButton, presupuestosButton ? 'Botón de navegación existe' : 'Botón de navegación NO existe')
+                
+                // Test 5: Console logs
+                const div = document.createElement('div')
+                div.className = 'test info'
+                div.innerHTML = `
+                    <strong>📋 INSTRUCCIONES:</strong><br>
+                    1. Abre la consola (F12)<br>
+                    2. Busca mensajes "✅ Botón Presupuestos inyectado"<br>
+                    3. Si no aparecen, el DOMContentLoaded falló
+                `
+                results.appendChild(div)
+            }, 1000)
+        }
+        
+        runTests()
+    </script>
+</body>
+</html>

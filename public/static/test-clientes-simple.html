@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Clientes Simple</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">🧪 Test Clientes - Diagnóstico</h1>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">Paso 1: Test API</h2>
+            <button onclick="testAPI()" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600">
+                🔍 Probar API /api/clientes
+            </button>
+            <div id="api-result" class="mt-4"></div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">Paso 2: Test Renderizado</h2>
+            <button onclick="testRender()" class="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600">
+                📊 Renderizar Tabla
+            </button>
+            <div id="clientes-lista" class="mt-4"></div>
+        </div>
+        
+        <div class="bg-gray-800 text-white rounded-lg p-6">
+            <h2 class="text-xl font-bold mb-4">📋 Logs:</h2>
+            <div id="logs" class="font-mono text-sm space-y-1"></div>
+        </div>
+    </div>
+    
+    <script>
+        const API = '/api'
+        
+        function log(msg, type = 'info') {
+            const colors = {
+                info: 'text-blue-300',
+                success: 'text-green-300',
+                error: 'text-red-300'
+            }
+            const logsDiv = document.getElementById('logs')
+            const time = new Date().toLocaleTimeString()
+            logsDiv.innerHTML += `<div class="${colors[type]}">[${time}] ${msg}</div>`
+            console.log(`[${time}] ${msg}`)
+        }
+        
+        async function testAPI() {
+            log('🔄 Probando API /api/clientes...', 'info')
+            const resultDiv = document.getElementById('api-result')
+            resultDiv.innerHTML = '<p class="text-gray-500">⏳ Cargando...</p>'
+            
+            try {
+                const response = await axios.get(`${API}/clientes`)
+                log(`✅ API OK - Status: ${response.status}`, 'success')
+                log(`✅ Clientes recibidos: ${response.data.length}`, 'success')
+                
+                resultDiv.innerHTML = `
+                    <div class="bg-green-50 border border-green-200 rounded p-4">
+                        <p class="font-bold text-green-800">✅ API Funciona Correctamente</p>
+                        <p class="text-sm text-green-700 mt-2">Status: ${response.status}</p>
+                        <p class="text-sm text-green-700">Clientes: ${response.data.length}</p>
+                        <pre class="mt-4 text-xs bg-white p-2 rounded overflow-auto max-h-40">${JSON.stringify(response.data, null, 2)}</pre>
+                    </div>
+                `
+            } catch (error) {
+                log(`❌ ERROR: ${error.message}`, 'error')
+                resultDiv.innerHTML = `
+                    <div class="bg-red-50 border border-red-200 rounded p-4">
+                        <p class="font-bold text-red-800">❌ Error en API</p>
+                        <p class="text-sm text-red-700 mt-2">${error.message}</p>
+                        <pre class="mt-2 text-xs">${error.stack}</pre>
+                    </div>
+                `
+            }
+        }
+        
+        async function testRender() {
+            log('🔄 Probando renderizado de tabla...', 'info')
+            const container = document.getElementById('clientes-lista')
+            
+            try {
+                log('📡 Fetching /api/clientes...', 'info')
+                const { data } = await axios.get(`${API}/clientes`)
+                log(`✅ Datos recibidos: ${data.length} clientes`, 'success')
+                
+                if (data.length === 0) {
+                    log('⚠️ No hay clientes para mostrar', 'info')
+                    container.innerHTML = '<p class="text-gray-500">No hay clientes registrados</p>'
+                    return
+                }
+                
+                log('🎨 Generando HTML de tabla...', 'info')
+                const html = `
+                    <table class="min-w-full border">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Teléfono</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ciudad</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${data.map(c => `
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 text-sm">${c.id}</td>
+                                    <td class="px-6 py-4">
+                                        <div class="font-medium text-gray-900">${c.nombre} ${c.apellidos}</div>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm">${c.telefono}</td>
+                                    <td class="px-6 py-4 text-sm">${c.email || '-'}</td>
+                                    <td class="px-6 py-4 text-sm">${c.ciudad}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `
+                
+                log('✅ Inyectando HTML en container...', 'info')
+                container.innerHTML = html
+                log('✅ TABLA RENDERIZADA CORRECTAMENTE', 'success')
+                
+            } catch (error) {
+                log(`❌ ERROR: ${error.message}`, 'error')
+                container.innerHTML = `
+                    <div class="bg-red-50 border border-red-200 rounded p-4">
+                        <p class="font-bold text-red-800">❌ Error al renderizar</p>
+                        <p class="text-sm text-red-700">${error.message}</p>
+                    </div>
+                `
+            }
+        }
+        
+        // Auto test on load
+        window.addEventListener('DOMContentLoaded', () => {
+            log('✅ Página cargada', 'success')
+            log('👉 Haz clic en los botones para probar', 'info')
+        })
+    </script>
+</body>
+</html>

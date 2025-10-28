@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Debug Clientes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="p-8">
+    <h1 class="text-2xl font-bold mb-4">🔍 Debug Clientes</h1>
+    
+    <button onclick="testAPI()" class="bg-blue-500 text-white px-4 py-2 rounded mb-4">
+        Test API
+    </button>
+    
+    <button onclick="testLoadClientes()" class="bg-green-500 text-white px-4 py-2 rounded mb-4 ml-2">
+        Test loadClientes()
+    </button>
+    
+    <div id="results" class="mt-4 p-4 bg-gray-100 rounded"></div>
+    
+    <hr class="my-6">
+    
+    <div id="clientes-lista"></div>
+    
+    <script>
+        const API = '/api'
+        
+        async function testAPI() {
+            const results = document.getElementById('results')
+            results.innerHTML = '<p>⏳ Testing...</p>'
+            
+            try {
+                const { data } = await axios.get(`${API}/clientes`)
+                results.innerHTML = `
+                    <h2 class="font-bold text-green-600">✅ API OK</h2>
+                    <p>Clientes encontrados: ${data.length}</p>
+                    <pre class="mt-2 text-xs">${JSON.stringify(data, null, 2)}</pre>
+                `
+            } catch (error) {
+                results.innerHTML = `
+                    <h2 class="font-bold text-red-600">❌ ERROR</h2>
+                    <pre class="mt-2">${error.message}</pre>
+                `
+            }
+        }
+        
+        async function testLoadClientes() {
+            const results = document.getElementById('results')
+            results.innerHTML = '<p>⏳ Loading clientes...</p>'
+            
+            try {
+                const { data } = await axios.get(`${API}/clientes`)
+                
+                const container = document.getElementById('clientes-lista')
+                container.innerHTML = `
+                  <table class="min-w-full border">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th class="px-6 py-3 text-left">Nombre</th>
+                        <th class="px-6 py-3 text-left">Teléfono</th>
+                        <th class="px-6 py-3 text-left">Ciudad</th>
+                        <th class="px-6 py-3 text-left">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${data.map(c => `
+                        <tr class="border-t">
+                          <td class="px-6 py-4">${c.nombre} ${c.apellidos}</td>
+                          <td class="px-6 py-4">${c.telefono}</td>
+                          <td class="px-6 py-4">${c.ciudad}</td>
+                          <td class="px-6 py-4">
+                            <button onclick="alert('View: ${c.id}')" class="text-blue-600">
+                              <i class="fas fa-eye"></i>
+                            </button>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                `
+                
+                results.innerHTML = `<h2 class="font-bold text-green-600">✅ Tabla renderizada</h2>`
+            } catch (error) {
+                results.innerHTML = `
+                    <h2 class="font-bold text-red-600">❌ ERROR</h2>
+                    <pre>${error.message}\n${error.stack}</pre>
+                `
+            }
+        }
+    </script>
+</body>
+</html>

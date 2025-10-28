@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Charts</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body style="padding: 20px;">
+    <h1>Test de Gráficas Chart.js</h1>
+    
+    <div style="max-width: 500px; margin: 20px 0;">
+        <h2>Gráfica de Trabajos</h2>
+        <canvas id="testChart1"></canvas>
+    </div>
+    
+    <div style="max-width: 500px; margin: 20px 0;">
+        <h2>Gráfica de Ingresos</h2>
+        <canvas id="testChart2"></canvas>
+    </div>
+    
+    <script>
+        console.log('Chart.js disponible?', typeof Chart !== 'undefined')
+        
+        // Test Chart 1 - Doughnut
+        const ctx1 = document.getElementById('testChart1')
+        if (ctx1) {
+            new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pendiente', 'En Proceso', 'Completado'],
+                    datasets: [{
+                        data: [5, 3, 12],
+                        backgroundColor: ['#fbbf24', '#3b82f6', '#10b981']
+                    }]
+                }
+            })
+            console.log('✅ Chart 1 creado')
+        }
+        
+        // Test Chart 2 - Bar
+        const ctx2 = document.getElementById('testChart2')
+        if (ctx2) {
+            new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie'],
+                    datasets: [{
+                        label: 'Ingresos',
+                        data: [100, 200, 150, 300, 250],
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)'
+                    }]
+                }
+            })
+            console.log('✅ Chart 2 creado')
+        }
+    </script>
+</body>
+</html>

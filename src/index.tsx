@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { serveStatic } from 'hono/cloudflare-workers'
+import presupuestos from './routes/presupuestos'
 
 type Bindings = {
   DB: D1Database;
@@ -127,22 +128,22 @@ app.put('/api/clientes/:id', async (c) => {
 })
 
 // ============================================
-// API ENDPOINTS - EMPLEADAS
+// API ENDPOINTS - PERSONAL
 // ============================================
 
-// Obtener todas las empleadas
-app.get('/api/empleadas', async (c) => {
+// Obtener todo el personal
+app.get('/api/personal', async (c) => {
   const { results } = await c.env.DB.prepare(`
     SELECT * FROM empleadas WHERE activa = 1 ORDER BY nombre
   `).all()
   return c.json(results)
 })
 
-// Obtener empleada por ID
-app.get('/api/empleadas/:id', async (c) => {
+// Obtener personal por ID
+app.get('/api/personal/:id', async (c) => {
   const id = c.req.param('id')
   
-  const empleada = await c.env.DB.prepare(`
+  const personal = await c.env.DB.prepare(`
     SELECT * FROM empleadas WHERE id = ?
   `).bind(id).first()
   
@@ -168,15 +169,15 @@ app.get('/api/empleadas/:id', async (c) => {
   `).bind(id).all()
   
   return c.json({
-    empleada,
+    personal,
     trabajos: trabajos.results,
     horas: horas.results,
     evaluaciones: evaluaciones.results
   })
 })
 
-// Crear empleada
-app.post('/api/empleadas', async (c) => {
+// Crear personal
+app.post('/api/personal', async (c) => {
   const data = await c.req.json()
   const result = await c.env.DB.prepare(`
     INSERT INTO empleadas (nombre, apellidos, telefono, email, dni, fecha_contratacion, 
@@ -184,15 +185,15 @@ app.post('/api/empleadas', async (c) => {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     data.nombre, data.apellidos, data.telefono, data.email || null, data.dni,
-    data.fecha_contratacion, data.salario_hora, 
+    data.fecha_contratacion || null, data.salario_hora || null, 
     JSON.stringify(data.especialidades || []), data.notas || null
   ).run()
   
   return c.json({ id: result.meta.last_row_id, ...data })
 })
 
-// Actualizar empleada
-app.put('/api/empleadas/:id', async (c) => {
+// Actualizar personal
+app.put('/api/personal/:id', async (c) => {
   const id = c.req.param('id')
   const data = await c.req.json()
   
@@ -203,7 +204,7 @@ app.put('/api/empleadas/:id', async (c) => {
     WHERE id = ?
   `).bind(
     data.nombre, data.apellidos, data.telefono, data.email,
-    data.salario_hora, JSON.stringify(data.especialidades || []), 
+    data.salario_hora || null, JSON.stringify(data.especialidades || []), 
     data.notas, id
   ).run()
   
@@ -246,6 +247,27 @@ app.get('/api/trabajos', async (c) => {
   return c.json(results)
 })
 
+// Obtener un trabajo específico
+app.get('/api/trabajos/:id', async (c) => {
+  const id = c.req.param('id')
+  
+  const trabajo = await c.env.DB.prepare(`
+    SELECT t.*, 
+           c.nombre as cliente_nombre, c.apellidos as cliente_apellidos,
+           e.nombre as empleada_nombre, e.apellidos as empleada_apellidos
+    FROM trabajos t
+    LEFT JOIN clientes c ON t.cliente_id = c.id
+    LEFT JOIN empleadas e ON t.empleada_id = e.id
+    WHERE t.id = ?
+  `).bind(id).first()
+  
+  if (!trabajo) {
+    return c.json({ error: 'Trabajo no encontrado' }, 404)
+  }
+  
+  return c.json(trabajo)
+})
+
 // Crear trabajo
 app.post('/api/trabajos', async (c) => {
   const data = await c.req.json()
@@ -283,6 +305,168 @@ app.put('/api/trabajos/:id', async (c) => {
   return c.json({ success: true })
 })
 
+// Obtener fases de un trabajo (con info de personal asignado)
+app.get('/api/trabajos/:id/fases', async (c) => {
+  const id = c.req.param('id')
+  
+  const { results } = await c.env.DB.prepare(`
+    SELECT 
+      f.*,
+      p.nombre as personal_nombre,
+      p.apellidos as personal_apellidos
+    FROM trabajo_fases f
+    LEFT JOIN empleadas p ON f.personal_id = p.id
+    WHERE f.trabajo_id = ? 
+    ORDER BY f.orden
+  `).bind(id).all()
+  
+  return c.json(results)
+})
+
+// Actualizar estado de una fase (CONTROL MANUAL + ASIGNAR PERSONAL)
+app.put('/api/trabajos/:id/fases/:fase_id', async (c) => {
+  const trabajoId = c.req.param('id')
+  const faseId = c.req.param('fase_id')
+  const { estado, notas, personal_id } = await c.req.json()
+  
+  // Obtener info de la fase actual
+  const faseActual = await c.env.DB.prepare(`
+    SELECT * FROM trabajo_fases WHERE id = ?
+  `).bind(faseId).first()
+  
+  if (!faseActual) {
+    return c.json({ error: 'Fase no encontrada' }, 404)
+  }
+  
+  // Actualizar la fase (control manual total + asignación de personal)
+  const now = new Date().toISOString()
+  await c.env.DB.prepare(`
+    UPDATE trabajo_fases 
+    SET estado = ?,
+        notas = ?,
+        personal_id = ?,
+        fecha_inicio = COALESCE(fecha_inicio, ?),
+        fecha_completado = CASE WHEN ? = 'completado' THEN ? ELSE NULL END
+    WHERE id = ?
+  `).bind(
+    estado, 
+    notas !== undefined ? notas : faseActual.notas, 
+    personal_id !== undefined ? personal_id : faseActual.personal_id,
+    now, 
+    estado, 
+    now, 
+    faseId
+  ).run()
+  
+  // Verificar si TODAS las fases están completadas
+  const { results: todasFases } = await c.env.DB.prepare(`
+    SELECT COUNT(*) as total, 
+           SUM(CASE WHEN estado = 'completado' THEN 1 ELSE 0 END) as completadas
+    FROM trabajo_fases 
+    WHERE trabajo_id = ?
+  `).bind(trabajoId).all()
+  
+  const stats = todasFases[0] as any
+  
+  // Si todas las fases están completadas, marcar trabajo como completado
+  if (stats.total === stats.completadas) {
+    await c.env.DB.prepare(`
+      UPDATE trabajos 
+      SET estado = 'completado',
+          fecha_finalizacion = ?
+      WHERE id = ?
+    `).bind(now, trabajoId).run()
+  } else {
+    // Si alguna fase volvió a pendiente, marcar trabajo como en_proceso
+    await c.env.DB.prepare(`
+      UPDATE trabajos 
+      SET estado = 'en_proceso',
+          fecha_finalizacion = NULL
+      WHERE id = ?
+    `).bind(trabajoId).run()
+  }
+  
+  return c.json({ success: true })
+})
+
+// ============================================
+// API ENDPOINTS - STOCK
+// ============================================
+
+// ============================================
+// API ENDPOINTS - CATEGORÍAS
+// ============================================
+
+// Obtener todas las categorías
+app.get('/api/categorias', async (c) => {
+  const { results } = await c.env.DB.prepare(`
+    SELECT * FROM categorias WHERE activo = 1 ORDER BY orden, nombre
+  `).all()
+  return c.json(results)
+})
+
+// Crear categoría
+app.post('/api/categorias', async (c) => {
+  const data = await c.req.json()
+  const result = await c.env.DB.prepare(`
+    INSERT INTO categorias (nombre, descripcion, color, icono, orden)
+    VALUES (?, ?, ?, ?, ?)
+  `).bind(
+    data.nombre, 
+    data.descripcion || null, 
+    data.color || '#6B7280',
+    data.icono || 'fa-box',
+    data.orden || 0
+  ).run()
+  
+  return c.json({ id: result.meta.last_row_id, ...data })
+})
+
+// Actualizar categoría
+app.put('/api/categorias/:id', async (c) => {
+  const id = c.req.param('id')
+  const data = await c.req.json()
+  
+  await c.env.DB.prepare(`
+    UPDATE categorias 
+    SET nombre = ?, descripcion = ?, color = ?, icono = ?, orden = ?,
+        updated_at = datetime('now')
+    WHERE id = ?
+  `).bind(
+    data.nombre, 
+    data.descripcion, 
+    data.color,
+    data.icono,
+    data.orden,
+    id
+  ).run()
+  
+  return c.json({ success: true })
+})
+
+// Eliminar categoría (soft delete)
+app.delete('/api/categorias/:id', async (c) => {
+  const id = c.req.param('id')
+  
+  // Verificar si hay productos usando esta categoría
+  const productosConCategoria = await c.env.DB.prepare(`
+    SELECT COUNT(*) as total FROM stock WHERE categoria_id = ? AND activo = 1
+  `).bind(id).first()
+  
+  if (productosConCategoria && productosConCategoria.total > 0) {
+    return c.json({ 
+      success: false, 
+      message: `No se puede eliminar. Hay ${productosConCategoria.total} producto(s) usando esta categoría.` 
+    }, 400)
+  }
+  
+  await c.env.DB.prepare(`
+    UPDATE categorias SET activo = 0 WHERE id = ?
+  `).bind(id).run()
+  
+  return c.json({ success: true })
+})
+
 // ============================================
 // API ENDPOINTS - STOCK
 // ============================================
@@ -290,12 +474,27 @@ app.put('/api/trabajos/:id', async (c) => {
 // Obtener todo el stock
 app.get('/api/stock', async (c) => {
   const bajo_stock = c.req.query('bajo_stock')
+  const categoria_id = c.req.query('categoria_id')
   
-  let query = 'SELECT * FROM stock WHERE activo = 1'
+  let query = `
+    SELECT s.*, 
+           c.nombre as categoria_nombre,
+           c.color as categoria_color,
+           c.icono as categoria_icono
+    FROM stock s
+    LEFT JOIN categorias c ON s.categoria_id = c.id
+    WHERE s.activo = 1
+  `
+  
   if (bajo_stock === 'true') {
-    query += ' AND cantidad_actual <= cantidad_minima'
+    query += ' AND s.cantidad_actual <= s.cantidad_minima'
   }
-  query += ' ORDER BY categoria, nombre'
+  
+  if (categoria_id) {
+    query += ` AND s.categoria_id = ${parseInt(categoria_id)}`
+  }
+  
+  query += ' ORDER BY c.orden, s.nombre'
   
   const { results } = await c.env.DB.prepare(query).all()
   return c.json(results)
@@ -305,13 +504,20 @@ app.get('/api/stock', async (c) => {
 app.post('/api/stock', async (c) => {
   const data = await c.req.json()
   const result = await c.env.DB.prepare(`
-    INSERT INTO stock (nombre, descripcion, categoria, unidad, cantidad_actual, 
+    INSERT INTO stock (nombre, descripcion, categoria, categoria_id, unidad, cantidad_actual, 
                       cantidad_minima, precio_unitario, proveedor, ubicacion)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
-    data.nombre, data.descripcion || null, data.categoria, data.unidad,
-    data.cantidad_actual, data.cantidad_minima, data.precio_unitario,
-    data.proveedor || null, data.ubicacion || null
+    data.nombre, 
+    data.descripcion || null, 
+    data.categoria || null, 
+    data.categoria_id || null,
+    data.unidad,
+    data.cantidad_actual, 
+    data.cantidad_minima, 
+    data.precio_unitario,
+    data.proveedor || null, 
+    data.ubicacion || null
   ).run()
   
   return c.json({ id: result.meta.last_row_id, ...data })
@@ -324,14 +530,22 @@ app.put('/api/stock/:id', async (c) => {
   
   await c.env.DB.prepare(`
     UPDATE stock 
-    SET nombre = ?, descripcion = ?, categoria = ?, unidad = ?, 
+    SET nombre = ?, descripcion = ?, categoria = ?, categoria_id = ?, unidad = ?, 
         cantidad_actual = ?, cantidad_minima = ?, precio_unitario = ?,
         proveedor = ?, ubicacion = ?
     WHERE id = ?
   `).bind(
-    data.nombre, data.descripcion, data.categoria, data.unidad,
-    data.cantidad_actual, data.cantidad_minima, data.precio_unitario,
-    data.proveedor, data.ubicacion, id
+    data.nombre, 
+    data.descripcion, 
+    data.categoria || null, 
+    data.categoria_id || null,
+    data.unidad,
+    data.cantidad_actual, 
+    data.cantidad_minima, 
+    data.precio_unitario,
+    data.proveedor, 
+    data.ubicacion, 
+    id
   ).run()
   
   return c.json({ success: true })
@@ -342,52 +556,77 @@ app.put('/api/stock/:id', async (c) => {
 // ============================================
 
 app.get('/api/dashboard', async (c) => {
-  // Ingresos del mes
-  const ingresos = await c.env.DB.prepare(`
-    SELECT SUM(total) as total
-    FROM facturas
-    WHERE estado = 'pagada' 
-    AND strftime('%Y-%m', fecha_pago) = strftime('%Y-%m', 'now')
-  `).first()
-  
-  // Trabajos activos
+  // Trabajos activos (pendientes + en proceso)
   const trabajosActivos = await c.env.DB.prepare(`
     SELECT COUNT(*) as total
     FROM trabajos
     WHERE estado IN ('pendiente', 'en_proceso')
   `).first()
   
-  // Stock bajo
-  const stockBajo = await c.env.DB.prepare(`
+  // Presupuestos pendientes (pendientes + enviados)
+  const presupuestosPendientes = await c.env.DB.prepare(`
     SELECT COUNT(*) as total
-    FROM stock
-    WHERE cantidad_actual <= cantidad_minima AND activo = 1
+    FROM presupuestos
+    WHERE estado IN ('pendiente', 'enviado')
   `).first()
   
-  // Horas trabajadas esta semana
-  const horasSemanales = await c.env.DB.prepare(`
-    SELECT SUM(horas_trabajadas) as total
-    FROM registro_horas
-    WHERE fecha >= date('now', '-7 days')
+  // Fases en proceso
+  const fasesEnProceso = await c.env.DB.prepare(`
+    SELECT COUNT(*) as total
+    FROM trabajo_fases
+    WHERE estado = 'en_proceso'
   `).first()
   
-  // Satisfacción promedio
-  const satisfaccion = await c.env.DB.prepare(`
-    SELECT AVG(satisfaccion_cliente) as promedio
+  // Trabajos completados este mes
+  const trabajosCompletadosMes = await c.env.DB.prepare(`
+    SELECT COUNT(*) as total
     FROM trabajos
-    WHERE satisfaccion_cliente IS NOT NULL
-    AND fecha_finalizacion >= date('now', '-30 days')
+    WHERE estado = 'completado'
+    AND strftime('%Y-%m', fecha_finalizacion) = strftime('%Y-%m', 'now')
   `).first()
   
-  // Trabajos por estado
+  // Trabajos por estado (últimos 30 días)
   const trabajosPorEstado = await c.env.DB.prepare(`
     SELECT estado, COUNT(*) as total
     FROM trabajos
-    WHERE fecha_programada >= date('now', '-30 days')
+    WHERE fecha_creacion >= date('now', '-30 days')
     GROUP BY estado
+    ORDER BY 
+      CASE estado 
+        WHEN 'pendiente' THEN 1 
+        WHEN 'en_proceso' THEN 2 
+        WHEN 'completado' THEN 3 
+        WHEN 'cancelado' THEN 4 
+      END
   `).all()
   
-  // Ingresos por día (últimos 7 días)
+  // Resumen de fases activas
+  const fasesResumen = await c.env.DB.prepare(`
+    SELECT f.fase, COUNT(*) as total
+    FROM trabajo_fases f
+    JOIN trabajos t ON f.trabajo_id = t.id
+    WHERE f.estado IN ('en_proceso', 'pendiente')
+    AND t.estado IN ('pendiente', 'en_proceso')
+    GROUP BY f.fase
+    ORDER BY f.orden
+  `).all()
+  
+  // Presupuestos por estado
+  const presupuestosPorEstado = await c.env.DB.prepare(`
+    SELECT estado, COUNT(*) as total
+    FROM presupuestos
+    WHERE fecha_emision >= date('now', '-90 days')
+    GROUP BY estado
+    ORDER BY 
+      CASE estado 
+        WHEN 'pendiente' THEN 1 
+        WHEN 'enviado' THEN 2 
+        WHEN 'aceptado' THEN 3 
+        WHEN 'rechazado' THEN 4 
+      END
+  `).all()
+  
+  // Ingresos por día (últimos 7 días) - para métricas
   const ingresosDiarios = await c.env.DB.prepare(`
     SELECT DATE(fecha_pago) as fecha, SUM(total) as total
     FROM facturas
@@ -396,27 +635,15 @@ app.get('/api/dashboard', async (c) => {
     ORDER BY fecha
   `).all()
   
-  // Top empleadas
-  const topEmpleadas = await c.env.DB.prepare(`
-    SELECT e.id, e.nombre, e.apellidos, e.calificacion,
-           COUNT(t.id) as trabajos_completados
-    FROM empleadas e
-    LEFT JOIN trabajos t ON e.id = t.empleada_id AND t.estado = 'completado'
-    WHERE e.activa = 1
-    GROUP BY e.id
-    ORDER BY trabajos_completados DESC, e.calificacion DESC
-    LIMIT 5
-  `).all()
-  
   return c.json({
-    ingresos: ingresos?.total || 0,
     trabajos_activos: trabajosActivos?.total || 0,
-    stock_bajo: stockBajo?.total || 0,
-    horas_semanales: horasSemanales?.total || 0,
-    satisfaccion_promedio: satisfaccion?.promedio || 0,
+    presupuestos_pendientes: presupuestosPendientes?.total || 0,
+    fases_en_proceso: fasesEnProceso?.total || 0,
+    trabajos_completados_mes: trabajosCompletadosMes?.total || 0,
     trabajos_por_estado: trabajosPorEstado.results,
-    ingresos_diarios: ingresosDiarios.results,
-    top_empleadas: topEmpleadas.results
+    fases_resumen: fasesResumen.results,
+    presupuestos_por_estado: presupuestosPorEstado.results,
+    ingresos_diarios: ingresosDiarios.results
   })
 })
 
@@ -505,6 +732,320 @@ app.get('/api/reportes/mensual', async (c) => {
 })
 
 // ============================================
+// API ENDPOINTS - CONSULTOR IA
+// ============================================
+
+// Chat con GALI (Consultora IA)
+app.post('/api/chat', async (c) => {
+  try {
+    const { message, context } = await c.req.json()
+    
+    // Sistema prompt de GALI
+    const systemPrompt = `Eres GALI (Gestora y Asesora para Líderes de Instalación), una consultora experta especializada en:
+
+1. NEGOCIO DE CORTINAS Y CONFECCIÓN:
+   - Cálculo de metraje y materiales para cortinas
+   - Técnicas de confección profesional
+   - Instalación de rieles, barras y sistemas de sujeción
+   - Tipos de telas, forros térmicos y blackout
+   - Propuestas comerciales y presupuestos
+   - Tendencias en decoración de interiores
+   - Tips para maximizar ventas
+
+2. FACTURACIÓN Y VERIFACTÜ:
+   - Facturación electrónica con VerificaTu (sistema español)
+   - Normativa fiscal para autónomos y empresas
+   - IVA, retenciones y obligaciones tributarias
+   - Gestión de cobros y pagos
+   - Documentación contable
+
+3. GESTIÓN DE CLIENTES:
+   - Fidelización y seguimiento
+   - Manejo de objeciones
+   - Técnicas de cierre de venta
+   - Gestión de reclamaciones
+   - Seguimiento post-venta
+
+4. USO DE LA HERRAMIENTA ANUSHKA HOGAR:
+   - Gestión de clientes y contactos
+   - Creación de presupuestos profesionales
+   - Control de inventario (stock)
+   - Sistema de categorías dinámicas
+   - Seguimiento de trabajos
+   - Facturación integrada
+   - Reportes y análisis
+
+Tu estilo de comunicación:
+- Directa, práctica y orientada a resultados
+- Empática con los desafíos del día a día
+- Usa ejemplos concretos del sector
+- Da consejos accionables inmediatamente
+- Formato claro con bullets y números cuando sea apropiado
+- Lenguaje cercano y profesional (tuteo)
+
+IMPORTANTE: Si te preguntan sobre la herramienta, da instrucciones paso a paso claras.`
+
+    // Contexto adicional de la herramienta
+    const toolContext = context ? JSON.stringify(context) : ''
+    
+    // Simulación de respuesta (en producción, aquí irías a OpenAI/Anthropic)
+    const userMessage = message.toLowerCase()
+    let response = ''
+    
+    // Respuestas inteligentes basadas en keywords
+    if (userMessage.includes('metraje') || userMessage.includes('calcul') || userMessage.includes('medir')) {
+      response = `📏 **Cálculo de Metraje para Cortinas**
+
+**Fórmula básica:**
+1. **Ancho**: Mide el ancho de la ventana/riel
+   - Multiplica x2 o x2.5 para caída natural
+   - Cortina standard: ancho ventana x2
+   - Cortina con mucha caída: x2.5 o x3
+
+2. **Alto**: Mide desde el riel hasta donde quieres que llegue
+   - Añade 15-20cm para dobladillos
+   - Si va del techo al suelo: altura total + 20cm
+
+3. **Ejemplo práctico:**
+   - Ventana: 2m ancho x 2.5m alto
+   - Tela necesaria: (2m x 2.5) x 2.7m (alto+dobladillo) = **13.5 metros lineales**
+
+💡 **Tips profesionales:**
+- Siempre suma 10% extra por errores y encogimiento
+- Para confección francesa, multiplica x2.5 el ancho
+- Anota el "rapport" (patrón repetitivo) si la tela lo tiene
+
+¿Necesitas ayuda con algún cálculo específico?`
+    } 
+    else if (userMessage.includes('verificatu') || userMessage.includes('factura') || userMessage.includes('fiscal')) {
+      response = `📄 **VerificaTu - Facturación Electrónica**
+
+**¿Qué es VerificaTu?**
+Sistema de la Agencia Tributaria para facturación electrónica obligatorio desde 2025.
+
+**Pasos para implementarlo:**
+1. **Alta en el sistema:**
+   - Accede a Sede Electrónica AEAT
+   - Certificado digital o Cl@ve
+   - Activa el servicio VerificaTu
+
+2. **Facturación con VerificaTu:**
+   - Cada factura debe enviarse a AEAT en 4 días
+   - Formato XML estándar
+   - Código QR obligatorio
+
+3. **En Anushka Hogar:**
+   - Ve a **Facturación** → **Nueva Factura**
+   - Rellena datos del cliente y servicios
+   - El sistema genera el XML automáticamente
+   - Descarga PDF con código QR incluido
+
+💡 **Consejos prácticos:**
+- Usa software homologado (como este)
+- Guarda XML de cada factura 4 años
+- Revisa numeración correlativa
+- Backup mensual de facturas
+
+¿Tienes dudas sobre alguna factura específica?`
+    }
+    else if (userMessage.includes('venta') || userMessage.includes('cerrar') || userMessage.includes('cliente')) {
+      response = `💰 **Tips para Cerrar Más Ventas de Cortinas**
+
+**1. Descubre la necesidad real:**
+- "¿Qué problema buscas resolver?" (luz, privacidad, decoración)
+- "¿Qué estilo tienes en mente?"
+- Escucha activamente antes de proponer
+
+**2. Presenta 3 opciones (Bueno - Mejor - Premium):**
+- Opción 1: Básica funcional (80€/m²)
+- Opción 2: Calidad media + extras (120€/m²) ⭐ MÁS VENDIDA
+- Opción 3: Premium con todo incluido (180€/m²)
+
+**3. Técnica del "Sí escalonado":**
+- "¿Te gusta esta tela?" → Sí
+- "¿El color combina con tu salón?" → Sí
+- "¿Te gustaría que lo instalemos el martes?" → Sí ✅
+
+**4. Maneja objeciones con empatía:**
+- "Es caro" → "Entiendo, ¿qué presupuesto tenías en mente?" + muestra valor/durabilidad
+- "Lo pienso" → "Por supuesto, ¿qué aspecto te genera dudas?"
+
+**5. Cierre profesional:**
+- Usa la herramienta para generar presupuesto en el momento
+- PDF profesional impresiona
+- "¿Confirmamos para esta semana o prefieres la siguiente?"
+
+💡 **Usa el sistema:**
+**Presupuestos** → Nuevo → Genera PDF profesional con logo
+
+¿Quieres que te ayude con alguna objeción específica?`
+    }
+    else if (userMessage.includes('herramienta') || userMessage.includes('sistema') || userMessage.includes('usar') || userMessage.includes('cómo')) {
+      response = `🛠️ **Guía Rápida de Anushka Hogar**
+
+**FLUJO COMPLETO:**
+
+**1. CLIENTE NUEVO:**
+   - **Clientes** → **Nuevo Cliente**
+   - Rellena: Nombre, teléfono, dirección
+   - Guarda → Aparece en tu lista
+
+**2. CREAR PRESUPUESTO:**
+   - **Presupuestos** → **Nuevo Presupuesto**
+   - Selecciona el cliente
+   - Añade líneas:
+     * **Telas**: Metros, precio/metro
+     * **Materiales**: Rieles, accesorios
+     * **Confección**: Horas de trabajo
+     * **Instalación**: Tiempo estimado
+   - Sistema calcula total con IVA
+   - **Descargar PDF** → Envía al cliente
+
+**3. CLIENTE ACEPTA → CREAR TRABAJO:**
+   - **Trabajos** → **Nuevo Trabajo**
+   - Asocia al cliente
+   - Asigna fecha y personal
+   - Estado: Pendiente → En proceso → Completado
+
+**4. GESTIÓN DE STOCK:**
+   - **Stock** → Ver inventario
+   - **Categorías** para organizar (Telas, Rieles, etc.)
+   - Alertas de stock bajo automáticas
+   - **Filtrar por categoría** para encontrar rápido
+
+**5. FACTURAR:**
+   - **Facturación** → **Nueva Factura**
+   - Selecciona cliente y trabajo
+   - Genera XML para VerificaTu
+   - PDF con código QR incluido
+
+**💡 ATAJOS ÚTILES:**
+- Dashboard muestra todo en un vistazo
+- Click en cualquier cliente → Ver historial completo
+- Reportes → Análisis mensual automático
+
+¿Sobre qué parte necesitas más detalles?`
+    }
+    else if (userMessage.includes('categoría') || userMessage.includes('stock') || userMessage.includes('inventario')) {
+      response = `📦 **Sistema de Categorías en Stock**
+
+**GESTIÓN DE CATEGORÍAS:**
+
+**1. Crear/Editar Categorías:**
+   - **Stock** → **Categorías** (botón verde)
+   - **Nueva Categoría** → Rellena:
+     * Nombre (ej: "Telas", "Rieles")
+     * Descripción
+     * Color personalizado (para badges)
+     * Icono Font Awesome
+     * Orden de visualización
+
+**2. Categorías Pre-cargadas:**
+   - 🔵 **Telas** (fa-cut)
+   - 🟣 **Rieles y Barras** (fa-grip-lines)
+   - 🟢 **Accesorios** (fa-paperclip)
+   - 🟠 **Forros** (fa-layer-group)
+   - 🔴 **Confección** (fa-scissors)
+   - 🔵 **Instalación** (fa-tools)
+   - ⚪ **Otros** (fa-ellipsis-h)
+
+**3. Añadir Productos a Categoría:**
+   **MÉTODO 1**: Desde categorías
+   - En cada tarjeta → **Añadir Artículo en [Categoría]**
+   - Formulario se abre con categoría pre-seleccionada
+   
+   **MÉTODO 2**: Desde stock
+   - **Nuevo Artículo** → Selecciona categoría del dropdown
+
+**4. Filtrar Inventario:**
+   - Dropdown "Filtrar por categoría"
+   - Ver solo productos de una categoría
+   - Badges visuales con colores
+
+💡 **Ventajas:**
+- Organización clara por tipo
+- Búsqueda rápida
+- Badges visuales en listado
+- Reportes por categoría
+
+¿Necesitas ayuda configurando tus categorías?`
+    }
+    else if (userMessage.includes('hola') || userMessage.includes('ayuda') || userMessage.includes('qué puedes')) {
+      response = `¡Hola! 👋 Soy GALI, tu consultora especializada.
+
+**Puedo ayudarte con:**
+
+🪡 **Negocio de Cortinas:**
+- Cálculo de metraje y materiales
+- Técnicas de confección e instalación
+- Propuestas comerciales
+- Tips de venta
+
+📄 **Facturación:**
+- VerificaTu y normativa fiscal
+- Gestión de cobros
+- IVA y obligaciones tributarias
+
+👥 **Gestión de Clientes:**
+- Fidelización y seguimiento
+- Manejo de objeciones
+- Técnicas de cierre
+
+🛠️ **Uso de la Herramienta:**
+- Guía paso a paso
+- Mejores prácticas
+- Optimización de flujos
+
+**Preguntas frecuentes:**
+- "¿Cómo calculo el metraje para cortinas?"
+- "¿Qué es VerificaTu y cómo lo uso?"
+- "Dame tips para cerrar más ventas"
+- "¿Cómo gestiono mejor el stock?"
+
+¿En qué te puedo ayudar hoy?`
+    }
+    else {
+      // Respuesta genérica inteligente
+      response = `Entiendo tu consulta sobre "${message}".
+
+Como consultora especializada en el sector de cortinas y gestión administrativa, puedo ayudarte de forma más específica si me das más detalles.
+
+**Algunas preguntas para orientarte mejor:**
+- ¿Es sobre confección/instalación de cortinas?
+- ¿Tiene que ver con facturación o VerificaTu?
+- ¿Necesitas ayuda con la gestión de clientes?
+- ¿Quieres saber cómo usar alguna función del sistema?
+
+O puedes probar con preguntas como:
+- "¿Cómo calculo metraje de cortinas?"
+- "Explícame VerificaTu"
+- "Tips para vender más"
+- "¿Cómo usar el sistema de presupuestos?"
+
+¿Cómo puedo ayudarte mejor? 😊`
+    }
+    
+    return c.json({ 
+      success: true, 
+      response: response,
+      timestamp: new Date().toISOString()
+    })
+    
+  } catch (error) {
+    console.error('Error en chat:', error)
+    return c.json({ 
+      success: false, 
+      response: 'Lo siento, hubo un error. Por favor intenta de nuevo.' 
+    }, 500)
+  }
+})
+
+// ============================================
+// MOUNT EXTERNAL ROUTES
+// ============================================
+app.route('/api/presupuestos', presupuestos)
+
+// ============================================
 // FRONTEND - HTML
 // ============================================
 
@@ -519,6 +1060,9 @@ app.get('/', (c) => {
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- jsPDF para generación de PDFs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <style>
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -558,11 +1102,11 @@ app.get('/', (c) => {
             <button onclick="showTab('clientes')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-users mr-2"></i>Clientes
             </button>
+            <button onclick="showTab('presupuestos')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-file-alt mr-2"></i>Presupuestos
+            </button>
             <button onclick="showTab('trabajos')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-briefcase mr-2"></i>Trabajos
-            </button>
-            <button onclick="showTab('empleadas')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
-                <i class="fas fa-user-tie mr-2"></i>Empleadas
             </button>
             <button onclick="showTab('stock')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-boxes mr-2"></i>Stock
@@ -570,8 +1114,14 @@ app.get('/', (c) => {
             <button onclick="showTab('facturas')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-file-invoice-dollar mr-2"></i>Facturación
             </button>
+            <button onclick="showTab('personal')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-user-tie mr-2"></i>Personal
+            </button>
             <button onclick="showTab('reportes')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-chart-bar mr-2"></i>Reportes
+            </button>
+            <button onclick="showTab('consultor')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-robot mr-2"></i>Consultor IA
             </button>
         </div>
     </div>
@@ -581,20 +1131,8 @@ app.get('/', (c) => {
         
         <!-- DASHBOARD TAB -->
         <div id="dashboard-tab" class="tab-content active">
-            <!-- KPI Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-gray-600">Ingresos Mes</p>
-                            <p class="text-2xl font-bold text-green-600" id="kpi-ingresos">€0</p>
-                        </div>
-                        <div class="bg-green-100 p-3 rounded-full">
-                            <i class="fas fa-euro-sign text-green-600 text-xl"></i>
-                        </div>
-                    </div>
-                </div>
-                
+            <!-- KPI Cards - Enfoque Operacional -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
@@ -610,11 +1148,11 @@ app.get('/', (c) => {
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm text-gray-600">Stock Bajo</p>
-                            <p class="text-2xl font-bold text-red-600" id="kpi-stock">0</p>
+                            <p class="text-sm text-gray-600">Presupuestos Pendientes</p>
+                            <p class="text-2xl font-bold text-orange-600" id="kpi-presupuestos">0</p>
                         </div>
-                        <div class="bg-red-100 p-3 rounded-full">
-                            <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                        <div class="bg-orange-100 p-3 rounded-full">
+                            <i class="fas fa-file-alt text-orange-600 text-xl"></i>
                         </div>
                     </div>
                 </div>
@@ -622,11 +1160,11 @@ app.get('/', (c) => {
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm text-gray-600">Horas Semanales</p>
-                            <p class="text-2xl font-bold text-purple-600" id="kpi-horas">0h</p>
+                            <p class="text-sm text-gray-600">Fases en Proceso</p>
+                            <p class="text-2xl font-bold text-purple-600" id="kpi-fases">0</p>
                         </div>
                         <div class="bg-purple-100 p-3 rounded-full">
-                            <i class="fas fa-clock text-purple-600 text-xl"></i>
+                            <i class="fas fa-stream text-purple-600 text-xl"></i>
                         </div>
                     </div>
                 </div>
@@ -634,33 +1172,38 @@ app.get('/', (c) => {
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm text-gray-600">Satisfacción</p>
-                            <p class="text-2xl font-bold text-yellow-600" id="kpi-satisfaccion">0</p>
+                            <p class="text-sm text-gray-600">Completados Este Mes</p>
+                            <p class="text-2xl font-bold text-green-600" id="kpi-completados">0</p>
                         </div>
-                        <div class="bg-yellow-100 p-3 rounded-full">
-                            <i class="fas fa-star text-yellow-600 text-xl"></i>
+                        <div class="bg-green-100 p-3 rounded-full">
+                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Charts -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Charts - Operaciones -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                 <div class="bg-white rounded-xl shadow-md p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">Trabajos por Estado</h3>
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">
+                        <i class="fas fa-briefcase text-blue-600 mr-2"></i>Trabajos por Estado
+                    </h3>
                     <canvas id="chartTrabajos"></canvas>
                 </div>
                 
                 <div class="bg-white rounded-xl shadow-md p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">Ingresos Últimos 7 Días</h3>
-                    <canvas id="chartIngresos"></canvas>
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">
+                        <i class="fas fa-tasks text-purple-600 mr-2"></i>Fases Activas
+                    </h3>
+                    <canvas id="chartFases"></canvas>
                 </div>
-            </div>
-
-            <!-- Top Empleadas -->
-            <div class="bg-white rounded-xl shadow-md p-6">
-                <h3 class="text-lg font-bold text-gray-800 mb-4">Top Empleadas del Mes</h3>
-                <div id="top-empleadas" class="space-y-3"></div>
+                
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">
+                        <i class="fas fa-file-invoice text-orange-600 mr-2"></i>Presupuestos por Estado
+                    </h3>
+                    <canvas id="chartPresupuestos"></canvas>
+                </div>
             </div>
         </div>
 
@@ -703,16 +1246,36 @@ app.get('/', (c) => {
             </div>
         </div>
 
-        <!-- EMPLEADAS TAB -->
-        <div id="empleadas-tab" class="tab-content">
-            <div class="bg-white rounded-xl shadow-md p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Gestión de Empleadas</h2>
-                    <button onclick="showEmpleadaForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
-                        <i class="fas fa-plus mr-2"></i>Nueva Empleada
-                    </button>
+        <!-- PERSONAL TAB -->
+        <div id="personal-tab" class="tab-content">
+            <!-- Sub-navegación de pestañas -->
+            <div class="bg-white rounded-xl shadow-md p-2 mb-6 flex gap-2">
+                <button onclick="showPersonalSubTab('nuevo')" id="personal-subtab-nuevo" class="personal-subtab active px-6 py-3 rounded-lg font-medium transition-all bg-gradient-to-r from-gray-800 to-gray-900 text-white">
+                    <i class="fas fa-plus-circle mr-2"></i>Nuevo Personal
+                </button>
+                <button onclick="showPersonalSubTab('gestion')" id="personal-subtab-gestion" class="personal-subtab px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-users mr-2"></i>Gestión de Personal
+                </button>
+            </div>
+            
+            <!-- SUBTAB: NUEVO PERSONAL -->
+            <div id="personal-subtab-nuevo-content" class="personal-subtab-content active">
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6">
+                        <i class="fas fa-user-plus text-teal-600 mr-2"></i>Añadir Nuevo Personal
+                    </h3>
+                    <div id="personal-form-container"></div>
                 </div>
-                <div id="empleadas-lista" class="overflow-x-auto"></div>
+            </div>
+            
+            <!-- SUBTAB: GESTIÓN DE PERSONAL -->
+            <div id="personal-subtab-gestion-content" class="personal-subtab-content" style="display: none;">
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6">
+                        <i class="fas fa-users-cog text-blue-600 mr-2"></i>Personal Registrado
+                    </h3>
+                    <div id="personal-lista" class="overflow-x-auto"></div>
+                </div>
             </div>
         </div>
 
@@ -720,8 +1283,14 @@ app.get('/', (c) => {
         <div id="stock-tab" class="tab-content">
             <div class="bg-white rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Control de Inventario</h2>
+                    <h2 class="text-2xl font-bold text-gray-800">
+                        <i class="fas fa-boxes text-teal-600 mr-2"></i>
+                        Control de Inventario
+                    </h2>
                     <div class="flex gap-3">
+                        <button onclick="showGestionCategorias()" class="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700">
+                            <i class="fas fa-tags mr-2"></i>Categorías
+                        </button>
                         <button onclick="loadStock(true)" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
                             <i class="fas fa-exclamation-circle mr-2"></i>Bajo Stock
                         </button>
@@ -730,6 +1299,15 @@ app.get('/', (c) => {
                         </button>
                     </div>
                 </div>
+                
+                <!-- Filtro por categoría -->
+                <div class="mb-4">
+                    <label class="text-sm font-medium text-gray-700 mr-3">Filtrar por categoría:</label>
+                    <select id="filter-categoria" onchange="loadStock(false)" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
+                        <option value="">Todas las categorías</option>
+                    </select>
+                </div>
+                
                 <div id="stock-lista" class="overflow-x-auto"></div>
             </div>
         </div>
@@ -749,9 +1327,25 @@ app.get('/', (c) => {
 
         <!-- REPORTES TAB -->
         <div id="reportes-tab" class="tab-content">
+            <!-- Gráfica de Ingresos -->
+            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-chart-line text-green-600 mr-2"></i>
+                    Análisis de Ingresos
+                </h2>
+                <div class="bg-gradient-to-r from-green-50 to-teal-50 rounded-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Ingresos Últimos 7 Días</h3>
+                    <canvas id="chartIngresos"></canvas>
+                </div>
+            </div>
+            
+            <!-- Reportes Mensuales -->
             <div class="bg-white rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Reportes Mensuales</h2>
+                    <h2 class="text-2xl font-bold text-gray-800">
+                        <i class="fas fa-file-invoice text-blue-600 mr-2"></i>
+                        Reportes Mensuales
+                    </h2>
                     <input type="month" id="reporte-mes" onchange="loadReporte()" 
                            class="px-4 py-2 border rounded-lg" value="${new Date().toISOString().slice(0, 7)}">
                 </div>
@@ -759,10 +1353,126 @@ app.get('/', (c) => {
             </div>
         </div>
 
+        <!-- PRESUPUESTOS TAB -->
+        <div id="presupuestos-tab" class="tab-content">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Gestión de Presupuestos</h2>
+                    <button onclick="showPresupuestoForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                        <i class="fas fa-plus mr-2"></i>Nuevo Presupuesto
+                    </button>
+                </div>
+                <div class="mb-6 flex gap-4">
+                    <select id="filter-estado-presupuesto" onchange="loadPresupuestos()" class="px-4 py-2 border rounded-lg">
+                        <option value="">Todos los estados</option>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="enviado">Enviado</option>
+                        <option value="aceptado">Aceptado</option>
+                        <option value="rechazado">Rechazado</option>
+                    </select>
+                </div>
+                <div id="presupuestos-lista" class="overflow-x-auto"></div>
+            </div>
+        </div>
+
+        <!-- CONSULTOR IA TAB -->
+        <div id="consultor-tab" class="tab-content">
+            <div class="bg-white rounded-xl shadow-md overflow-hidden h-[calc(100vh-250px)] flex flex-col">
+                <!-- Header del Chat -->
+                <div class="bg-gradient-to-r from-purple-600 to-blue-600 p-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+                            <i class="fas fa-robot text-purple-600 text-2xl"></i>
+                        </div>
+                        <div class="text-white">
+                            <h2 class="text-2xl font-bold">GALI - Tu Consultora IA</h2>
+                            <p class="text-purple-100 text-sm">Gestora y Asesora para Líderes de Instalación</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        <span class="bg-white/20 text-white px-3 py-1 rounded-full text-xs">
+                            <i class="fas fa-cut mr-1"></i>Experta en Cortinas
+                        </span>
+                        <span class="bg-white/20 text-white px-3 py-1 rounded-full text-xs">
+                            <i class="fas fa-file-invoice mr-1"></i>Facturación y VerificaTu
+                        </span>
+                        <span class="bg-white/20 text-white px-3 py-1 rounded-full text-xs">
+                            <i class="fas fa-users mr-1"></i>Gestión de Clientes
+                        </span>
+                        <span class="bg-white/20 text-white px-3 py-1 rounded-full text-xs">
+                            <i class="fas fa-lightbulb mr-1"></i>Tips y Mejoras
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Área de Mensajes -->
+                <div id="chat-messages" class="flex-1 p-6 overflow-y-auto bg-gray-50">
+                    <!-- Mensaje de Bienvenida -->
+                    <div class="mb-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-robot text-white"></i>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 shadow-sm max-w-3xl">
+                                <p class="text-gray-800 mb-3">
+                                    ¡Hola! Soy <strong>GALI</strong>, tu consultora especializada en el negocio de cortinas y gestión administrativa. 👋
+                                </p>
+                                <p class="text-gray-700 mb-3">
+                                    Puedo ayudarte con:
+                                </p>
+                                <ul class="list-disc list-inside text-gray-700 space-y-1 mb-3">
+                                    <li><strong>Negocio de Cortinas</strong>: Confección, instalación, propuestas comerciales, tips de venta</li>
+                                    <li><strong>Facturación</strong>: VerificaTu, normativa fiscal, gestión de cobros</li>
+                                    <li><strong>Gestión de Clientes</strong>: Fidelización, seguimiento, presupuestos</li>
+                                    <li><strong>Uso de la Herramienta</strong>: Guía completa, mejores prácticas, optimización</li>
+                                </ul>
+                                <p class="text-gray-600 text-sm italic">
+                                    💡 Pregúntame lo que quieras sobre tu negocio, facturación o cómo usar mejor el sistema.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Área de Input -->
+                <div class="border-t bg-white p-4">
+                    <div class="flex gap-3">
+                        <input 
+                            type="text" 
+                            id="chat-input" 
+                            placeholder="Escribe tu consulta aquí... (ej: ¿Cómo calculo el metraje para cortinas?)"
+                            class="flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            onkeypress="if(event.key==='Enter') sendMessage()"
+                        >
+                        <button 
+                            onclick="sendMessage()" 
+                            class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all"
+                        >
+                            <i class="fas fa-paper-plane mr-2"></i>Enviar
+                        </button>
+                    </div>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <button onclick="sendQuickQuestion('¿Cómo calculo el metraje de cortinas?')" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full text-gray-700">
+                            📏 Calcular metraje
+                        </button>
+                        <button onclick="sendQuickQuestion('¿Qué es VerificaTu y cómo lo uso?')" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full text-gray-700">
+                            📄 VerificaTu
+                        </button>
+                        <button onclick="sendQuickQuestion('Dame tips para cerrar más ventas')" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full text-gray-700">
+                            💰 Tips de venta
+                        </button>
+                        <button onclick="sendQuickQuestion('¿Cómo gestiono mejor mis clientes?')" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full text-gray-700">
+                            👥 Gestión clientes
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
-    <script src="/static/app.js"></script>
+    <script src="/static/app-final.js"></script>
 </body>
 </html>
   `)

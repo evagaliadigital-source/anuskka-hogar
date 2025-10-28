@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Completo - Clientes + Presupuestos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .tab-button.active { background: linear-gradient(135deg, #1f2937 0%, #374151 100%); color: white; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-6">🧪 Test Completo</h1>
+        
+        <!-- Navegación -->
+        <div class="bg-white rounded-lg shadow-md p-4 mb-6 flex gap-2">
+            <button onclick="showTab('clientes')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-users mr-2"></i>Clientes
+            </button>
+            <button onclick="showTab('presupuestos')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-file-alt mr-2"></i>Presupuestos
+            </button>
+        </div>
+        
+        <!-- Tab Clientes -->
+        <div id="clientes-tab" class="tab-content">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-4">Clientes</h2>
+                <button onclick="testClientes()" class="bg-blue-500 text-white px-4 py-2 rounded mb-4">
+                    Cargar Clientes
+                </button>
+                <div id="clientes-lista"></div>
+            </div>
+        </div>
+        
+        <!-- Tab Presupuestos -->
+        <div id="presupuestos-tab" class="tab-content">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-4">Presupuestos</h2>
+                <button onclick="testPresupuestos()" class="bg-green-500 text-white px-4 py-2 rounded mb-4">
+                    Cargar Presupuestos
+                </button>
+                <div id="presupuestos-lista"></div>
+            </div>
+        </div>
+        
+        <!-- Logs -->
+        <div class="mt-6 bg-gray-800 text-white p-4 rounded-lg">
+            <h3 class="font-bold mb-2">📋 Console Logs:</h3>
+            <div id="logs" class="text-sm font-mono"></div>
+        </div>
+    </div>
+    
+    <script>
+        const API = '/api'
+        
+        function log(msg, type = 'info') {
+            const colors = {
+                info: 'text-blue-400',
+                success: 'text-green-400',
+                error: 'text-red-400'
+            }
+            const logs = document.getElementById('logs')
+            const time = new Date().toLocaleTimeString()
+            logs.innerHTML += `<div class="${colors[type]}">[${time}] ${msg}</div>`
+            console.log(msg)
+        }
+        
+        function showTab(tabName) {
+            log(`🔄 Changing to tab: ${tabName}`)
+            
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active')
+            })
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active')
+            })
+            
+            const tab = document.getElementById(`${tabName}-tab`)
+            if (tab) {
+                tab.classList.add('active')
+                event.target.classList.add('active')
+                log(`✅ Tab ${tabName} activated`, 'success')
+            } else {
+                log(`❌ Tab ${tabName} NOT FOUND`, 'error')
+            }
+        }
+        
+        async function testClientes() {
+            log('🔄 Loading clientes...')
+            try {
+                const { data } = await axios.get(`${API}/clientes`)
+                log(`✅ Got ${data.length} clientes`, 'success')
+                
+                const container = document.getElementById('clientes-lista')
+                container.innerHTML = `
+                    <table class="min-w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left">Nombre</th>
+                                <th class="px-6 py-3 text-left">Teléfono</th>
+                                <th class="px-6 py-3 text-left">Ciudad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(c => `
+                                <tr class="border-t">
+                                    <td class="px-6 py-4">${c.nombre} ${c.apellidos}</td>
+                                    <td class="px-6 py-4">${c.telefono}</td>
+                                    <td class="px-6 py-4">${c.ciudad}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error')
+            }
+        }
+        
+        async function testPresupuestos() {
+            log('🔄 Loading presupuestos...')
+            try {
+                const { data } = await axios.get(`${API}/presupuestos`)
+                log(`✅ Got ${data.length} presupuestos`, 'success')
+                
+                const container = document.getElementById('presupuestos-lista')
+                container.innerHTML = `
+                    <table class="min-w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left">Número</th>
+                                <th class="px-6 py-3 text-left">Cliente</th>
+                                <th class="px-6 py-3 text-left">Total</th>
+                                <th class="px-6 py-3 text-left">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(p => `
+                                <tr class="border-t">
+                                    <td class="px-6 py-4">${p.numero_presupuesto}</td>
+                                    <td class="px-6 py-4">${p.cliente_nombre} ${p.cliente_apellidos}</td>
+                                    <td class="px-6 py-4">€${p.total.toFixed(2)}</td>
+                                    <td class="px-6 py-4">${p.estado}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error')
+            }
+        }
+        
+        // Auto-activate first tab
+        document.addEventListener('DOMContentLoaded', () => {
+            log('✅ Page loaded')
+            showTab('clientes')
+            testClientes()
+        })
+    </script>
+</body>
+</html>
