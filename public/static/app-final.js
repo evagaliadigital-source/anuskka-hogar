@@ -4052,9 +4052,17 @@ async function analizarImagen() {
   
   try {
     console.log('📤 Mostrando loading...')
-    showLoading('Analizando espacio con IA...')
+    showLoading('Analizando espacio con IA (Gemini Vision)...')
     
-    // Simular upload a R2 (en producción, aquí subirías a Cloudflare R2)
+    // Convertir imagen a base64 para Gemini Vision
+    const imagen_base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = (e) => resolve(e.target.result)
+      reader.onerror = reject
+      reader.readAsDataURL(proyectoActual.imagen_file)
+    })
+    
+    // Simular upload a R2 para preview (en producción, aquí subirías a Cloudflare R2)
     const imagen_url = URL.createObjectURL(proyectoActual.imagen_file)
     proyectoActual.imagen_url = imagen_url
     
@@ -4064,15 +4072,18 @@ async function analizarImagen() {
       imagen_original_url: imagen_url
     })
     proyectoActual.id = proyecto.proyecto_id
+    console.log('✅ Proyecto creado con ID:', proyectoActual.id)
     
-    // Analizar con IA
+    // Analizar con IA (Gemini Vision)
+    console.log('🤖 Llamando a Gemini Vision...')
     const { data: analisis } = await axios.post(`${API}/disenador/analizar`, {
-      imagen_url: imagen_url,
+      imagen_base64: imagen_base64,
       proyecto_id: proyectoActual.id
     })
     
     proyectoActual.analisis = analisis.analisis
     console.log('✅ Análisis recibido:', analisis.analisis)
+    console.log('ℹ️ Mensaje:', analisis.mensaje)
     
     hideLoading()
     console.log('📊 Mostrando análisis...')
@@ -4098,7 +4109,12 @@ async function analizarImagen() {
       }
     }, 300)
     
-    showSuccess('✅ Análisis completado - Ahora elige el tipo de cortina')
+    // Mensaje de éxito (indicar si es real o simulado)
+    if (analisis.mensaje.includes('simulado')) {
+      showSuccess('⚠️ Análisis simulado completado (configura GEMINI_API_KEY para análisis real)')
+    } else {
+      showSuccess('✅ Análisis completado con Gemini Vision - Ahora elige el tipo de cortina')
+    }
     
   } catch (error) {
     console.error('❌ Error analizando imagen:', error)

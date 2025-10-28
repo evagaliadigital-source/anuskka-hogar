@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 
 type Bindings = {
   DB: D1Database;
+  GEMINI_API_KEY: string;
 }
 
 const disenador = new Hono<{ Bindings: Bindings }>()
@@ -372,23 +373,109 @@ disenador.delete('/proyectos/:id', async (c) => {
 // POST - Analizar imagen con Gemini Vision
 disenador.post('/analizar', async (c) => {
   try {
-    const { imagen_url, proyecto_id } = await c.req.json()
+    const { imagen_base64, proyecto_id } = await c.req.json()
     
-    // TODO: Integrar Gemini Vision aquí
-    // Por ahora devolvemos un análisis simulado
+    if (!imagen_base64) {
+      return c.json({ error: 'Imagen no proporcionada' }, 400)
+    }
     
-    const analisisSimulado = {
-      ventanas: [{
-        ubicacion: "pared frontal",
-        ancho_aprox: 2.5,
-        alto_aprox: 2.0,
-        forma: "rectangular"
-      }],
-      estilo: "moderno",
-      colores: ["#F5F5DC", "#36454F"],
-      luz_natural: "alta",
-      materiales: ["madera", "textil"],
-      recomendaciones: ["Lino natural", "Algodón", "Seda"]
+    const apiKey = c.env.GEMINI_API_KEY
+    if (!apiKey || apiKey === 'your-api-key-here') {
+      // Modo desarrollo sin API key - usar análisis simulado
+      console.warn('⚠️ GEMINI_API_KEY no configurada, usando análisis simulado')
+      return usarAnalisisSimulado(c, proyecto_id)
+    }
+    
+    // Extraer solo el base64 sin el prefijo data:image/...
+    const base64Data = imagen_base64.includes('base64,') 
+      ? imagen_base64.split('base64,')[1] 
+      : imagen_base64
+    
+    // Llamar a Gemini Vision API
+    const prompt = `Analiza esta imagen de una habitación para diseñar cortinas. Proporciona:
+
+1. **Ventanas detectadas**: Para cada ventana, indica:
+   - Ubicación en la habitación
+   - Dimensiones aproximadas (ancho y alto en metros)
+   - Forma (rectangular, arqueada, etc.)
+
+2. **Estilo del espacio**: Describe el estilo decorativo (moderno, clásico, minimalista, rústico, etc.)
+
+3. **Colores predominantes**: Lista 2-4 colores principales en formato hexadecimal
+
+4. **Nivel de luz natural**: (baja, media, alta)
+
+5. **Materiales visibles**: (madera, metal, textil, vidrio, etc.)
+
+6. **Recomendaciones de telas**: Sugiere 3-4 tipos de telas que combinen bien (Lino, Algodón, Terciopelo, Seda, Blackout, etc.)
+
+Responde SOLO en formato JSON válido siguiendo esta estructura:
+{
+  "ventanas": [{"ubicacion": "string", "ancho_aprox": number, "alto_aprox": number, "forma": "string"}],
+  "estilo": "string",
+  "colores": ["#RRGGBB"],
+  "luz_natural": "string",
+  "materiales": ["string"],
+  "recomendaciones": ["string"]
+}`
+    
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: prompt },
+              {
+                inline_data: {
+                  mime_type: 'image/jpeg',
+                  data: base64Data
+                }
+              }
+            ]
+          }]
+        })
+      }
+    )
+    
+    if (!response.ok) {
+      const errorData = await response.text()
+      console.error('Error de Gemini API:', errorData)
+      return c.json({ error: 'Error al analizar imagen con IA' }, 500)
+    }
+    
+    const result = await response.json()
+    const textoRespuesta = result.candidates?.[0]?.content?.parts?.[0]?.text
+    
+    if (!textoRespuesta) {
+      console.error('Respuesta vacía de Gemini')
+      return usarAnalisisSimulado(c, proyecto_id)
+    }
+    
+    // Extraer JSON de la respuesta (Gemini a veces envuelve el JSON en markdown)
+    let analisis
+    try {
+      const jsonMatch = textoRespuesta.match(/\{[\s\S]*\}/)
+      analisis = JSON.parse(jsonMatch ? jsonMatch[0] : textoRespuesta)
+    } catch (parseError) {
+      console.error('Error parseando respuesta de Gemini:', parseError)
+      console.log('Respuesta recibida:', textoRespuesta)
+      return usarAnalisisSimulado(c, proyecto_id)
+    }
+    
+    // Validar estructura del análisis
+    if (!analisis.ventanas || !analisis.estilo || !analisis.colores) {
+      console.error('Análisis incompleto:', analisis)
+      return usarAnalisisSimulado(c, proyecto_id)
+    }
+    
+    // Extraer dimensiones de la primera ventana
+    const ventanaPrincipal = analisis.ventanas[0]
+    const dimensiones = {
+      ancho: ventanaPrincipal?.ancho_aprox || 2.5,
+      alto: ventanaPrincipal?.alto_aprox || 2.0
     }
     
     // Actualizar proyecto con análisis
@@ -402,24 +489,66 @@ disenador.post('/analizar', async (c) => {
             updated_at = datetime('now')
         WHERE id = ?
       `).bind(
-        JSON.stringify(analisisSimulado),
-        JSON.stringify({ ancho: 2.5, alto: 2.0 }),
-        analisisSimulado.estilo,
-        JSON.stringify(analisisSimulado.colores),
+        JSON.stringify(analisis),
+        JSON.stringify(dimensiones),
+        analisis.estilo,
+        JSON.stringify(analisis.colores),
         proyecto_id
       ).run()
     }
     
     return c.json({
       success: true,
-      analisis: analisisSimulado,
-      mensaje: 'Análisis completado correctamente'
+      analisis: analisis,
+      mensaje: 'Análisis completado con Gemini Vision'
     })
   } catch (error) {
     console.error('Error analizando imagen:', error)
     return c.json({ error: 'Error al analizar imagen' }, 500)
   }
 })
+
+// Función auxiliar para análisis simulado (desarrollo sin API key)
+function usarAnalisisSimulado(c: any, proyecto_id: any) {
+  const analisisSimulado = {
+    ventanas: [{
+      ubicacion: "pared frontal",
+      ancho_aprox: 2.5,
+      alto_aprox: 2.0,
+      forma: "rectangular"
+    }],
+    estilo: "moderno",
+    colores: ["#F5F5DC", "#36454F"],
+    luz_natural: "alta",
+    materiales: ["madera", "textil"],
+    recomendaciones: ["Lino natural", "Algodón", "Seda"]
+  }
+  
+  // Actualizar proyecto con análisis simulado
+  if (proyecto_id) {
+    c.env.DB.prepare(`
+      UPDATE proyectos_diseno 
+      SET analisis_ia = ?,
+          dimensiones_detectadas = ?,
+          estilo_detectado = ?,
+          colores_predominantes = ?,
+          updated_at = datetime('now')
+      WHERE id = ?
+    `).bind(
+      JSON.stringify(analisisSimulado),
+      JSON.stringify({ ancho: 2.5, alto: 2.0 }),
+      analisisSimulado.estilo,
+      JSON.stringify(analisisSimulado.colores),
+      proyecto_id
+    ).run()
+  }
+  
+  return c.json({
+    success: true,
+    analisis: analisisSimulado,
+    mensaje: '⚠️ Análisis simulado (configura GEMINI_API_KEY para análisis real)'
+  })
+}
 
 // ============================================
 // GENERACIÓN DE VISUALIZACIONES
