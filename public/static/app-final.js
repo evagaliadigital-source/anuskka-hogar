@@ -4019,8 +4019,11 @@ function resetUpload() {
 // Analizar imagen con IA
 async function analizarImagen() {
   console.log('🔍 analizarImagen() iniciada')
+  console.log('📁 proyectoActual.imagen_file:', proyectoActual.imagen_file)
+  
   if (!proyectoActual.imagen_file) {
     alert('❌ Selecciona una imagen primero')
+    console.error('❌ No hay imagen_file en proyectoActual')
     return
   }
   
@@ -4504,4 +4507,19 @@ document.addEventListener('DOMContentLoaded', () => {
   } else {
     console.error('❌ analizarImagen NO DEFINIDA')
   }
+  
+  // MÉTODO ALTERNATIVO: Event listener directo en el botón
+  setTimeout(() => {
+    const btnAnalizar = document.getElementById('btn-analizar')
+    if (btnAnalizar) {
+      console.log('✅ Botón #btn-analizar encontrado, añadiendo event listener')
+      btnAnalizar.addEventListener('click', function(e) {
+        e.preventDefault()
+        console.log('🖱️ CLICK DETECTADO en btn-analizar')
+        analizarImagen()
+      })
+    } else {
+      console.error('❌ Botón #btn-analizar NO encontrado')
+    }
+  }, 1000)
 })

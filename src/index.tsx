@@ -1551,7 +1551,7 @@ app.get('/', (c) => {
                         <div id="image-preview" class="hidden mt-6">
                             <img id="preview-img" src="" alt="Preview" class="w-full max-h-96 object-contain rounded-lg">
                             <div class="flex gap-3 mt-4">
-                                <button onclick="analizarImagen()" class="flex-1 bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700">
+                                <button id="btn-analizar" class="flex-1 bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700">
                                     <i class="fas fa-magic mr-2"></i>Analizar con IA
                                 </button>
                                 <button onclick="resetUpload()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
