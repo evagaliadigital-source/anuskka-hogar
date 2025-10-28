@@ -6,6 +6,19 @@
 
 ## ✨ Características Completadas
 
+### 🤖 Consultor IA - GALI (NUEVO)
+- **Agente especializado** integrado en el sistema
+- **4 áreas de expertise**:
+  - 🪡 Negocio de cortinas (metraje, confección, instalación)
+  - 📄 Facturación y VerificaTu
+  - 👥 Gestión de clientes y ventas
+  - 🛠️ Uso de la herramienta Anushka Hogar
+- **Chat interactivo** con respuestas contextuales
+- **Preguntas rápidas** predefinidas para acceso rápido
+- **Formato markdown** en respuestas (negritas, listas, enlaces)
+- **Acceso universal** (disponible para todos los roles)
+- Ver documentación completa: [GALI_CONSULTOR_IA.md](./GALI_CONSULTOR_IA.md)
+
 ### 🔐 Sistema de Autenticación y Roles
 - **NUEVO**: Sistema de roles completo (Ana Ramos 👑 vs Tienda 🏪)
 - **NUEVO**: Contraseña adicional "1984" para Ana Ramos (recordable por navegador)
@@ -104,7 +117,8 @@
 
 ### API REST Endpoints
 **Autenticación**: POST `/api/login`
-**Categorías**: GET, POST, PUT, DELETE `/api/categorias` - **NUEVO**
+**Consultor IA**: POST `/api/chat` - **NUEVO**
+**Categorías**: GET, POST, PUT, DELETE `/api/categorias`
 **Clientes**: GET, POST, PUT `/api/clientes`
 **Empleadas**: GET, POST, PUT `/api/empleadas`
 **Trabajos**: GET, POST, PUT `/api/trabajos`
@@ -270,15 +284,16 @@ npx wrangler d1 execute anushka-hogar-production --local --command="SELECT * FRO
 ## 📝 Guía de Uso Rápida
 
 1. **Login**: Elegir rol (Ana Ramos o Tienda) → Ingresar credenciales
-2. **Gestionar Categorías**: Ir a "Stock" → "Categorías" → Crear/Editar categorías con colores e iconos
-3. **Crear Productos desde Categoría**: En "Categorías" → Click en "Añadir Artículo" en cualquier categoría
-4. **Crear Cliente**: Ir a "Clientes" → "Nuevo Cliente" → Rellenar formulario
-5. **Crear Empleada**: Ir a "Personal" → "Nueva Empleada" → Rellenar datos (solo Ana Ramos)
-6. **Programar Trabajo**: Ir a "Trabajos" → "Nuevo Trabajo" → Asignar cliente y empleada
-7. **Gestionar Stock**: Ir a "Stock" → "Nuevo Artículo" → Seleccionar categoría → Configurar alertas
-8. **Filtrar Stock**: Usar dropdown de categorías para filtrar inventario
-9. **Generar Factura**: Ir a "Facturación" → "Nueva Factura" → Asociar a trabajo (solo Ana Ramos)
-10. **Ver Reportes**: Ir a "Reportes" → Seleccionar mes → Ver métricas (solo Ana Ramos)
+2. **🤖 Consultar a GALI**: Click en "Consultor IA" → Pregunta lo que necesites sobre cortinas, facturación, ventas o el sistema
+3. **Gestionar Categorías**: Ir a "Stock" → "Categorías" → Crear/Editar categorías con colores e iconos
+4. **Crear Productos desde Categoría**: En "Categorías" → Click en "Añadir Artículo" en cualquier categoría
+5. **Crear Cliente**: Ir a "Clientes" → "Nuevo Cliente" → Rellenar formulario
+6. **Crear Empleada**: Ir a "Personal" → "Nueva Empleada" → Rellenar datos (solo Ana Ramos)
+7. **Programar Trabajo**: Ir a "Trabajos" → "Nuevo Trabajo" → Asignar cliente y empleada
+8. **Gestionar Stock**: Ir a "Stock" → "Nuevo Artículo" → Seleccionar categoría → Configurar alertas
+9. **Filtrar Stock**: Usar dropdown de categorías para filtrar inventario
+10. **Generar Factura**: Ir a "Facturación" → "Nueva Factura" → Asociar a trabajo (solo Ana Ramos)
+11. **Ver Reportes**: Ir a "Reportes" → Seleccionar mes → Ver métricas (solo Ana Ramos)
 
 ## 🔐 Seguridad
 
@@ -308,10 +323,27 @@ Dashboard desarrollado para uso interno de Anushka Hogar.
 
 ## 🆕 Cambios Recientes (28/10/2025)
 
+### 🤖 Consultor IA - GALI (NUEVO)
+✅ **Agente especializado** integrado en el sistema  
+✅ **4 áreas de expertise**: Cortinas, Facturación, Ventas, Herramienta  
+✅ Chat interactivo con respuestas contextuales  
+✅ Preguntas rápidas predefinidas  
+✅ Formato markdown en respuestas  
+✅ Acceso universal (todos los roles)  
+✅ Endpoint API: POST `/api/chat`  
+✅ Sistema de keywords inteligente  
+✅ Respuestas estructuradas y prácticas
+
+**Ejemplos de uso:**
+- "¿Cómo calculo el metraje para cortinas?"
+- "¿Qué es VerificaTu y cómo lo uso?"
+- "Dame tips para cerrar más ventas"
+- "¿Cómo gestiono mejor el stock?"
+
 ### Sistema de Roles Completo
 ✅ Implementado sistema de roles con dos niveles de acceso  
 ✅ Ana Ramos (propietaria) - Acceso total con contraseña adicional "1984"  
-✅ Tienda - Acceso limitado a 5 pestañas operativas  
+✅ Tienda - Acceso limitado a 6 pestañas operativas (incluye Consultor IA)  
 ✅ Tabs sensibles invisibles para rol Tienda  
 ✅ Contraseña 1984 recordable por navegador (autocomplete)
 
@@ -322,7 +354,7 @@ Dashboard desarrollado para uso interno de Anushka Hogar.
 ✅ Validación de eliminación (no se puede borrar si tiene productos)  
 ✅ Filtro por categoría en inventario  
 ✅ Badges visuales con colores e iconos en listado de stock  
-✅ **NUEVO**: Botón "Añadir Artículo" en cada tarjeta de categoría  
+✅ Botón "Añadir Artículo" en cada tarjeta de categoría  
 ✅ Formulario de productos usa categorías dinámicas desde BD  
 ✅ Pre-selección de categoría al crear producto desde categoría
 
@@ -330,4 +362,5 @@ Dashboard desarrollado para uso interno de Anushka Hogar.
 ✅ Categorías visuales con colores personalizables  
 ✅ Iconos Font Awesome para cada categoría  
 ✅ Creación rápida de productos desde gestión de categorías  
-✅ Flujo integrado: Categorías → Añadir Artículo → Formulario con categoría preseleccionada
+✅ Flujo integrado: Categorías → Añadir Artículo → Formulario con categoría preseleccionada  
+✅ **Chat IA con interfaz moderna** y animaciones suaves
