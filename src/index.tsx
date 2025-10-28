@@ -1678,6 +1678,52 @@ app.get('/', (c) => {
                             
                             <!-- Columna 1: Catálogo de Telas -->
                             <div class="lg:col-span-2">
+                                <!-- Opción: Subir Tela Nueva -->
+                                <div class="mb-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h4 class="font-bold text-gray-800">
+                                            <i class="fas fa-upload text-blue-600 mr-2"></i>
+                                            ¿No encuentras la tela? Súbela aquí
+                                        </h4>
+                                        <button onclick="toggleSubirTela()" id="btn-toggle-subir" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                            <i class="fas fa-chevron-down"></i> Mostrar
+                                        </button>
+                                    </div>
+                                    
+                                    <div id="form-subir-tela" class="hidden space-y-3">
+                                        <div class="border-2 border-dashed border-blue-300 rounded-lg p-6 text-center hover:border-blue-500 transition-all cursor-pointer"
+                                             onclick="document.getElementById('tela-file-input').click()">
+                                            <input type="file" id="tela-file-input" accept="image/*" class="hidden" onchange="handleTelaUpload(event)">
+                                            <i class="fas fa-image text-4xl text-blue-400 mb-2"></i>
+                                            <p class="text-sm text-gray-600">Click para subir imagen de la tela</p>
+                                        </div>
+                                        
+                                        <div id="tela-preview" class="hidden">
+                                            <img id="tela-preview-img" src="" alt="Preview" class="w-full h-32 object-cover rounded-lg mb-2">
+                                            <input type="text" id="tela-nombre-input" placeholder="Nombre de la tela" class="w-full px-3 py-2 border rounded-lg mb-2">
+                                            <input type="number" id="tela-precio-input" placeholder="Precio por m² (€)" step="0.01" class="w-full px-3 py-2 border rounded-lg mb-2">
+                                            
+                                            <label class="flex items-center space-x-2 p-3 bg-white rounded-lg border">
+                                                <input type="checkbox" id="tela-es-stock" class="w-4 h-4">
+                                                <span class="text-sm">
+                                                    <i class="fas fa-warehouse text-purple-600 mr-1"></i>
+                                                    ¿Es de nuestro stock?
+                                                </span>
+                                            </label>
+                                            
+                                            <div class="flex gap-2 mt-3">
+                                                <button onclick="usarTelaSubida()" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                                                    <i class="fas fa-check mr-2"></i>Usar Esta Tela
+                                                </button>
+                                                <button onclick="cancelarTelaSubida()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+                                                    Cancelar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Catálogo existente -->
                                 <div class="mb-4 flex gap-3">
                                     <select id="filter-opacidad" onchange="filtrarTelas()" class="px-4 py-2 border rounded-lg">
                                         <option value="">Todas las opacidades</option>

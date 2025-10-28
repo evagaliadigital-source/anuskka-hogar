@@ -4230,6 +4230,111 @@ async function continuarATelas() {
   }
 }
 
+// Toggle mostrar form de subir tela
+function toggleSubirTela() {
+  const form = document.getElementById('form-subir-tela')
+  const btn = document.getElementById('btn-toggle-subir')
+  
+  if (form.classList.contains('hidden')) {
+    form.classList.remove('hidden')
+    btn.innerHTML = '<i class="fas fa-chevron-up"></i> Ocultar'
+  } else {
+    form.classList.add('hidden')
+    btn.innerHTML = '<i class="fas fa-chevron-down"></i> Mostrar'
+  }
+}
+
+// Manejar subida de imagen de tela
+function handleTelaUpload(event) {
+  const file = event.target.files[0]
+  if (!file) return
+  
+  if (file.size > 10 * 1024 * 1024) {
+    alert('❌ La imagen es demasiado grande (máx. 10MB)')
+    return
+  }
+  
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    document.getElementById('tela-preview-img').src = e.target.result
+    document.getElementById('tela-preview').classList.remove('hidden')
+    proyectoActual.tela_custom_file = file
+    proyectoActual.tela_custom_preview = e.target.result
+  }
+  reader.readAsDataURL(file)
+}
+
+// Usar tela subida
+function usarTelaSubida() {
+  const nombre = document.getElementById('tela-nombre-input').value.trim()
+  const precio = parseFloat(document.getElementById('tela-precio-input').value)
+  const esStock = document.getElementById('tela-es-stock').checked
+  
+  if (!nombre) {
+    alert('❌ Ingresa el nombre de la tela')
+    return
+  }
+  
+  if (!precio || precio <= 0) {
+    alert('❌ Ingresa un precio válido')
+    return
+  }
+  
+  if (!proyectoActual.tela_custom_file) {
+    alert('❌ Sube una imagen de la tela')
+    return
+  }
+  
+  // Crear objeto de tela personalizada
+  proyectoActual.tela_seleccionada = {
+    id: 'custom',
+    nombre: nombre,
+    precio_metro: precio,
+    referencia: 'CUSTOM-' + Date.now(),
+    es_stock: esStock,
+    imagen_preview: proyectoActual.tela_custom_preview,
+    es_personalizada: true
+  }
+  
+  // Actualizar UI
+  document.getElementById('tela-nombre').textContent = nombre
+  document.getElementById('tela-precio').textContent = `${precio}€/m²`
+  
+  // Si es de stock, crear tarea pendiente
+  if (esStock) {
+    showSuccess(`✅ Tela "${nombre}" seleccionada. Se creará tarea para añadir al stock.`)
+    // TODO: Crear tarea en sistema de tareas
+    console.log('⚠️ TAREA PENDIENTE: Añadir tela al stock:', {
+      nombre: nombre,
+      precio: precio,
+      imagen: proyectoActual.tela_custom_file.name
+    })
+  } else {
+    showSuccess(`✅ Tela externa "${nombre}" seleccionada`)
+  }
+  
+  // Habilitar botón de generar
+  document.getElementById('btn-generar').disabled = false
+  
+  // Ocultar form
+  toggleSubirTela()
+  cancelarTelaSubida()
+  
+  // Calcular precio
+  calcularPrecioEstimado()
+}
+
+// Cancelar subida de tela
+function cancelarTelaSubida() {
+  document.getElementById('tela-file-input').value = ''
+  document.getElementById('tela-nombre-input').value = ''
+  document.getElementById('tela-precio-input').value = ''
+  document.getElementById('tela-es-stock').checked = false
+  document.getElementById('tela-preview').classList.add('hidden')
+  proyectoActual.tela_custom_file = null
+  proyectoActual.tela_custom_preview = null
+}
+
 // Cargar catálogo de telas
 async function loadCatalogoTelas() {
   console.log('🔄 loadCatalogoTelas() iniciada')
