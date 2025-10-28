@@ -1858,32 +1858,6 @@ app.get('/', (c) => {
                                     </p>
                                 </div>
                                 
-                                <!-- Opciones extra -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Opciones Extra</label>
-                                    <div class="space-y-2">
-                                        <label class="flex items-center">
-                                            <input type="checkbox" id="opt-forro" class="mr-2">
-                                            <span>Forro Térmico (+15€/m²)</span>
-                                        </label>
-                                        <label class="flex items-center">
-                                            <input type="checkbox" id="opt-motorizada" class="mr-2">
-                                            <span>Motorizada (+180€)</span>
-                                        </label>
-                                        <label class="flex items-center">
-                                            <input type="checkbox" id="opt-doble" class="mr-2">
-                                            <span>Doble Cortina</span>
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <!-- Resumen de precio -->
-                                <div class="bg-gray-50 rounded-lg p-4">
-                                    <p class="text-sm text-gray-600 mb-2">Precio Estimado:</p>
-                                    <p id="precio-estimado" class="text-3xl font-bold text-purple-600">0€</p>
-                                    <p class="text-xs text-gray-500 mt-1">Cálculo aproximado</p>
-                                </div>
-                                
                                 <!-- Botón generar -->
                                 <button onclick="generarVisualizaciones()" id="btn-generar" disabled 
                                         class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-4 rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">

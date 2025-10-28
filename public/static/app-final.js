@@ -4397,8 +4397,8 @@ async function usarTelaSubida() {
     toggleSubirTela()
     cancelarTelaSubida()
     
-    // Calcular precio
-    calcularPrecioEstimado()
+    // Calcular precio - DESHABILITADO (solo visualización)
+    // calcularPrecioEstimado()
   } catch (error) {
     console.error('Error creando tarea:', error)
     hideLoading()
@@ -4494,53 +4494,53 @@ function seleccionarTela(telaId) {
   renderCatalogoTelas(catalogoTelas)
 }
 
-// Calcular precio estimado
-function calcularPrecioEstimado() {
-  if (!proyectoActual.analisis || !proyectoActual.tela_seleccionada) return
-  
-  const ventana = proyectoActual.analisis.ventanas[0]
-  const ancho = ventana.ancho_aprox
-  const alto = ventana.alto_aprox
-  
-  // Cálculo de metraje (ancho x 2.5 para caída) x (alto + 0.2 para dobladillos)
-  const metraje = (ancho * 2.5) * (alto + 0.2)
-  
-  let precioTela = metraje * proyectoActual.tela_seleccionada.precio_metro
-  
-  // Añadir extras
-  if (document.getElementById('opt-forro').checked) {
-    precioTela += metraje * 15
-  }
-  
-  if (document.getElementById('opt-motorizada').checked) {
-    precioTela += 180
-  }
-  
-  if (document.getElementById('opt-doble').checked) {
-    precioTela *= 1.8
-  }
-  
-  // Accesorios (estimado)
-  const accesorios = ancho * 45 // Rieles, ganchos, etc.
-  
-  // Confección e instalación (estimado)
-  const manoObra = 150
-  
-  const total = Math.round(precioTela + accesorios + manoObra)
-  
-  document.getElementById('precio-estimado').textContent = `${total}€`
-}
+// DESHABILITADO - Diseñador Virtual solo para visualización, no para presupuestos
+// function calcularPrecioEstimado() {
+//   if (!proyectoActual.analisis || !proyectoActual.tela_seleccionada) return
+//   
+//   const ventana = proyectoActual.analisis.ventanas[0]
+//   const ancho = ventana.ancho_aprox
+//   const alto = ventana.alto_aprox
+//   
+//   // Cálculo de metraje (ancho x 2.5 para caída) x (alto + 0.2 para dobladillos)
+//   const metraje = (ancho * 2.5) * (alto + 0.2)
+//   
+//   let precioTela = metraje * proyectoActual.tela_seleccionada.precio_metro
+//   
+//   // Añadir extras
+//   if (document.getElementById('opt-forro').checked) {
+//     precioTela += metraje * 15
+//   }
+//   
+//   if (document.getElementById('opt-motorizada').checked) {
+//     precioTela += 180
+//   }
+//   
+//   if (document.getElementById('opt-doble').checked) {
+//     precioTela *= 1.8
+//   }
+//   
+//   // Accesorios (estimado)
+//   const accesorios = ancho * 45 // Rieles, ganchos, etc.
+//   
+//   // Confección e instalación (estimado)
+//   const manoObra = 150
+//   
+//   const total = Math.round(precioTela + accesorios + manoObra)
+//   
+//   document.getElementById('precio-estimado').textContent = `${total}€`
+// }
 
-// Actualizar precio al cambiar opciones
-document.addEventListener('DOMContentLoaded', () => {
-  const opciones = ['opt-forro', 'opt-motorizada', 'opt-doble']
-  opciones.forEach(id => {
-    const el = document.getElementById(id)
-    if (el) {
-      el.addEventListener('change', calcularPrecioEstimado)
-    }
-  })
-})
+// DESHABILITADO - No hay opciones extra ahora
+// document.addEventListener('DOMContentLoaded', () => {
+//   const opciones = ['opt-forro', 'opt-motorizada', 'opt-doble']
+//   opciones.forEach(id => {
+//     const el = document.getElementById(id)
+//     if (el) {
+//       el.addEventListener('change', calcularPrecioEstimado)
+//     }
+//   })
+// })
 
 // Generar visualizaciones con IA
 async function generarVisualizaciones() {
@@ -4552,12 +4552,14 @@ async function generarVisualizaciones() {
   try {
     showLoading('🎨 Generando visualización con Flux Pro Ultra... (15-30 segundos)')
     
-    // Recoger opciones
-    proyectoActual.tipo_cortina = document.querySelector('input[name="tipo-cortina"]:checked')?.value || 'ondas_francesas'
+    // Obtener tipo de cortina (ya seleccionado en paso anterior)
+    proyectoActual.tipo_cortina = proyectoActual.tipo_cortina || 'ondas_francesas'
+    
+    // Opciones por defecto (sin extras)
     proyectoActual.opciones = {
-      forro_termico: document.getElementById('opt-forro')?.checked || false,
-      motorizada: document.getElementById('opt-motorizada')?.checked || false,
-      doble_cortina: document.getElementById('opt-doble')?.checked || false
+      forro_termico: false,
+      motorizada: false,
+      doble_cortina: false
     }
     
     console.log('📤 Enviando a generación:', {
@@ -4676,7 +4678,7 @@ async function compartirProyecto() {
 }
 
 function compartirWhatsApp() {
-  const texto = `¡Mira cómo quedarán las cortinas en tu espacio! 😍\n\nTela: ${proyectoActual.tela_seleccionada.nombre}\nPresupuesto estimado: ${document.getElementById('precio-estimado').textContent}`
+  const texto = `¡Mira cómo quedarán las cortinas en tu espacio! 😍\n\nTela: ${proyectoActual.tela_seleccionada.nombre}\nTipo: ${proyectoActual.tipo_cortina}\n\n✨ Visualización generada con IA`
   const url = `https://wa.me/?text=${encodeURIComponent(texto)}`
   window.open(url, '_blank')
   closeModal()
