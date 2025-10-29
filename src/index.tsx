@@ -1067,6 +1067,19 @@ app.get('/', (c) => {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anushka Hogar - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-orange': '#C89116',
+                        'brand-orange-dark': '#a07512',
+                        'brand-orange-light': '#f0dbb5'
+                    }
+                }
+            }
+        }
+    </script>
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <!-- jsPDF para generación de PDFs -->
@@ -1078,6 +1091,25 @@ app.get('/', (c) => {
         .tab-button.active { 
             background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
             color: white;
+            border-bottom: 3px solid #C89116;
+        }
+        /* Custom brand colors */
+        .bg-brand-orange { background-color: #C89116; }
+        .text-brand-orange { color: #C89116; }
+        .border-brand-orange { border-color: #C89116; }
+        .hover\:bg-brand-orange-dark:hover { background-color: #a07512; }
+        .bg-brand-orange-light { background-color: #f0dbb5; }
+        
+        /* GAL IA Float Button Animation */
+        @keyframes float-pulse {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        #galia-float-btn {
+            animation: float-pulse 3s ease-in-out infinite;
+        }
+        #galia-float-btn:hover {
+            animation: none;
         }
     </style>
 </head>
@@ -1133,9 +1165,7 @@ app.get('/', (c) => {
             <button onclick="showTab('reportes')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-chart-bar mr-2"></i>Reportes
             </button>
-            <button onclick="showTab('consultor')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
-                <i class="fas fa-robot mr-2"></i>Consultor IA
-            </button>
+            <!-- Consultor IA ahora disponible vía botón flotante GAL IA 🐙 -->
             <button onclick="showTab('disenador')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-magic mr-2"></i>Diseñador Virtual
             </button>
@@ -1153,10 +1183,10 @@ app.get('/', (c) => {
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600">Trabajos Activos</p>
-                            <p class="text-2xl font-bold text-blue-600" id="kpi-trabajos">0</p>
+                            <p class="text-2xl font-bold text-brand-orange" id="kpi-trabajos">0</p>
                         </div>
-                        <div class="bg-blue-100 p-3 rounded-full">
-                            <i class="fas fa-tasks text-blue-600 text-xl"></i>
+                        <div class="bg-brand-orange-light p-3 rounded-full">
+                            <i class="fas fa-tasks text-brand-orange text-xl"></i>
                         </div>
                     </div>
                 </div>
@@ -1165,10 +1195,10 @@ app.get('/', (c) => {
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600">Presupuestos Pendientes</p>
-                            <p class="text-2xl font-bold text-orange-600" id="kpi-presupuestos">0</p>
+                            <p class="text-2xl font-bold text-brand-orange" id="kpi-presupuestos">0</p>
                         </div>
-                        <div class="bg-orange-100 p-3 rounded-full">
-                            <i class="fas fa-file-alt text-orange-600 text-xl"></i>
+                        <div class="bg-brand-orange-light p-3 rounded-full">
+                            <i class="fas fa-file-alt text-brand-orange text-xl"></i>
                         </div>
                     </div>
                 </div>
@@ -1177,10 +1207,10 @@ app.get('/', (c) => {
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600">Fases en Proceso</p>
-                            <p class="text-2xl font-bold text-purple-600" id="kpi-fases">0</p>
+                            <p class="text-2xl font-bold text-amber-600" id="kpi-fases">0</p>
                         </div>
-                        <div class="bg-purple-100 p-3 rounded-full">
-                            <i class="fas fa-stream text-purple-600 text-xl"></i>
+                        <div class="bg-amber-100 p-3 rounded-full">
+                            <i class="fas fa-stream text-amber-600 text-xl"></i>
                         </div>
                     </div>
                 </div>
@@ -1203,21 +1233,21 @@ app.get('/', (c) => {
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-lg font-bold text-gray-800 mb-4">
-                        <i class="fas fa-briefcase text-blue-600 mr-2"></i>Trabajos por Estado
+                        <i class="fas fa-briefcase text-brand-orange mr-2"></i>Trabajos por Estado
                     </h3>
                     <canvas id="chartTrabajos"></canvas>
                 </div>
                 
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-lg font-bold text-gray-800 mb-4">
-                        <i class="fas fa-tasks text-purple-600 mr-2"></i>Fases Activas
+                        <i class="fas fa-tasks text-amber-600 mr-2"></i>Fases Activas
                     </h3>
                     <canvas id="chartFases"></canvas>
                 </div>
                 
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-lg font-bold text-gray-800 mb-4">
-                        <i class="fas fa-file-invoice text-orange-600 mr-2"></i>Presupuestos por Estado
+                        <i class="fas fa-file-invoice text-brand-orange mr-2"></i>Presupuestos por Estado
                     </h3>
                     <canvas id="chartPresupuestos"></canvas>
                 </div>
@@ -1279,7 +1309,7 @@ app.get('/', (c) => {
             <div id="personal-subtab-nuevo-content" class="personal-subtab-content active">
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-xl font-bold text-gray-800 mb-6">
-                        <i class="fas fa-user-plus text-teal-600 mr-2"></i>Añadir Nuevo Personal
+                        <i class="fas fa-user-plus text-brand-orange mr-2"></i>Añadir Nuevo Personal
                     </h3>
                     <div id="personal-form-container"></div>
                 </div>
@@ -1289,7 +1319,7 @@ app.get('/', (c) => {
             <div id="personal-subtab-gestion-content" class="personal-subtab-content" style="display: none;">
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-xl font-bold text-gray-800 mb-6">
-                        <i class="fas fa-users-cog text-blue-600 mr-2"></i>Personal Registrado
+                        <i class="fas fa-users-cog text-brand-orange mr-2"></i>Personal Registrado
                     </h3>
                     <div id="personal-lista" class="overflow-x-auto"></div>
                 </div>
@@ -1301,11 +1331,11 @@ app.get('/', (c) => {
             <div class="bg-white rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">
-                        <i class="fas fa-boxes text-teal-600 mr-2"></i>
+                        <i class="fas fa-boxes text-brand-orange mr-2"></i>
                         Control de Inventario
                     </h2>
                     <div class="flex gap-3">
-                        <button onclick="showGestionCategorias()" class="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700">
+                        <button onclick="showGestionCategorias()" class="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900">
                             <i class="fas fa-tags mr-2"></i>Categorías
                         </button>
                         <button onclick="loadStock(true)" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
@@ -1360,7 +1390,7 @@ app.get('/', (c) => {
             <div class="bg-white rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">
-                        <i class="fas fa-file-invoice text-blue-600 mr-2"></i>
+                        <i class="fas fa-file-invoice text-brand-orange mr-2"></i>
                         Reportes Mensuales
                     </h2>
                     <input type="month" id="reporte-mes" onchange="loadReporte()" 
@@ -1394,45 +1424,45 @@ app.get('/', (c) => {
 
         <!-- CONSULTOR IA TAB -->
         <div id="consultor-tab" class="tab-content">
-            <div class="bg-white rounded-xl shadow-md overflow-hidden h-[calc(100vh-250px)] flex flex-col">
+            <div class="bg-gradient-to-br from-slate-50 to-gray-100 rounded-xl shadow-2xl overflow-hidden h-[calc(100vh-250px)] flex flex-col border border-gray-200">
                 <!-- Header del Chat -->
-                <div class="bg-gradient-to-r from-purple-600 to-blue-600 p-6">
+                <div class="bg-gradient-to-r from-teal-700 via-blue-900 to-purple-800 p-8">
                     <div class="flex items-center gap-4">
-                        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-                            <i class="fas fa-robot text-purple-600 text-2xl"></i>
+                        <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg p-2">
+                            <img src="/static/galia-pulpo.png" alt="GAL IA" class="w-full h-full object-contain">
                         </div>
                         <div class="text-white">
-                            <h2 class="text-2xl font-bold">GALI - Tu Consultora IA</h2>
-                            <p class="text-purple-100 text-sm">Gestora y Asesora para Líderes de Instalación</p>
+                            <h2 class="text-3xl font-bold tracking-tight">GAL IA - Tu Consultora</h2>
+                            <p class="text-teal-200 text-sm font-medium mt-1">Experta en Cortinas • Gestión • Innovación</p>
                         </div>
                     </div>
-                    <div class="mt-4 flex flex-wrap gap-2">
-                        <span class="bg-white/20 text-white px-3 py-1 rounded-full text-xs">
-                            <i class="fas fa-cut mr-1"></i>Experta en Cortinas
+                    <div class="mt-6 flex flex-wrap gap-3">
+                        <span class="bg-white/25 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg hover:bg-white/35 transition-all">
+                            <i class="fas fa-cut mr-2"></i>Experta en Cortinas
                         </span>
-                        <span class="bg-white/20 text-white px-3 py-1 rounded-full text-xs">
-                            <i class="fas fa-file-invoice mr-1"></i>Facturación y VerificaTu
+                        <span class="bg-white/25 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg hover:bg-white/35 transition-all">
+                            <i class="fas fa-file-invoice mr-2"></i>Facturación y VerificaTu
                         </span>
-                        <span class="bg-white/20 text-white px-3 py-1 rounded-full text-xs">
-                            <i class="fas fa-users mr-1"></i>Gestión de Clientes
+                        <span class="bg-white/25 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg hover:bg-white/35 transition-all">
+                            <i class="fas fa-users mr-2"></i>Gestión de Clientes
                         </span>
-                        <span class="bg-white/20 text-white px-3 py-1 rounded-full text-xs">
-                            <i class="fas fa-lightbulb mr-1"></i>Tips y Mejoras
+                        <span class="bg-white/25 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg hover:bg-white/35 transition-all">
+                            <i class="fas fa-lightbulb mr-2"></i>Tips y Mejoras
                         </span>
                     </div>
                 </div>
 
                 <!-- Área de Mensajes -->
-                <div id="chat-messages" class="flex-1 p-6 overflow-y-auto bg-gray-50">
+                <div id="chat-messages" class="flex-1 p-8 overflow-y-auto bg-gradient-to-b from-white to-slate-50">
                     <!-- Mensaje de Bienvenida -->
                     <div class="mb-4">
                         <div class="flex items-start gap-3">
-                            <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                                <i class="fas fa-robot text-white"></i>
+                            <div class="w-12 h-12 bg-gradient-to-br from-teal-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-md p-1">
+                                <img src="/static/galia-pulpo.png" alt="GAL IA" class="w-full h-full object-contain">
                             </div>
-                            <div class="bg-white rounded-lg p-4 shadow-sm max-w-3xl">
-                                <p class="text-gray-800 mb-3">
-                                    ¡Hola! Soy <strong>GALI</strong>, tu consultora especializada en el negocio de cortinas y gestión administrativa. 👋
+                            <div class="bg-white rounded-2xl p-6 shadow-lg max-w-3xl border-l-4 border-teal-500">
+                                <p class="text-gray-800 mb-3 text-lg">
+                                    ¡Hola! Soy <strong class="text-teal-700">GAL IA</strong> 🐙, tu consultora especializada en cortinas y gestión administrativa. 👋
                                 </p>
                                 <p class="text-gray-700 mb-3">
                                     Puedo ayudarte con:
@@ -1458,21 +1488,21 @@ app.get('/', (c) => {
                             type="text" 
                             id="chat-input" 
                             placeholder="Escribe tu consulta aquí... (ej: ¿Cómo calculo el metraje para cortinas?)"
-                            class="flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            class="flex-1 px-5 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
                             onkeypress="if(event.key==='Enter') sendMessage()"
                         >
                         <button 
                             onclick="sendMessage()" 
-                            class="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all"
+                            class="bg-gradient-to-r from-teal-600 to-purple-700 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-2xl hover:scale-105 transition-all duration-300"
                         >
                             <i class="fas fa-paper-plane mr-2"></i>Enviar
                         </button>
                     </div>
-                    <div class="mt-2 flex flex-wrap gap-2">
-                        <button onclick="sendQuickQuestion('¿Cómo calculo el metraje de cortinas?')" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full text-gray-700">
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        <button onclick="sendQuickQuestion('¿Cómo calculo el metraje de cortinas?')" class="text-sm bg-gradient-to-r from-teal-50 to-purple-50 hover:from-teal-100 hover:to-purple-100 px-4 py-2 rounded-full text-teal-800 font-medium border border-teal-200 hover:border-teal-400 transition-all">
                             📏 Calcular metraje
                         </button>
-                        <button onclick="sendQuickQuestion('¿Qué es VerificaTu y cómo lo uso?')" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full text-gray-700">
+                        <button onclick="sendQuickQuestion('¿Qué es VerificaTu y cómo lo uso?')" class="text-sm bg-gradient-to-r from-teal-50 to-purple-50 hover:from-teal-100 hover:to-purple-100 px-4 py-2 rounded-full text-teal-800 font-medium border border-teal-200 hover:border-teal-400 transition-all">
                             📄 VerificaTu
                         </button>
                         <button onclick="sendQuickQuestion('Dame tips para cerrar más ventas')" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-full text-gray-700">
@@ -1567,37 +1597,37 @@ app.get('/', (c) => {
         <div id="disenador-tab" class="tab-content">
             <div class="space-y-6">
                 
-                <!-- Header con instrucciones -->
-                <div class="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl shadow-lg p-8 text-white">
+                <!-- Header con instrucciones - ELEGANTE GRIS PASTEL -->
+                <div class="bg-gradient-to-br from-gray-100 via-gray-50 to-stone-100 rounded-xl shadow-lg p-8 border border-gray-200">
                     <div class="flex items-center gap-4 mb-4">
-                        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-                            <i class="fas fa-magic text-purple-600 text-3xl"></i>
+                        <div class="w-16 h-16 bg-gradient-to-br from-amber-100 to-stone-200 rounded-full flex items-center justify-center shadow-md">
+                            <i class="fas fa-pencil-ruler text-amber-600 text-3xl"></i>
                         </div>
                         <div>
-                            <h1 class="text-3xl font-bold">Diseñador Virtual de Cortinas</h1>
-                            <p class="text-purple-100">Visualiza cómo quedarán las cortinas en el espacio real usando IA</p>
+                            <h1 class="text-3xl font-bold text-gray-800">Diseñador Virtual de Cortinas</h1>
+                            <p class="text-gray-600">Visualiza cómo quedarán las cortinas en el espacio real usando IA</p>
                         </div>
                     </div>
                     <div class="grid grid-cols-5 gap-3 mt-6">
-                        <div class="bg-white/10 rounded-lg p-4 text-center">
-                            <i class="fas fa-upload text-2xl mb-2"></i>
-                            <p class="text-sm">1. Sube foto</p>
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 text-center hover:shadow-md transition-shadow">
+                            <i class="fas fa-upload text-2xl mb-2 text-amber-600"></i>
+                            <p class="text-sm text-gray-700 font-medium">1. Sube foto</p>
                         </div>
-                        <div class="bg-white/10 rounded-lg p-4 text-center">
-                            <i class="fas fa-search text-2xl mb-2"></i>
-                            <p class="text-sm">2. IA analiza</p>
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 text-center hover:shadow-md transition-shadow">
+                            <i class="fas fa-search text-2xl mb-2 text-amber-600"></i>
+                            <p class="text-sm text-gray-700 font-medium">2. IA analiza</p>
                         </div>
-                        <div class="bg-white/10 rounded-lg p-4 text-center">
-                            <i class="fas fa-swatchbook text-2xl mb-2"></i>
-                            <p class="text-sm">3. Tipo cortina</p>
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 text-center hover:shadow-md transition-shadow">
+                            <i class="fas fa-swatchbook text-2xl mb-2 text-amber-600"></i>
+                            <p class="text-sm text-gray-700 font-medium">3. Tipo cortina</p>
                         </div>
-                        <div class="bg-white/10 rounded-lg p-4 text-center">
-                            <i class="fas fa-palette text-2xl mb-2"></i>
-                            <p class="text-sm">4. Elige tela</p>
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 text-center hover:shadow-md transition-shadow">
+                            <i class="fas fa-palette text-2xl mb-2 text-amber-600"></i>
+                            <p class="text-sm text-gray-700 font-medium">4. Elige tela</p>
                         </div>
-                        <div class="bg-white/10 rounded-lg p-4 text-center">
-                            <i class="fas fa-eye text-2xl mb-2"></i>
-                            <p class="text-sm">5. Visualiza</p>
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 text-center hover:shadow-md transition-shadow">
+                            <i class="fas fa-eye text-2xl mb-2 text-amber-600"></i>
+                            <p class="text-sm text-gray-700 font-medium">5. Visualiza</p>
                         </div>
                     </div>
                 </div>
@@ -1606,10 +1636,10 @@ app.get('/', (c) => {
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-gray-800">
-                            <i class="fas fa-folder-open text-purple-600 mr-2"></i>
+                            <i class="fas fa-folder-open text-amber-600 mr-2"></i>
                             Mis Proyectos
                         </h2>
-                        <button onclick="showNuevoProyecto()" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                        <button onclick="showNuevoProyecto()" class="bg-brand-orange hover:bg-brand-orange-dark text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
                             <i class="fas fa-plus mr-2"></i>Nuevo Proyecto
                         </button>
                     </div>
@@ -1624,11 +1654,11 @@ app.get('/', (c) => {
                     <!-- Paso 1: Upload de imagen -->
                     <div id="step-upload" class="bg-white rounded-xl shadow-md p-6">
                         <h3 class="text-xl font-bold mb-4">
-                            <i class="fas fa-upload text-purple-600 mr-2"></i>
+                            <i class="fas fa-upload text-amber-600 mr-2"></i>
                             Paso 1: Sube la foto del espacio
                         </h3>
                         
-                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-purple-500 transition-all cursor-pointer" 
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-amber-500 transition-all cursor-pointer" 
                              id="upload-zone"
                              onclick="document.getElementById('file-input').click()">
                             <input type="file" id="file-input" accept="image/*" class="hidden" onchange="handleFileUpload(event)">
@@ -1640,7 +1670,7 @@ app.get('/', (c) => {
                         <div id="image-preview" class="hidden mt-6">
                             <img id="preview-img" src="" alt="Preview" class="w-full max-h-96 object-contain rounded-lg">
                             <div class="flex gap-3 mt-4">
-                                <button id="btn-analizar" class="flex-1 bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700">
+                                <button id="btn-analizar" class="flex-1 bg-amber-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-amber-700">
                                     <i class="fas fa-magic mr-2"></i>Analizar con IA
                                 </button>
                                 <button onclick="resetUpload()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -1653,16 +1683,19 @@ app.get('/', (c) => {
                     <!-- Paso 2: Análisis IA (se muestra después del análisis) -->
                     <div id="step-analisis" class="hidden bg-white rounded-xl shadow-md p-6">
                         <h3 class="text-xl font-bold mb-4">
-                            <i class="fas fa-brain text-purple-600 mr-2"></i>
+                            <i class="fas fa-brain text-amber-600 mr-2"></i>
                             Paso 2: Análisis del Espacio
                         </h3>
                         <div id="analisis-resultado" class="space-y-4">
                             <!-- Se llena dinámicamente -->
                         </div>
                         
-                        <!-- Botón para continuar al siguiente paso -->
-                        <div class="mt-6 text-center">
-                            <button onclick="mostrarSeleccionTipo()" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                        <!-- Botones de navegación -->
+                        <div class="mt-6 flex gap-3 justify-center">
+                            <button onclick="volverAPaso(1)" class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all">
+                                <i class="fas fa-arrow-left mr-2"></i>Volver
+                            </button>
+                            <button onclick="mostrarSeleccionTipo()" class="bg-brand-orange hover:bg-brand-orange-dark text-white px-8 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
                                 <i class="fas fa-arrow-right mr-2"></i>Continuar: Elegir Tipo de Cortina
                             </button>
                         </div>
@@ -1671,7 +1704,7 @@ app.get('/', (c) => {
                     <!-- Paso 3: Tipo de Confección -->
                     <div id="step-tipo-cortina" class="hidden bg-white rounded-xl shadow-md p-6">
                         <h3 class="text-xl font-bold mb-6">
-                            <i class="fas fa-swatchbook text-purple-600 mr-2"></i>
+                            <i class="fas fa-swatchbook text-amber-600 mr-2"></i>
                             Paso 3: Elige el Tipo de Cortina
                         </h3>
                         <p class="text-gray-600 mb-6">Selecciona el estilo de confección que mejor se adapte a tu espacio:</p>
@@ -1680,86 +1713,91 @@ app.get('/', (c) => {
                             
                             <!-- Onda Perfecta -->
                             <div onclick="seleccionarTipoCortina('ondas_francesas', 'Onda Perfecta')" 
-                                 class="tipo-cortina-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-purple-600 hover:shadow-lg transition-all">
+                                 class="tipo-cortina-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-amber-600 hover:shadow-lg transition-all">
                                 <div class="text-5xl mb-3 text-center">🌊</div>
                                 <h4 class="font-bold text-lg mb-2 text-center">Onda Perfecta</h4>
                                 <p class="text-sm text-gray-600 mb-3">Elegancia clásica con caída ondulada suave y uniforme</p>
-                                <div class="text-xs text-purple-600 font-medium">
+                                <div class="text-xs text-amber-600 font-medium">
                                     <i class="fas fa-check mr-1"></i>Ideal para: Salones, dormitorios principales
                                 </div>
                             </div>
                             
                             <!-- Paneles Japoneses -->
                             <div onclick="seleccionarTipoCortina('panel_japones', 'Paneles Japoneses')" 
-                                 class="tipo-cortina-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-purple-600 hover:shadow-lg transition-all">
+                                 class="tipo-cortina-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-amber-600 hover:shadow-lg transition-all">
                                 <div class="text-5xl mb-3 text-center">🎋</div>
                                 <h4 class="font-bold text-lg mb-2 text-center">Paneles Japoneses</h4>
                                 <p class="text-sm text-gray-600 mb-3">Diseño minimalista con paneles deslizantes planos</p>
-                                <div class="text-xs text-purple-600 font-medium">
+                                <div class="text-xs text-amber-600 font-medium">
                                     <i class="fas fa-check mr-1"></i>Ideal para: Espacios modernos, grandes ventanales
                                 </div>
                             </div>
                             
                             <!-- Pliegues Rectos -->
                             <div onclick="seleccionarTipoCortina('pliegues_rectos', 'Pliegues Rectos')" 
-                                 class="tipo-cortina-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-purple-600 hover:shadow-lg transition-all">
+                                 class="tipo-cortina-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-amber-600 hover:shadow-lg transition-all">
                                 <div class="text-5xl mb-3 text-center">📏</div>
                                 <h4 class="font-bold text-lg mb-2 text-center">Pliegues Rectos</h4>
                                 <p class="text-sm text-gray-600 mb-3">Líneas verticales limpias y aspecto estructurado</p>
-                                <div class="text-xs text-purple-600 font-medium">
+                                <div class="text-xs text-amber-600 font-medium">
                                     <i class="fas fa-check mr-1"></i>Ideal para: Oficinas, espacios contemporáneos
                                 </div>
                             </div>
                             
                             <!-- Estor Enrollable -->
                             <div onclick="seleccionarTipoCortina('estor_enrollable', 'Estor Enrollable')" 
-                                 class="tipo-cortina-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-purple-600 hover:shadow-lg transition-all">
+                                 class="tipo-cortina-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-amber-600 hover:shadow-lg transition-all">
                                 <div class="text-5xl mb-3 text-center">📜</div>
                                 <h4 class="font-bold text-lg mb-2 text-center">Estor Enrollable</h4>
                                 <p class="text-sm text-gray-600 mb-3">Solución compacta y funcional que se enrolla verticalmente</p>
-                                <div class="text-xs text-purple-600 font-medium">
+                                <div class="text-xs text-amber-600 font-medium">
                                     <i class="fas fa-check mr-1"></i>Ideal para: Cocinas, baños, espacios reducidos
                                 </div>
                             </div>
                             
                             <!-- Estor Plegable -->
                             <div onclick="seleccionarTipoCortina('estor_plegable', 'Estor Plegable')" 
-                                 class="tipo-cortina-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-purple-600 hover:shadow-lg transition-all">
+                                 class="tipo-cortina-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-amber-600 hover:shadow-lg transition-all">
                                 <div class="text-5xl mb-3 text-center">🪗</div>
                                 <h4 class="font-bold text-lg mb-2 text-center">Estor Plegable</h4>
                                 <p class="text-sm text-gray-600 mb-3">Se recoge en pliegues horizontales tipo acordeón</p>
-                                <div class="text-xs text-purple-600 font-medium">
+                                <div class="text-xs text-amber-600 font-medium">
                                     <i class="fas fa-check mr-1"></i>Ideal para: Ventanas pequeñas, estilo romántico
                                 </div>
                             </div>
                             
                             <!-- Otros / Personalizado -->
                             <div onclick="seleccionarTipoCortina('otros', 'Otros')" 
-                                 class="tipo-cortina-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-purple-600 hover:shadow-lg transition-all">
+                                 class="tipo-cortina-card border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-amber-600 hover:shadow-lg transition-all">
                                 <div class="text-5xl mb-3 text-center">✨</div>
                                 <h4 class="font-bold text-lg mb-2 text-center">Otros / Personalizado</h4>
                                 <p class="text-sm text-gray-600 mb-3">Confección especial o diseño personalizado</p>
-                                <div class="text-xs text-purple-600 font-medium">
+                                <div class="text-xs text-amber-600 font-medium">
                                     <i class="fas fa-check mr-1"></i>Consulta con nuestro equipo
                                 </div>
                             </div>
                             
                         </div>
                         
-                        <div id="tipo-seleccionado-info" class="hidden mt-6 p-4 bg-purple-50 rounded-lg border-2 border-purple-200">
+                        <div id="tipo-seleccionado-info" class="hidden mt-6 p-4 bg-stone-50 rounded-lg border-2 border-stone-200">
                             <p class="text-sm text-gray-600">Tipo seleccionado:</p>
-                            <p id="tipo-seleccionado-nombre" class="text-lg font-bold text-purple-600"></p>
+                            <p id="tipo-seleccionado-nombre" class="text-lg font-bold text-amber-600"></p>
                             
-                            <button id="btn-continuar-telas" onclick="continuarATelas()" class="mt-4 w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
-                                <i class="fas fa-arrow-right mr-2"></i>Continuar: Elegir Tela
-                            </button>
+                            <div class="mt-4 flex gap-3">
+                                <button onclick="volverAPaso(2)" class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all">
+                                    <i class="fas fa-arrow-left mr-2"></i>Volver
+                                </button>
+                                <button id="btn-continuar-telas" onclick="continuarATelas()" class="flex-1 bg-brand-orange hover:bg-brand-orange-dark text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                                    <i class="fas fa-arrow-right mr-2"></i>Continuar: Elegir Tela
+                                </button>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Paso 4: Selección de tela y opciones -->
                     <div id="step-configuracion" class="hidden bg-white rounded-xl shadow-md p-6">
                         <h3 class="text-xl font-bold mb-6">
-                            <i class="fas fa-palette text-purple-600 mr-2"></i>
+                            <i class="fas fa-palette text-amber-600 mr-2"></i>
                             Paso 4: Diseña tus Cortinas
                         </h3>
                         
@@ -1768,13 +1806,13 @@ app.get('/', (c) => {
                             <!-- Columna 1: Catálogo de Telas -->
                             <div class="lg:col-span-2">
                                 <!-- Opción: Subir Tela Nueva -->
-                                <div class="mb-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+                                <div class="mb-6 p-4 bg-gray-50 border-2 border-gray-300 rounded-lg">
                                     <div class="flex items-center justify-between mb-3">
                                         <h4 class="font-bold text-gray-800">
-                                            <i class="fas fa-upload text-blue-600 mr-2"></i>
+                                            <i class="fas fa-upload text-brand-orange mr-2"></i>
                                             ¿No encuentras la tela? Súbela aquí
                                         </h4>
-                                        <button onclick="toggleSubirTela()" id="btn-toggle-subir" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                        <button onclick="toggleSubirTela()" id="btn-toggle-subir" class="text-brand-orange hover:text-brand-orange-dark text-sm font-medium">
                                             <i class="fas fa-chevron-down"></i> Mostrar
                                         </button>
                                     </div>
@@ -1783,7 +1821,7 @@ app.get('/', (c) => {
                                         <div class="border-2 border-dashed border-blue-300 rounded-lg p-6 text-center hover:border-blue-500 transition-all cursor-pointer"
                                              onclick="document.getElementById('tela-file-input').click()">
                                             <input type="file" id="tela-file-input" accept="image/*" class="hidden" onchange="handleTelaUpload(event)">
-                                            <i class="fas fa-image text-4xl text-blue-400 mb-2"></i>
+                                            <i class="fas fa-image text-4xl text-gray-400 mb-2"></i>
                                             <p class="text-sm text-gray-600">Click para subir imagen de la tela</p>
                                         </div>
                                         
@@ -1795,13 +1833,13 @@ app.get('/', (c) => {
                                             <label class="flex items-center space-x-2 p-3 bg-white rounded-lg border">
                                                 <input type="checkbox" id="tela-es-stock" class="w-4 h-4">
                                                 <span class="text-sm">
-                                                    <i class="fas fa-warehouse text-purple-600 mr-1"></i>
+                                                    <i class="fas fa-warehouse text-amber-600 mr-1"></i>
                                                     ¿Es de nuestro stock?
                                                 </span>
                                             </label>
                                             
                                             <div class="flex gap-2 mt-3">
-                                                <button onclick="usarTelaSubida()" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                                                <button onclick="usarTelaSubida()" class="flex-1 bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900">
                                                     <i class="fas fa-check mr-2"></i>Usar Esta Tela
                                                 </button>
                                                 <button onclick="cancelarTelaSubida()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
@@ -1836,10 +1874,10 @@ app.get('/', (c) => {
                             <div class="space-y-6">
                                 
                                 <!-- Tela seleccionada -->
-                                <div id="tela-seleccionada" class="border rounded-lg p-4 bg-purple-50">
+                                <div id="tela-seleccionada" class="border rounded-lg p-4 bg-stone-50">
                                     <p class="text-sm text-gray-600 mb-2">Tela seleccionada:</p>
                                     <p id="tela-nombre" class="font-bold text-lg">Ninguna</p>
-                                    <p id="tela-precio" class="text-purple-600">-</p>
+                                    <p id="tela-precio" class="text-amber-600">-</p>
                                 </div>
                                 
                                 <!-- Tipo de cortina (read-only, ya seleccionado en paso 3) -->
@@ -1858,11 +1896,16 @@ app.get('/', (c) => {
                                     </p>
                                 </div>
                                 
-                                <!-- Botón generar -->
-                                <button onclick="generarVisualizaciones()" id="btn-generar" disabled 
-                                        class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-4 rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                                    <i class="fas fa-magic mr-2"></i>Generar Visualizaciones
-                                </button>
+                                <!-- Botones de navegación -->
+                                <div class="flex gap-3">
+                                    <button onclick="volverAPaso(3)" class="px-6 py-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all">
+                                        <i class="fas fa-arrow-left mr-2"></i>Volver
+                                    </button>
+                                    <button onclick="generarVisualizaciones()" id="btn-generar" 
+                                            class="flex-1 bg-brand-orange hover:bg-brand-orange-dark text-white px-6 py-4 rounded-lg font-medium hover:shadow-lg transition-all cursor-pointer">
+                                        <i class="fas fa-magic mr-2"></i>Generar Visualizaciones
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1870,7 +1913,7 @@ app.get('/', (c) => {
                     <!-- Paso 5: Resultados (galería de imágenes generadas) -->
                     <div id="step-resultados" class="hidden bg-white rounded-xl shadow-md p-6">
                         <h3 class="text-xl font-bold mb-6">
-                            <i class="fas fa-images text-purple-600 mr-2"></i>
+                            <i class="fas fa-images text-amber-600 mr-2"></i>
                             Paso 5: Visualizaciones Generadas
                         </h3>
                         
@@ -1886,25 +1929,25 @@ app.get('/', (c) => {
                         </div>
                         
                         <div class="grid grid-cols-3 gap-4 mb-6">
-                            <button onclick="mostrarVariante(0)" class="border-2 border-purple-600 rounded-lg p-2 hover:bg-purple-50">
+                            <button onclick="mostrarVariante(0)" class="border-2 border-amber-600 rounded-lg p-2 hover:bg-stone-50">
                                 <img id="variante-0" src="" alt="Diurna" class="w-full rounded">
                                 <p class="text-sm mt-1">☀️ Diurna</p>
                             </button>
-                            <button onclick="mostrarVariante(1)" class="border-2 border-transparent rounded-lg p-2 hover:bg-purple-50">
+                            <button onclick="mostrarVariante(1)" class="border-2 border-transparent rounded-lg p-2 hover:bg-stone-50">
                                 <img id="variante-1" src="" alt="Atardecer" class="w-full rounded">
                                 <p class="text-sm mt-1">🌅 Atardecer</p>
                             </button>
-                            <button onclick="mostrarVariante(2)" class="border-2 border-transparent rounded-lg p-2 hover:bg-purple-50">
+                            <button onclick="mostrarVariante(2)" class="border-2 border-transparent rounded-lg p-2 hover:bg-stone-50">
                                 <img id="variante-2" src="" alt="Noche" class="w-full rounded">
                                 <p class="text-sm mt-1">🌙 Noche</p>
                             </button>
                         </div>
                         
                         <div class="flex gap-3">
-                            <button onclick="generarPresupuesto()" class="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700">
+                            <button onclick="generarPresupuesto()" class="flex-1 bg-gray-800 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-900">
                                 <i class="fas fa-file-invoice-dollar mr-2"></i>Generar Presupuesto
                             </button>
-                            <button onclick="compartirProyecto()" class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700">
+                            <button onclick="compartirProyecto()" class="flex-1 bg-gray-800 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-900">
                                 <i class="fas fa-share-alt mr-2"></i>Compartir
                             </button>
                             <button onclick="resetProyecto()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -1919,6 +1962,14 @@ app.get('/', (c) => {
         </div>
 
     </div>
+
+    <!-- 🐙 GAL IA - Asistente Flotante -->
+    <button id="galia-float-btn" onclick="openGalIA()" 
+            class="fixed bottom-8 right-8 w-32 h-32 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 z-50 bg-white p-3 animate-bounce hover:animate-none"
+            title="¡Hola! Soy GAL IA, tu asistente virtual">
+        <img src="/static/galia-pulpo.png" alt="GAL IA" class="w-full h-full object-contain">
+        <span id="galia-badge" class="hidden absolute -top-2 -right-2 bg-brand-orange text-white text-sm rounded-full w-7 h-7 flex items-center justify-center font-bold shadow-lg">!</span>
+    </button>
 
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="/static/app-final.js?v=${Date.now()}"></script>

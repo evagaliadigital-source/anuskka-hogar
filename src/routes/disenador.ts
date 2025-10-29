@@ -710,4 +710,37 @@ function usarImagenesSimuladas(c: any, proyecto_id: any, tipo_cortina: any, opci
   })
 }
 
+// ============================================
+// ELIMINAR PROYECTO
+// ============================================
+
+// DELETE - Eliminar proyecto de diseño
+disenador.delete('/proyectos/:id', async (c) => {
+  try {
+    const id = c.req.param('id')
+    
+    // Verificar que el proyecto existe
+    const proyecto = await c.env.DB.prepare(`
+      SELECT id FROM proyectos_diseno WHERE id = ?
+    `).bind(id).first()
+    
+    if (!proyecto) {
+      return c.json({ error: 'Proyecto no encontrado' }, 404)
+    }
+    
+    // Eliminar proyecto
+    await c.env.DB.prepare(`
+      DELETE FROM proyectos_diseno WHERE id = ?
+    `).bind(id).run()
+    
+    return c.json({
+      success: true,
+      mensaje: 'Proyecto eliminado correctamente'
+    })
+  } catch (error) {
+    console.error('Error eliminando proyecto:', error)
+    return c.json({ error: 'Error al eliminar proyecto' }, 500)
+  }
+})
+
 export default disenador

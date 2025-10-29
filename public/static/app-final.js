@@ -49,8 +49,8 @@ function tienePermiso(seccion) {
     return true
   }
   
-  // Tienda solo tiene acceso a secciones operativas + consultor IA + diseñador virtual
-  const seccionesTienda = ['dashboard', 'clientes', 'presupuestos', 'trabajos', 'stock', 'consultor', 'disenador']
+  // Tienda solo tiene acceso a secciones operativas + consultor IA + diseñador virtual + tareas
+  const seccionesTienda = ['dashboard', 'clientes', 'presupuestos', 'trabajos', 'stock', 'tareas', 'consultor', 'disenador']
   return seccionesTienda.includes(seccion)
 }
 
@@ -602,7 +602,7 @@ async function showClienteForm(id = null) {
   }
   
   const html = `
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <h3 class="text-2xl font-bold mb-6">${isEdit ? 'Editar' : 'Nuevo'} Cliente</h3>
         <form id="cliente-form" class="space-y-4">
@@ -794,7 +794,7 @@ async function viewTrabajo(id) {
     }
     
     const html = `
-      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) closeModal()">
+      <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) closeModal()">
         <div class="bg-white rounded-xl shadow-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-start mb-6">
             <h3 class="text-2xl font-bold text-gray-800">
@@ -999,7 +999,7 @@ async function showTrabajoForm(id = null) {
   }
   
   const html = `
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <h3 class="text-2xl font-bold mb-6">${isEdit ? 'Editar' : 'Nuevo'} Trabajo</h3>
         <form id="trabajo-form" class="space-y-4">
@@ -1382,7 +1382,7 @@ async function showPersonalForm(id = null) {
   }
   
   const html = `
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <h3 class="text-2xl font-bold mb-6">${isEdit ? 'Editar' : 'Nuevo'} Personal</h3>
         <form id="personal-form" class="space-y-4">
@@ -1630,7 +1630,7 @@ async function showStockForm(id = null, preselectedCategoriaId = null) {
   await loadCategorias()
   
   const html = `
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <h3 class="text-2xl font-bold mb-6">
           <i class="fas ${isEdit ? 'fa-edit' : 'fa-plus'} text-teal-600 mr-2"></i>
@@ -1804,7 +1804,7 @@ async function showFacturaForm() {
   ])
   
   const html = `
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <h3 class="text-2xl font-bold mb-6">Nueva Factura</h3>
         <form id="factura-form" class="space-y-4">
@@ -2009,6 +2009,7 @@ window.viewCliente = async (id) => {
 
 window.editCliente = (id) => showClienteForm(id)
 window.editTrabajo = (id) => showTrabajoForm(id)
+window.closeModal = closeModal
 window.viewPersonal = async (id) => {
   const { data } = await axios.get(`${API}/personal/${id}`)
   const calificacion = data.personal.calificacion ? `\nCalificación: ${data.personal.calificacion} ⭐` : ''
@@ -2016,6 +2017,36 @@ window.viewPersonal = async (id) => {
 }
 window.editPersonal = (id) => showPersonalForm(id)
 window.editStock = (id) => showStockForm(id)
+
+// ============================================
+// GAL IA - ASISTENTE FLOTANTE
+// ============================================
+
+// Abrir GAL IA (Consultor IA)
+function openGalIA() {
+  // Cambiar a la pestaña del Consultor IA
+  showTab('consultor')
+  
+  // Scroll suave al inicio
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+  
+  // Animación del botón
+  const btn = document.getElementById('galia-float-btn')
+  if (btn) {
+    btn.classList.add('scale-95')
+    setTimeout(() => btn.classList.remove('scale-95'), 200)
+  }
+  
+  // Opcional: Agregar mensaje de bienvenida si el textarea está vacío
+  const textarea = document.getElementById('consultor-input')
+  if (textarea && !textarea.value.trim()) {
+    setTimeout(() => {
+      // Puedes agregar un mensaje de sugerencia aquí
+      console.log('🐙 GAL IA: ¡Hola! ¿En qué puedo ayudarte hoy?')
+    }, 500)
+  }
+}
+window.openGalIA = openGalIA
 
 // ============================================
 // INICIALIZACIÓN
@@ -3216,7 +3247,7 @@ async function showClientePresupuestos(clienteId) {
     }
     
     const html = `
-      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) closeModal()">
+      <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) closeModal()">
         <div class="bg-white rounded-xl shadow-2xl p-8 max-w-5xl w-full max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-start mb-6">
             <div>
@@ -3336,7 +3367,7 @@ async function showClienteInfo(clienteId) {
     const presupuestos = presupuestosResponse.data
     
     const html = `
-      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) closeModal()">
+      <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) closeModal()">
         <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-start mb-6">
             <h3 class="text-2xl font-bold text-gray-800">
@@ -3950,8 +3981,17 @@ let catalogoTelas = []
 // Cargar proyectos existentes
 async function loadProyectosDiseño() {
   try {
+    console.log('📂 Cargando proyectos desde API...')
     const { data } = await axios.get(`${API}/disenador/proyectos`)
+    console.log('✅ Proyectos recibidos:', data.length)
+    
     const galeria = document.getElementById('proyectos-galeria')
+    if (!galeria) {
+      console.error('❌ Elemento #proyectos-galeria NO encontrado')
+      return
+    }
+    
+    console.log('🎨 Renderizando galería...')
     
     if (data.length === 0) {
       galeria.innerHTML = `
@@ -3960,15 +4000,42 @@ async function loadProyectosDiseño() {
           <p class="text-gray-500">No hay proyectos aún. ¡Crea el primero!</p>
         </div>
       `
+      console.log('✅ Galería vacía renderizada')
       return
     }
     
-    galeria.innerHTML = data.map(p => `
-      <div class="border rounded-lg overflow-hidden hover:shadow-lg transition-all cursor-pointer" onclick="abrirProyecto(${p.id})">
-        <img src="${p.imagen_original_url}" alt="${p.nombre_proyecto}" class="w-full h-48 object-cover">
-        <div class="p-4">
-          <h3 class="font-semibold text-gray-800">${p.nombre_proyecto}</h3>
-          <p class="text-sm text-gray-500">${p.cliente_nombre || 'Sin cliente'}</p>
+    galeria.innerHTML = data.map(p => {
+      // Validar si la imagen es válida (no blob, no null, no undefined)
+      const tieneImagenValida = p.imagen_original_url && 
+                                 !p.imagen_original_url.startsWith('blob:') && 
+                                 p.imagen_original_url.startsWith('http')
+      
+      // Imagen placeholder (muestrario de telas) si no hay foto válida
+      const imagenUrl = tieneImagenValida 
+        ? p.imagen_original_url 
+        : 'https://page.gensparksite.com/v1/base64_upload/37d001a1d9a1374db7d3226a28ce3c50'
+      
+      return `
+      <div class="border rounded-lg overflow-hidden hover:shadow-lg transition-all relative group">
+        <!-- Imagen con aspect ratio fijo y botón eliminar -->
+        <div class="relative">
+          <div class="w-full aspect-video bg-gray-100 cursor-pointer" onclick="abrirProyecto(${p.id})">
+            <img src="${imagenUrl}" alt="${p.nombre_proyecto}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/800x450/e5e7eb/9ca3af?text=En+Proceso'">
+            ${!tieneImagenValida ? '<div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center"><span class="text-white font-medium text-lg"><i class="fas fa-spinner fa-spin mr-2"></i>En Proceso</span></div>' : ''}
+          </div>
+          <!-- Botón eliminar (aparece al hover) -->
+          <button 
+            onclick="event.stopPropagation(); eliminarProyecto(${p.id})" 
+            class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 flex items-center justify-center z-10"
+            title="Eliminar proyecto"
+          >
+            <i class="fas fa-trash text-sm"></i>
+          </button>
+        </div>
+        <!-- Info del proyecto -->
+        <div class="p-4 cursor-pointer" onclick="abrirProyecto(${p.id})">
+          <h3 class="font-semibold text-gray-800 truncate">${p.nombre_proyecto}</h3>
+          <p class="text-sm text-gray-500 truncate">${p.cliente_nombre || 'Sin cliente'}</p>
           <div class="flex justify-between items-center mt-2">
             <span class="text-xs px-2 py-1 rounded-full ${
               p.estado === 'presupuestado' ? 'bg-green-100 text-green-800' :
@@ -3979,9 +4046,53 @@ async function loadProyectosDiseño() {
           </div>
         </div>
       </div>
-    `).join('')
+      `
+    }).join('')
+    
+    console.log('✅ Galería renderizada con', data.length, 'proyectos')
   } catch (error) {
-    console.error('Error cargando proyectos:', error)
+    console.error('❌ Error cargando proyectos:', error)
+  }
+}
+
+// Volver a paso anterior
+function volverAPaso(numeroPaso) {
+  console.log('⬅️ Volviendo al paso:', numeroPaso)
+  
+  switch(numeroPaso) {
+    case 1:
+      // Volver a Paso 1 (Upload)
+      document.getElementById('step-analisis').classList.add('hidden')
+      document.getElementById('step-tipo-cortina').classList.add('hidden')
+      document.getElementById('step-configuracion').classList.add('hidden')
+      document.getElementById('step-resultados').classList.add('hidden')
+      document.getElementById('step-upload').classList.remove('hidden')
+      document.getElementById('step-upload').scrollIntoView({ behavior: 'smooth' })
+      break
+      
+    case 2:
+      // Volver a Paso 2 (Análisis)
+      document.getElementById('step-tipo-cortina').classList.add('hidden')
+      document.getElementById('step-configuracion').classList.add('hidden')
+      document.getElementById('step-resultados').classList.add('hidden')
+      document.getElementById('step-analisis').classList.remove('hidden')
+      document.getElementById('step-analisis').scrollIntoView({ behavior: 'smooth' })
+      break
+      
+    case 3:
+      // Volver a Paso 3 (Tipo de Cortina)
+      document.getElementById('step-configuracion').classList.add('hidden')
+      document.getElementById('step-resultados').classList.add('hidden')
+      document.getElementById('step-tipo-cortina').classList.remove('hidden')
+      document.getElementById('step-tipo-cortina').scrollIntoView({ behavior: 'smooth' })
+      break
+      
+    case 4:
+      // Volver a Paso 4 (Configuración/Telas)
+      document.getElementById('step-resultados').classList.add('hidden')
+      document.getElementById('step-configuracion').classList.remove('hidden')
+      document.getElementById('step-configuracion').scrollIntoView({ behavior: 'smooth' })
+      break
   }
 }
 
@@ -3990,6 +4101,12 @@ function showNuevoProyecto() {
   document.getElementById('proyectos-galeria').parentElement.classList.add('hidden')
   document.getElementById('proyecto-workspace').classList.remove('hidden')
   document.getElementById('step-upload').classList.remove('hidden')
+  
+  // IMPORTANTE: Ocultar todos los pasos menos el primero
+  document.getElementById('step-analisis').classList.add('hidden')
+  document.getElementById('step-tipo-cortina').classList.add('hidden')
+  document.getElementById('step-configuracion').classList.add('hidden')
+  document.getElementById('step-resultados').classList.add('hidden')
   
   // Reset proyecto
   proyectoActual = {
@@ -4390,8 +4507,8 @@ async function usarTelaSubida() {
       showSuccess(`✅ Tela externa "${nombre}" seleccionada. Imagen guardada.`)
     }
     
-    // Habilitar botón de generar
-    document.getElementById('btn-generar').disabled = false
+    // Botón ya NO tiene disabled (siempre activo, validación en generarVisualizaciones)
+    console.log('✅ Tela lista para generar visualizaciones')
     
     // Ocultar form
     toggleSubirTela()
@@ -4544,8 +4661,25 @@ function seleccionarTela(telaId) {
 
 // Generar visualizaciones con IA
 async function generarVisualizaciones() {
+  // VALIDACIONES ROBUSTAS (botón siempre activo, validación aquí)
+  console.log('🔍 Validando antes de generar...', {
+    tela_seleccionada: !!proyectoActual.tela_seleccionada,
+    tipo_cortina: proyectoActual.tipo_cortina,
+    imagen_url: proyectoActual.imagen_url
+  })
+  
   if (!proyectoActual.tela_seleccionada) {
-    alert('❌ Selecciona una tela primero')
+    alert('❌ Por favor, selecciona una tela primero')
+    return
+  }
+  
+  if (!proyectoActual.tipo_cortina) {
+    alert('❌ Por favor, selecciona un tipo de cortina')
+    return
+  }
+  
+  if (!proyectoActual.imagen_url) {
+    alert('❌ No hay imagen del espacio. Vuelve al Paso 1.')
     return
   }
   
@@ -4581,6 +4715,12 @@ async function generarVisualizaciones() {
     
     proyectoActual.imagenes_generadas = data.imagenes
     
+    console.log('✅ Imágenes recibidas del backend:', {
+      cantidad: data.imagenes.length,
+      imagenes: data.imagenes,
+      modelo: data.modelo
+    })
+    
     hideLoading()
     
     // Mensaje diferenciado según modelo usado
@@ -4590,6 +4730,7 @@ async function generarVisualizaciones() {
       showSuccess(`✅ Visualización generada con ${data.modelo} en ${data.tiempo_generacion}s`)
     }
     
+    console.log('🎬 Llamando a mostrarResultados()...')
     mostrarResultados()
     
   } catch (error) {
@@ -4601,21 +4742,52 @@ async function generarVisualizaciones() {
 
 // Mostrar resultados
 function mostrarResultados() {
-  document.getElementById('step-resultados').classList.remove('hidden')
+  console.log('🎨 mostrarResultados() ejecutándose...')
+  console.log('📊 Datos actuales:', {
+    imagen_url: proyectoActual.imagen_url,
+    imagenes_generadas: proyectoActual.imagenes_generadas
+  })
+  
+  const stepResultados = document.getElementById('step-resultados')
+  if (!stepResultados) {
+    console.error('❌ Elemento #step-resultados NO encontrado')
+    return
+  }
+  
+  console.log('✅ Mostrando Paso 5...')
+  stepResultados.classList.remove('hidden')
   
   // Cargar imagen original
-  document.getElementById('resultado-original').src = proyectoActual.imagen_url
+  const imgOriginal = document.getElementById('resultado-original')
+  if (imgOriginal) {
+    imgOriginal.src = proyectoActual.imagen_url
+    console.log('✅ Imagen original cargada:', proyectoActual.imagen_url)
+  } else {
+    console.error('❌ Elemento #resultado-original NO encontrado')
+  }
   
   // Cargar variantes
+  if (!proyectoActual.imagenes_generadas || proyectoActual.imagenes_generadas.length === 0) {
+    console.error('❌ No hay imágenes generadas')
+    return
+  }
+  
   proyectoActual.imagenes_generadas.forEach((img, i) => {
-    document.getElementById(`variante-${i}`).src = img
+    const elemento = document.getElementById(`variante-${i}`)
+    if (elemento) {
+      elemento.src = img
+      console.log(`✅ Variante ${i} cargada:`, img)
+    } else {
+      console.error(`❌ Elemento #variante-${i} NO encontrado`)
+    }
   })
   
   // Mostrar primera variante por defecto
   mostrarVariante(0)
   
   // Scroll al resultado
-  document.getElementById('step-resultados').scrollIntoView({ behavior: 'smooth' })
+  console.log('📜 Haciendo scroll al resultado...')
+  stepResultados.scrollIntoView({ behavior: 'smooth' })
 }
 
 // Mostrar variante específica
@@ -4712,6 +4884,39 @@ function resetProyecto() {
     
     resetUpload()
     loadProyectosDiseño()
+  }
+}
+
+// Eliminar proyecto
+async function eliminarProyecto(proyectoId) {
+  console.log('🗑️ Intentando eliminar proyecto ID:', proyectoId)
+  
+  if (!confirm(`¿Estás segura de eliminar este proyecto?\n\nEsta acción no se puede deshacer.`)) {
+    console.log('❌ Eliminación cancelada por usuario')
+    return
+  }
+  
+  try {
+    console.log('📤 Enviando DELETE a:', `${API}/disenador/proyectos/${proyectoId}`)
+    showLoading('Eliminando proyecto...')
+    
+    const response = await axios.delete(`${API}/disenador/proyectos/${proyectoId}`)
+    console.log('✅ Respuesta del servidor:', response.data)
+    
+    console.log('🔄 Recargando galería INMEDIATAMENTE...')
+    
+    // Recargar galería ANTES de ocultar loading
+    await loadProyectosDiseño()
+    console.log('✅ Galería recargada')
+    
+    hideLoading()
+    showSuccess('✅ Proyecto eliminado correctamente')
+    
+  } catch (error) {
+    console.error('❌ Error eliminando proyecto:', error)
+    console.error('❌ Detalles:', error.response?.data || error.message)
+    hideLoading()
+    showError('❌ Error al eliminar proyecto: ' + (error.response?.data?.error || error.message))
   }
 }
 
@@ -5039,6 +5244,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 1000)
   
   // Hacer funciones globales
+  window.volverAPaso = volverAPaso
   window.continuarATelas = continuarATelas
   window.seleccionarTipoCortina = seleccionarTipoCortina
   window.toggleSubirTela = toggleSubirTela
@@ -5046,6 +5252,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.usarTelaSubida = usarTelaSubida
   window.cancelarTelaSubida = cancelarTelaSubida
   window.generarVisualizaciones = generarVisualizaciones
+  window.eliminarProyecto = eliminarProyecto
   window.loadTareas = loadTareas
   
   console.log('✅ Todas las funciones del Diseñador Virtual están globales')
