@@ -157,12 +157,24 @@ presupuestos.put('/:id', async (c) => {
   // Extraer líneas
   const lineas = data.lineas || []
   
-  // Calcular totales
-  const subtotal = lineas.reduce((sum: number, linea: any) => {
-    const cantidad = linea.metros || linea.cantidad || linea.horas || 0
-    const precio = linea.precio || 0
-    return sum + (cantidad * precio)
-  }, 0)
+  // Si NO vienen líneas, obtener las existentes para no recalcular
+  let subtotal = 0
+  let recalcular = lineas.length > 0
+  
+  if (recalcular) {
+    // Calcular totales con las nuevas líneas
+    subtotal = lineas.reduce((sum: number, linea: any) => {
+      const cantidad = linea.metros || linea.cantidad || linea.horas || 0
+      const precio = linea.precio || 0
+      return sum + (cantidad * precio)
+    }, 0)
+  } else {
+    // Mantener subtotal existente (no recalcular)
+    const presupuestoActual = await c.env.DB.prepare(`
+      SELECT subtotal FROM presupuestos WHERE id = ?
+    `).bind(id).first()
+    subtotal = presupuestoActual?.subtotal || 0
+  }
   
   const descuento = data.descuento_porcentaje ? (subtotal * data.descuento_porcentaje / 100) : 0
   const subtotalConDescuento = subtotal - descuento
@@ -204,13 +216,15 @@ presupuestos.put('/:id', async (c) => {
     id
   ).run()
   
-  // Eliminar líneas existentes
-  await c.env.DB.prepare(`
-    DELETE FROM presupuesto_lineas WHERE presupuesto_id = ?
-  `).bind(id).run()
-  
-  // Insertar líneas nuevas
-  for (const linea of lineas) {
+  // PROTECCIÓN: Solo eliminar y reinsertar líneas si vienen líneas nuevas
+  if (recalcular && lineas.length > 0) {
+    // Eliminar líneas existentes
+    await c.env.DB.prepare(`
+      DELETE FROM presupuesto_lineas WHERE presupuesto_id = ?
+    `).bind(id).run()
+    
+    // Insertar líneas nuevas
+    for (const linea of lineas) {
     const cantidad = linea.metros || linea.cantidad || linea.horas || 0
     const precioUnitario = linea.precio || 0
     const subtotalLinea = cantidad * precioUnitario
@@ -235,6 +249,7 @@ presupuestos.put('/:id', async (c) => {
       linea.detalles || ''
     ).run()
   }
+  } // Fin de if (recalcular && lineas.length > 0)
   
   return c.json({ success: true })
 })
