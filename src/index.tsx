@@ -1047,6 +1047,201 @@ O puedes probar con preguntas como:
 })
 
 // ============================================
+// API ENDPOINTS - HISTORIAL DE MOVIMIENTOS
+// ============================================
+// Solo accesible por rol "duena" (Ana Ramos)
+
+// Registrar acción en historial
+app.post('/api/historial', async (c) => {
+  try {
+    const { usuario_email, usuario_nombre, usuario_rol, accion, seccion, entidad_tipo, entidad_id, detalles } = await c.req.json()
+    
+    // Validar datos obligatorios
+    if (!usuario_email || !accion || !seccion) {
+      return c.json({ error: 'Datos incompletos' }, 400)
+    }
+    
+    // Obtener IP y User Agent de headers
+    const ip_address = c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For') || 'unknown'
+    const user_agent = c.req.header('User-Agent') || 'unknown'
+    
+    const result = await c.env.DB.prepare(`
+      INSERT INTO historial_movimientos (
+        usuario_email, usuario_nombre, usuario_rol, 
+        accion, seccion, entidad_tipo, entidad_id, 
+        detalles_json, ip_address, user_agent
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      usuario_email,
+      usuario_nombre || null,
+      usuario_rol || null,
+      accion,
+      seccion,
+      entidad_tipo || null,
+      entidad_id || null,
+      detalles ? JSON.stringify(detalles) : null,
+      ip_address,
+      user_agent
+    ).run()
+    
+    return c.json({ 
+      success: true, 
+      id: result.meta.last_row_id,
+      message: 'Acción registrada en historial' 
+    })
+  } catch (error) {
+    console.error('Error registrando en historial:', error)
+    return c.json({ error: 'Error al registrar acción' }, 500)
+  }
+})
+
+// Obtener historial completo (con filtros)
+app.get('/api/historial', async (c) => {
+  try {
+    const usuario = c.req.query('usuario')
+    const accion = c.req.query('accion')
+    const seccion = c.req.query('seccion')
+    const fecha_desde = c.req.query('fecha_desde')
+    const fecha_hasta = c.req.query('fecha_hasta')
+    const limit = parseInt(c.req.query('limit') || '100')
+    const offset = parseInt(c.req.query('offset') || '0')
+    
+    let query = `
+      SELECT * FROM historial_movimientos
+      WHERE 1=1
+    `
+    const params: any[] = []
+    
+    if (usuario) {
+      query += ` AND usuario_email = ?`
+      params.push(usuario)
+    }
+    
+    if (accion) {
+      query += ` AND accion = ?`
+      params.push(accion)
+    }
+    
+    if (seccion) {
+      query += ` AND seccion = ?`
+      params.push(seccion)
+    }
+    
+    if (fecha_desde) {
+      query += ` AND created_at >= ?`
+      params.push(fecha_desde)
+    }
+    
+    if (fecha_hasta) {
+      query += ` AND created_at <= ?`
+      params.push(fecha_hasta)
+    }
+    
+    query += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`
+    params.push(limit, offset)
+    
+    const stmt = c.env.DB.prepare(query)
+    const { results } = params.length > 0 
+      ? await stmt.bind(...params).all()
+      : await stmt.all()
+    
+    // Parse JSON fields
+    const movimientos = results.map((m: any) => ({
+      ...m,
+      detalles: m.detalles_json ? JSON.parse(m.detalles_json) : null
+    }))
+    
+    // Contar total de registros (para paginación)
+    let countQuery = `SELECT COUNT(*) as total FROM historial_movimientos WHERE 1=1`
+    const countParams: any[] = []
+    
+    if (usuario) {
+      countQuery += ` AND usuario_email = ?`
+      countParams.push(usuario)
+    }
+    if (accion) {
+      countQuery += ` AND accion = ?`
+      countParams.push(accion)
+    }
+    if (seccion) {
+      countQuery += ` AND seccion = ?`
+      countParams.push(seccion)
+    }
+    if (fecha_desde) {
+      countQuery += ` AND created_at >= ?`
+      countParams.push(fecha_desde)
+    }
+    if (fecha_hasta) {
+      countQuery += ` AND created_at <= ?`
+      countParams.push(fecha_hasta)
+    }
+    
+    const countStmt = c.env.DB.prepare(countQuery)
+    const countResult = countParams.length > 0
+      ? await countStmt.bind(...countParams).first()
+      : await countStmt.first()
+    
+    return c.json({
+      movimientos: movimientos,
+      total: countResult?.total || 0,
+      limit: limit,
+      offset: offset
+    })
+  } catch (error) {
+    console.error('Error obteniendo historial:', error)
+    return c.json({ error: 'Error al obtener historial' }, 500)
+  }
+})
+
+// Obtener estadísticas del historial
+app.get('/api/historial/stats', async (c) => {
+  try {
+    // Total de acciones por usuario
+    const porUsuario = await c.env.DB.prepare(`
+      SELECT usuario_email, usuario_nombre, COUNT(*) as total
+      FROM historial_movimientos
+      GROUP BY usuario_email
+      ORDER BY total DESC
+    `).all()
+    
+    // Total de acciones por tipo
+    const porAccion = await c.env.DB.prepare(`
+      SELECT accion, COUNT(*) as total
+      FROM historial_movimientos
+      GROUP BY accion
+      ORDER BY total DESC
+    `).all()
+    
+    // Total de acciones por sección
+    const porSeccion = await c.env.DB.prepare(`
+      SELECT seccion, COUNT(*) as total
+      FROM historial_movimientos
+      GROUP BY seccion
+      ORDER BY total DESC
+    `).all()
+    
+    // Actividad por día (últimos 30 días)
+    const porDia = await c.env.DB.prepare(`
+      SELECT DATE(created_at) as fecha, COUNT(*) as total
+      FROM historial_movimientos
+      WHERE created_at >= DATE('now', '-30 days')
+      GROUP BY DATE(created_at)
+      ORDER BY fecha DESC
+    `).all()
+    
+    return c.json({
+      por_usuario: porUsuario.results,
+      por_accion: porAccion.results,
+      por_seccion: porSeccion.results,
+      por_dia: porDia.results
+    })
+  } catch (error) {
+    console.error('Error obteniendo estadísticas:', error)
+    return c.json({ error: 'Error al obtener estadísticas' }, 500)
+  }
+})
+
+// ============================================
 // MOUNT EXTERNAL ROUTES
 // ============================================
 app.route('/api/presupuestos', presupuestos)
@@ -1164,6 +1359,9 @@ app.get('/', (c) => {
             </button>
             <button onclick="showTab('reportes')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-chart-bar mr-2"></i>Reportes
+            </button>
+            <button onclick="showTab('historial')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100" data-tab="historial">
+                <i class="fas fa-history mr-2"></i>Historial
             </button>
             <!-- Consultor IA ahora disponible vía botón flotante GAL IA 🐙 -->
             <button onclick="showTab('disenador')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">

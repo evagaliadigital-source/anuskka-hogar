@@ -40,6 +40,35 @@ function isDuena() {
   return getUserRole() === 'duena'
 }
 
+// ============================================
+// HISTORIAL DE MOVIMIENTOS (AUDITORÍA)
+// ============================================
+
+// Registrar acción en el historial
+async function logAccion(accion, seccion, entidadTipo = null, entidadId = null, detalles = null) {
+  try {
+    const user = checkAuth()
+    if (!user) return // No registrar si no hay sesión
+    
+    const payload = {
+      usuario_email: user.email,
+      usuario_nombre: user.nombre,
+      usuario_rol: user.rol,
+      accion: accion, // 'crear', 'editar', 'eliminar', 'login', 'logout'
+      seccion: seccion, // 'clientes', 'trabajos', 'presupuestos', etc.
+      entidad_tipo: entidadTipo, // 'cliente', 'trabajo', etc.
+      entidad_id: entidadId, // ID del registro
+      detalles: detalles // Objeto con datos adicionales
+    }
+    
+    await axios.post(`${API}/historial`, payload)
+    console.log(`📝 Historial: ${accion} en ${seccion}`, entidadId)
+  } catch (error) {
+    // No bloquear la app si falla el log
+    console.warn('⚠️ Error registrando en historial:', error)
+  }
+}
+
 // Verificar si el usuario tiene permiso para una sección
 function tienePermiso(seccion) {
   const rol = getUserRole()
@@ -2052,16 +2081,49 @@ window.openGalIA = openGalIA
 // INICIALIZACIÓN
 // ============================================
 
+// ============================================
+// INIT: CONSOLIDADO DE TODAS LAS INICIALIZACIONES
+// ============================================
 document.addEventListener('DOMContentLoaded', () => {
-  // Verificar autenticación
+  console.log('🚀 DOM cargado - Inicializando aplicación')
+  
+  // 1. Autenticación
   checkAuth()
   loadUserInfo()
   
-  // Ocultar pestañas según rol
+  // 2. Permisos
   ocultarPestanasSegunRol()
   
-  // Cargar dashboard
-  loadDashboard()
+  // 3. Dashboard (con delay para asegurar que Chart.js está listo)
+  setTimeout(() => {
+    console.log('📊 Cargando dashboard y gráficas...')
+    loadDashboard()
+  }, 500)
+  
+  // 4. Tareas (contador)
+  actualizarContadorTareas()
+  setInterval(actualizarContadorTareas, 30000)
+  
+  // 5. Event listeners especiales (botones dinámicos)
+  setTimeout(() => {
+    const btnAnalizar = document.getElementById('btn-analizar')
+    if (btnAnalizar) {
+      btnAnalizar.addEventListener('click', function(e) {
+        e.preventDefault()
+        analizarImagen()
+      })
+    }
+    
+    const btnContinuarTelas = document.getElementById('btn-continuar-telas')
+    if (btnContinuarTelas) {
+      btnContinuarTelas.addEventListener('click', function(e) {
+        e.preventDefault()
+        continuarATelas()
+      })
+    }
+  }, 1000)
+  
+  console.log('✅ Aplicación inicializada correctamente')
 })
 
 // Ocultar pestañas según rol del usuario
@@ -4966,33 +5028,7 @@ async function abrirProyecto(proyectoId) {
 }
 
 // Cargar proyectos al entrar al tab
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('🚀 DOM cargado completamente')
-  console.log('🔍 Verificando función analizarImagen:', typeof window.analizarImagen)
-  
-  // Hacer la función global explícitamente
-  if (typeof analizarImagen !== 'undefined') {
-    window.analizarImagen = analizarImagen
-    console.log('✅ analizarImagen asignada a window')
-  } else {
-    console.error('❌ analizarImagen NO DEFINIDA')
-  }
-  
-  // MÉTODO ALTERNATIVO: Event listener directo en el botón
-  setTimeout(() => {
-    const btnAnalizar = document.getElementById('btn-analizar')
-    if (btnAnalizar) {
-      console.log('✅ Botón #btn-analizar encontrado, añadiendo event listener')
-      btnAnalizar.addEventListener('click', function(e) {
-        e.preventDefault()
-        console.log('🖱️ CLICK DETECTADO en btn-analizar')
-        analizarImagen()
-      })
-    } else {
-      console.error('❌ Botón #btn-analizar NO encontrado')
-    }
-  }, 1000)
-})
+// REMOVIDO: DOMContentLoaded duplicado (consolidado arriba)
 
 // ============================================
 // TAREAS PENDIENTES
@@ -5221,39 +5257,136 @@ function showNuevaTarea() {
   // TODO: Implementar modal con formulario completo
 }
 
-// Actualizar contador al cargar dashboard
-document.addEventListener('DOMContentLoaded', () => {
-  actualizarContadorTareas()
-  
-  // Actualizar cada 30 segundos
-  setInterval(actualizarContadorTareas, 30000)
-  
-  // Event listener para botón "Continuar: Elegir Tela"
-  setTimeout(() => {
-    const btnContinuarTelas = document.getElementById('btn-continuar-telas')
-    if (btnContinuarTelas) {
-      console.log('✅ Botón #btn-continuar-telas encontrado, añadiendo event listener')
-      btnContinuarTelas.addEventListener('click', function(e) {
-        e.preventDefault()
-        console.log('🖱️ CLICK DETECTADO en btn-continuar-telas')
-        continuarATelas()
-      })
-    } else {
-      console.warn('⚠️ Botón #btn-continuar-telas NO encontrado')
+// ============================================
+// HISTORIAL - FUNCIONES DE CARGA Y FILTRADO
+// ============================================
+
+async function loadHistorial() {
+  try {
+    const usuario = document.getElementById('filter-historial-usuario')?.value || ''
+    const accion = document.getElementById('filter-historial-accion')?.value || ''
+    const seccion = document.getElementById('filter-historial-seccion')?.value || ''
+    const fechaDesde = document.getElementById('filter-fecha-desde')?.value || ''
+    const fechaHasta = document.getElementById('filter-fecha-hasta')?.value || ''
+    
+    const params = new URLSearchParams()
+    if (usuario) params.append('usuario', usuario)
+    if (accion) params.append('accion', accion)
+    if (seccion) params.append('seccion', seccion)
+    if (fechaDesde) params.append('fecha_desde', fechaDesde)
+    if (fechaHasta) params.append('fecha_hasta', fechaHasta)
+    params.append('limit', '100')
+    
+    const response = await axios.get(`${API}/historial?${params}`)
+    const { movimientos, total } = response.data
+    
+    const tbody = document.getElementById('historial-tbody')
+    if (!tbody) return
+    
+    if (movimientos.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+            <i class="fas fa-inbox text-4xl mb-2"></i>
+            <p>No hay movimientos registrados</p>
+          </td>
+        </tr>
+      `
+      return
     }
-  }, 1000)
-  
-  // Hacer funciones globales
-  window.volverAPaso = volverAPaso
-  window.continuarATelas = continuarATelas
-  window.seleccionarTipoCortina = seleccionarTipoCortina
-  window.toggleSubirTela = toggleSubirTela
-  window.handleTelaUpload = handleTelaUpload
-  window.usarTelaSubida = usarTelaSubida
-  window.cancelarTelaSubida = cancelarTelaSubida
-  window.generarVisualizaciones = generarVisualizaciones
-  window.eliminarProyecto = eliminarProyecto
-  window.loadTareas = loadTareas
-  
-  console.log('✅ Todas las funciones del Diseñador Virtual están globales')
-})
+    
+    tbody.innerHTML = movimientos.map(m => {
+      // Badge de acción con colores
+      const accionBadge = {
+        'crear': '<span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">✅ Crear</span>',
+        'editar': '<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">✏️ Editar</span>',
+        'eliminar': '<span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">🗑️ Eliminar</span>',
+        'login': '<span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">🔐 Login</span>',
+        'logout': '<span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">👋 Logout</span>'
+      }[m.accion] || `<span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">${m.accion}</span>`
+      
+      // Badge de rol
+      const rolBadge = m.usuario_rol === 'duena' 
+        ? '<span class="text-xs text-amber-600 font-semibold">👑 Dueña</span>'
+        : '<span class="text-xs text-gray-600">🏪 Tienda</span>'
+      
+      // Formatear fecha
+      const fecha = new Date(m.created_at)
+      const fechaStr = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+      const horaStr = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+      
+      // Detalles (JSON)
+      const detallesBtn = m.detalles 
+        ? `<button onclick="alert(JSON.stringify(${JSON.stringify(m.detalles)}, null, 2))" class="text-xs text-blue-600 hover:underline">Ver detalles</button>`
+        : '<span class="text-xs text-gray-400">-</span>'
+      
+      return `
+        <tr class="border-b hover:bg-gray-50">
+          <td class="px-4 py-3 text-sm">
+            <div class="font-medium text-gray-900">${m.usuario_nombre || m.usuario_email}</div>
+            <div class="text-xs text-gray-500">${m.usuario_email}</div>
+            <div class="mt-1">${rolBadge}</div>
+          </td>
+          <td class="px-4 py-3 text-sm">${accionBadge}</td>
+          <td class="px-4 py-3 text-sm">
+            <span class="font-medium text-gray-700">${m.seccion}</span>
+            ${m.entidad_tipo ? `<div class="text-xs text-gray-500">${m.entidad_tipo} #${m.entidad_id || '-'}</div>` : ''}
+          </td>
+          <td class="px-4 py-3 text-xs">${detallesBtn}</td>
+          <td class="px-4 py-3 text-xs text-gray-500">${m.ip_address || '-'}</td>
+          <td class="px-4 py-3 text-sm">
+            <div class="text-gray-900">${fechaStr}</div>
+            <div class="text-xs text-gray-500">${horaStr}</div>
+          </td>
+        </tr>
+      `
+    }).join('')
+    
+    // Actualizar contador
+    document.getElementById('total-movimientos').textContent = `Total: ${total} movimientos`
+    
+  } catch (error) {
+    console.error('Error cargando historial:', error)
+    showError('Error al cargar historial de movimientos')
+  }
+}
+
+function filtrarHistorial() {
+  loadHistorial() // Recargar con nuevos filtros
+}
+
+// ============================================
+// EXPONER FUNCIONES GLOBALES (ANTES DE DOMContentLoaded)
+// ============================================
+// CRÍTICO: Estas deben estar disponibles INMEDIATAMENTE para onclick en HTML
+
+window.showNuevoProyecto = showNuevoProyecto
+window.handleFileUpload = handleFileUpload
+window.resetUpload = resetUpload
+window.analizarImagen = analizarImagen
+window.mostrarSeleccionTipo = mostrarSeleccionTipo
+window.volverAPaso = volverAPaso
+window.continuarATelas = continuarATelas
+window.seleccionarTipoCortina = seleccionarTipoCortina
+window.toggleSubirTela = toggleSubirTela
+window.handleTelaUpload = handleTelaUpload
+window.usarTelaSubida = usarTelaSubida
+window.cancelarTelaSubida = cancelarTelaSubida
+window.generarVisualizaciones = generarVisualizaciones
+window.eliminarProyecto = eliminarProyecto
+window.abrirProyecto = abrirProyecto
+window.compartirProyecto = compartirProyecto
+window.resetProyecto = resetProyecto
+window.loadTareas = loadTareas
+window.loadProyectosDiseño = loadProyectosDiseño
+window.mostrarVariante = mostrarVariante
+window.generarPresupuesto = generarPresupuesto
+window.filtrarTelas = filtrarTelas
+window.loadHistorial = loadHistorial
+window.filtrarHistorial = filtrarHistorial
+
+console.log('✅ Todas las funciones del Diseñador Virtual expuestas globalmente')
+console.log('✅ Función logAccion() disponible para auditoría')
+
+// Actualizar contador al cargar dashboard
+// REMOVIDO: DOMContentLoaded duplicado (consolidado arriba)
