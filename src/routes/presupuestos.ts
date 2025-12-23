@@ -66,11 +66,19 @@ presupuestos.post('/', async (c) => {
   // Extraer líneas
   const lineas = data.lineas || []
   
+  // PROTECCIÓN ANTI-NaN: Filtrar líneas válidas
+  const lineasValidas = lineas.filter((linea: any) => {
+    const cantidad = parseFloat(linea.metros || linea.cantidad || linea.horas || 0)
+    const precio = parseFloat(linea.precio || 0)
+    return !isNaN(cantidad) && !isNaN(precio) && cantidad > 0 && precio > 0
+  })
+  
   // Calcular totales
-  const subtotal = lineas.reduce((sum: number, linea: any) => {
-    const cantidad = linea.metros || linea.cantidad || linea.horas || 0
-    const precio = linea.precio || 0
-    return sum + (cantidad * precio)
+  const subtotal = lineasValidas.reduce((sum: number, linea: any) => {
+    const cantidad = parseFloat(linea.metros || linea.cantidad || linea.horas || 0)
+    const precio = parseFloat(linea.precio || 0)
+    const lineaSubtotal = cantidad * precio
+    return sum + (isNaN(lineaSubtotal) ? 0 : lineaSubtotal)
   }, 0)
   
   const descuento = data.descuento_porcentaje ? (subtotal * data.descuento_porcentaje / 100) : 0
@@ -115,11 +123,16 @@ presupuestos.post('/', async (c) => {
   
   const presupuestoId = resultPresupuesto.meta.last_row_id
   
-  // Insertar líneas
-  for (const linea of lineas) {
-    const cantidad = linea.metros || linea.cantidad || linea.horas || 0
-    const precioUnitario = linea.precio || 0
+  // Insertar líneas VÁLIDAS
+  for (const linea of lineasValidas) {
+    const cantidad = parseFloat(linea.metros || linea.cantidad || linea.horas || 0)
+    const precioUnitario = parseFloat(linea.precio || 0)
     const subtotalLinea = cantidad * precioUnitario
+    
+    // Protección final: NO insertar si el cálculo da NaN
+    if (isNaN(subtotalLinea) || isNaN(cantidad) || isNaN(precioUnitario)) {
+      continue
+    }
     
     let unidad = 'unidad'
     if (linea.metros) unidad = 'metros'
@@ -157,16 +170,25 @@ presupuestos.put('/:id', async (c) => {
   // Extraer líneas
   const lineas = data.lineas || []
   
-  // Si NO vienen líneas, obtener las existentes para no recalcular
+  // PROTECCIÓN ANTI-NaN: Filtrar líneas válidas
+  const lineasValidas = lineas.filter((linea: any) => {
+    const cantidad = parseFloat(linea.metros || linea.cantidad || linea.horas || 0)
+    const precio = parseFloat(linea.precio || 0)
+    return !isNaN(cantidad) && !isNaN(precio) && cantidad > 0 && precio > 0
+  })
+  
+  // Si NO vienen líneas VÁLIDAS, obtener las existentes para no recalcular
   let subtotal = 0
-  let recalcular = lineas.length > 0
+  let recalcular = lineasValidas.length > 0
   
   if (recalcular) {
-    // Calcular totales con las nuevas líneas
-    subtotal = lineas.reduce((sum: number, linea: any) => {
-      const cantidad = linea.metros || linea.cantidad || linea.horas || 0
-      const precio = linea.precio || 0
-      return sum + (cantidad * precio)
+    // Calcular totales con las nuevas líneas VÁLIDAS
+    subtotal = lineasValidas.reduce((sum: number, linea: any) => {
+      const cantidad = parseFloat(linea.metros || linea.cantidad || linea.horas || 0)
+      const precio = parseFloat(linea.precio || 0)
+      const lineaSubtotal = cantidad * precio
+      // Protección adicional: verificar que el resultado no sea NaN
+      return sum + (isNaN(lineaSubtotal) ? 0 : lineaSubtotal)
     }, 0)
   } else {
     // Mantener subtotal existente (no recalcular)
@@ -216,18 +238,23 @@ presupuestos.put('/:id', async (c) => {
     id
   ).run()
   
-  // PROTECCIÓN: Solo eliminar y reinsertar líneas si vienen líneas nuevas
-  if (recalcular && lineas.length > 0) {
+  // PROTECCIÓN: Solo eliminar y reinsertar líneas si vienen líneas VÁLIDAS
+  if (recalcular && lineasValidas.length > 0) {
     // Eliminar líneas existentes
     await c.env.DB.prepare(`
       DELETE FROM presupuesto_lineas WHERE presupuesto_id = ?
     `).bind(id).run()
     
-    // Insertar líneas nuevas
-    for (const linea of lineas) {
-    const cantidad = linea.metros || linea.cantidad || linea.horas || 0
-    const precioUnitario = linea.precio || 0
+    // Insertar líneas nuevas VÁLIDAS
+    for (const linea of lineasValidas) {
+    const cantidad = parseFloat(linea.metros || linea.cantidad || linea.horas || 0)
+    const precioUnitario = parseFloat(linea.precio || 0)
     const subtotalLinea = cantidad * precioUnitario
+    
+    // Protección final: NO insertar si el cálculo da NaN
+    if (isNaN(subtotalLinea) || isNaN(cantidad) || isNaN(precioUnitario)) {
+      continue
+    }
     
     let unidad = 'unidad'
     if (linea.metros) unidad = 'metros'
