@@ -2606,7 +2606,7 @@ async function updatePresupuesto(event, id) {
   presupuestoLineas.materiales.forEach(l => { if (l.concepto && l.cantidad && l.precio) lineas.push({tipo: 'material', concepto: l.concepto, cantidad: parseFloat(l.cantidad), precio: parseFloat(l.precio)}) })
   presupuestoLineas.confeccion.forEach(l => { if (l.concepto && l.horas && l.precio) lineas.push({tipo: 'confeccion', concepto: l.concepto, horas: parseFloat(l.horas), precio: parseFloat(l.precio)}) })
   presupuestoLineas.instalacion.forEach(l => { if (l.concepto && l.horas && l.precio) lineas.push({tipo: 'instalacion', concepto: l.concepto, horas: parseFloat(l.horas), precio: parseFloat(l.precio)}) })
-  if (lineas.length === 0) { alert('Debe añadir al menos una línea al presupuesto'); return }
+  // Validación eliminada: Ahora se permite actualizar presupuesto sin líneas (solo con observaciones/condiciones)
   const data = {
     cliente_id: parseInt(document.getElementById('presupuesto-cliente').value),
     estado: document.getElementById('presupuesto-estado').value,
@@ -2879,10 +2879,7 @@ async function savePresupuesto(event) {
     }
   })
   
-  if (lineas.length === 0) {
-    alert('Debe añadir al menos una línea al presupuesto')
-    return
-  }
+  // Validación eliminada: Ahora se permite crear presupuesto sin líneas (solo con observaciones/condiciones)
   
   const data = {
     cliente_id: parseInt(document.getElementById('presupuesto-cliente').value),
