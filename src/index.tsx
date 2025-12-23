@@ -25,16 +25,17 @@ app.use('/static/*', serveStatic({ root: './' }))
 // API ENDPOINTS - AUTENTICACIÓN
 // ============================================
 
-// Login
+// Login - Soporta mismo email con diferentes contraseñas
 app.post('/api/login', async (c) => {
   try {
     const { email, password } = await c.req.json()
     
+    // Buscar usuario por email Y password (permite mismo email, diferentes roles)
     const usuario = await c.env.DB.prepare(`
-      SELECT * FROM usuarios WHERE email = ? AND activo = 1
-    `).bind(email).first()
+      SELECT * FROM usuarios WHERE email = ? AND password_hash = ? AND activo = 1
+    `).bind(email, password).first()
     
-    if (!usuario || usuario.password_hash !== password) {
+    if (!usuario) {
       return c.json({ success: false, message: 'Credenciales inválidas' }, 401)
     }
     
@@ -53,6 +54,7 @@ app.post('/api/login', async (c) => {
       }
     })
   } catch (error) {
+    console.error('Error en login:', error)
     return c.json({ success: false, message: 'Error en el servidor' }, 500)
   }
 })
