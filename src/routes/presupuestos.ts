@@ -66,11 +66,12 @@ presupuestos.post('/', async (c) => {
   // Extraer líneas
   const lineas = data.lineas || []
   
-  // PROTECCIÓN ANTI-NaN: Filtrar líneas válidas
+  // PROTECCIÓN ANTI-NaN: Filtrar líneas válidas (pero permitir cantidad=0 si es válida)
   const lineasValidas = lineas.filter((linea: any) => {
     const cantidad = parseFloat(linea.metros || linea.cantidad || linea.horas || 0)
     const precio = parseFloat(linea.precio || 0)
-    return !isNaN(cantidad) && !isNaN(precio) && cantidad > 0 && precio > 0
+    // Solo validar que NO sean NaN (permitir 0)
+    return !isNaN(cantidad) && !isNaN(precio) && (cantidad !== 0 || precio !== 0)
   })
   
   // Calcular totales
@@ -170,11 +171,12 @@ presupuestos.put('/:id', async (c) => {
   // Extraer líneas
   const lineas = data.lineas || []
   
-  // PROTECCIÓN ANTI-NaN: Filtrar líneas válidas
+  // PROTECCIÓN ANTI-NaN: Filtrar líneas válidas (pero permitir cantidad=0 si es válida)
   const lineasValidas = lineas.filter((linea: any) => {
     const cantidad = parseFloat(linea.metros || linea.cantidad || linea.horas || 0)
     const precio = parseFloat(linea.precio || 0)
-    return !isNaN(cantidad) && !isNaN(precio) && cantidad > 0 && precio > 0
+    // Solo validar que NO sean NaN (permitir 0)
+    return !isNaN(cantidad) && !isNaN(precio) && (cantidad !== 0 || precio !== 0)
   })
   
   // Si NO vienen líneas VÁLIDAS, obtener las existentes para no recalcular

@@ -2602,10 +2602,22 @@ async function editPresupuesto(id) {
 async function updatePresupuesto(event, id) {
   event.preventDefault()
   const lineas = []
-  presupuestoLineas.telas.forEach(l => { if (l.concepto && l.metros && l.precio) lineas.push({tipo: 'tela', concepto: l.concepto, metros: parseFloat(l.metros), precio: parseFloat(l.precio)}) })
-  presupuestoLineas.materiales.forEach(l => { if (l.concepto && l.cantidad && l.precio) lineas.push({tipo: 'material', concepto: l.concepto, cantidad: parseFloat(l.cantidad), precio: parseFloat(l.precio)}) })
-  presupuestoLineas.confeccion.forEach(l => { if (l.concepto && l.horas && l.precio) lineas.push({tipo: 'confeccion', concepto: l.concepto, horas: parseFloat(l.horas), precio: parseFloat(l.precio)}) })
-  presupuestoLineas.instalacion.forEach(l => { if (l.concepto && l.horas && l.precio) lineas.push({tipo: 'instalacion', concepto: l.concepto, horas: parseFloat(l.horas), precio: parseFloat(l.precio)}) })
+  presupuestoLineas.telas.forEach(l => { 
+    if (l.concepto && (l.metros !== '' && l.metros !== undefined) && (l.precio !== '' && l.precio !== undefined)) 
+      lineas.push({tipo: 'tela', concepto: l.concepto, metros: parseFloat(l.metros) || 0, precio: parseFloat(l.precio) || 0}) 
+  })
+  presupuestoLineas.materiales.forEach(l => { 
+    if (l.concepto && (l.cantidad !== '' && l.cantidad !== undefined) && (l.precio !== '' && l.precio !== undefined)) 
+      lineas.push({tipo: 'material', concepto: l.concepto, cantidad: parseFloat(l.cantidad) || 0, precio: parseFloat(l.precio) || 0}) 
+  })
+  presupuestoLineas.confeccion.forEach(l => { 
+    if (l.concepto && (l.horas !== '' && l.horas !== undefined) && (l.precio !== '' && l.precio !== undefined)) 
+      lineas.push({tipo: 'confeccion', concepto: l.concepto, horas: parseFloat(l.horas) || 0, precio: parseFloat(l.precio) || 0}) 
+  })
+  presupuestoLineas.instalacion.forEach(l => { 
+    if (l.concepto && (l.horas !== '' && l.horas !== undefined) && (l.precio !== '' && l.precio !== undefined)) 
+      lineas.push({tipo: 'instalacion', concepto: l.concepto, horas: parseFloat(l.horas) || 0, precio: parseFloat(l.precio) || 0}) 
+  })
   // Validación eliminada: Ahora se permite actualizar presupuesto sin líneas (solo con observaciones/condiciones)
   const data = {
     cliente_id: parseInt(document.getElementById('presupuesto-cliente').value),
@@ -2836,45 +2848,45 @@ async function savePresupuesto(event) {
   const lineas = []
   
   presupuestoLineas.telas.forEach(l => {
-    if (l.concepto && l.metros && l.precio) {
+    if (l.concepto && (l.metros !== '' && l.metros !== undefined) && (l.precio !== '' && l.precio !== undefined)) {
       lineas.push({
         tipo: 'tela',
         concepto: l.concepto,
-        metros: parseFloat(l.metros),
-        precio: parseFloat(l.precio)
+        metros: parseFloat(l.metros) || 0,
+        precio: parseFloat(l.precio) || 0
       })
     }
   })
   
   presupuestoLineas.materiales.forEach(l => {
-    if (l.concepto && l.cantidad && l.precio) {
+    if (l.concepto && (l.cantidad !== '' && l.cantidad !== undefined) && (l.precio !== '' && l.precio !== undefined)) {
       lineas.push({
         tipo: 'material',
         concepto: l.concepto,
-        cantidad: parseFloat(l.cantidad),
-        precio: parseFloat(l.precio)
+        cantidad: parseFloat(l.cantidad) || 0,
+        precio: parseFloat(l.precio) || 0
       })
     }
   })
   
   presupuestoLineas.confeccion.forEach(l => {
-    if (l.concepto && l.horas && l.precio) {
+    if (l.concepto && (l.horas !== '' && l.horas !== undefined) && (l.precio !== '' && l.precio !== undefined)) {
       lineas.push({
         tipo: 'confeccion',
         concepto: l.concepto,
-        horas: parseFloat(l.horas),
-        precio: parseFloat(l.precio)
+        horas: parseFloat(l.horas) || 0,
+        precio: parseFloat(l.precio) || 0
       })
     }
   })
   
   presupuestoLineas.instalacion.forEach(l => {
-    if (l.concepto && l.horas && l.precio) {
+    if (l.concepto && (l.horas !== '' && l.horas !== undefined) && (l.precio !== '' && l.precio !== undefined)) {
       lineas.push({
         tipo: 'instalacion',
         concepto: l.concepto,
-        horas: parseFloat(l.horas),
-        precio: parseFloat(l.precio)
+        horas: parseFloat(l.horas) || 0,
+        precio: parseFloat(l.precio) || 0
       })
     }
   })
