@@ -2216,9 +2216,19 @@ async function loadPresupuestos() {
                 <button onclick="editPresupuesto(${p.id})" class="text-orange-600 hover:text-orange-800" title="Editar">
                   <i class="fas fa-edit"></i>
                 </button>
-                <button onclick="downloadPresupuestoPDF(${p.id})" class="text-green-600 hover:text-green-800" title="Descargar PDF">
-                  <i class="fas fa-file-pdf"></i>
-                </button>
+                <div class="relative inline-block">
+                  <button onclick="togglePDFMenu(${p.id})" class="text-green-600 hover:text-green-800" title="Descargar PDF">
+                    <i class="fas fa-file-pdf"></i>
+                  </button>
+                  <div id="pdf-menu-${p.id}" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+                    <button onclick="downloadPresupuestoPDF(${p.id}, 'completo'); togglePDFMenu(${p.id})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                      📄 Presupuesto Completo
+                    </button>
+                    <button onclick="downloadPresupuestoPDF(${p.id}, 'final'); togglePDFMenu(${p.id})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                      📋 Presupuesto Final (Resumen)
+                    </button>
+                  </div>
+                </div>
                 ${p.estado === 'aceptado' && !p.trabajo_id ? `
                   <button onclick="convertirPresupuestoATrabajo(${p.id})" class="text-teal-600 hover:text-teal-800" title="Convertir a Trabajo">
                     <i class="fas fa-tasks"></i>
@@ -2959,8 +2969,25 @@ function loadImage(url) {
   })
 }
 
+// Toggle menú PDF
+function togglePDFMenu(id) {
+  const menu = document.getElementById(`pdf-menu-${id}`)
+  const allMenus = document.querySelectorAll('[id^="pdf-menu-"]')
+  allMenus.forEach(m => {
+    if (m.id !== `pdf-menu-${id}`) m.classList.add('hidden')
+  })
+  menu.classList.toggle('hidden')
+}
+
+// Cerrar menús al hacer click fuera
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.relative')) {
+    document.querySelectorAll('[id^="pdf-menu-"]').forEach(m => m.classList.add('hidden'))
+  }
+})
+
 // Descargar PDF con diseño premium
-async function downloadPresupuestoPDF(id) {
+async function downloadPresupuestoPDF(id, tipo = 'completo') {
   try {
     // Obtener datos del presupuesto
     const response = await axios.get(`${API}/presupuestos/${id}`)
@@ -3032,7 +3059,8 @@ async function downloadPresupuestoPDF(id) {
     doc.setTextColor(...primaryColor)
     doc.setFontSize(11)
     doc.setFont(undefined, 'bold')
-    doc.text('PRESUPUESTO', 20, yPos)
+    const tituloDoc = tipo === 'completo' ? 'PRESUPUESTO COMPLETO' : 'PRESUPUESTO FINAL'
+    doc.text(tituloDoc, 20, yPos)
     
     doc.setFontSize(10)
     doc.setTextColor(...accentColor)
@@ -3067,11 +3095,12 @@ async function downloadPresupuestoPDF(id) {
     }
     
     // ====================================
-    // LÍNEAS DEL PRESUPUESTO
+    // LÍNEAS DEL PRESUPUESTO (solo si es COMPLETO)
     // ====================================
     
-    // Función helper para crear tabla minimalista y compacta
-    const createTable = (title, items, unit) => {
+    if (tipo === 'completo') {
+      // Función helper para crear tabla minimalista y compacta
+      const createTable = (title, items, unit) => {
       if (items.length === 0) return
       
       // Título de sección simple y limpio
@@ -3140,6 +3169,8 @@ async function downloadPresupuestoPDF(id) {
     if (instalacion.length > 0) {
       createTable('Instalacion', instalacion, 'horas')
     }
+    
+    } // Fin if (tipo === 'completo')
     
     // ====================================
     // TOTALES COMPACTOS
@@ -3284,7 +3315,8 @@ async function downloadPresupuestoPDF(id) {
     // ====================================
     // DESCARGAR PDF
     // ====================================
-    const filename = `Presupuesto_${data.numero_presupuesto}_${data.cliente_apellidos}.pdf`
+    const tipoLabel = tipo === 'completo' ? 'Completo' : 'Final'
+    const filename = `Presupuesto_${tipoLabel}_${data.numero_presupuesto}_${data.cliente_apellidos}.pdf`
     doc.save(filename)
     
     showToast('PDF generado correctamente', 'success')
