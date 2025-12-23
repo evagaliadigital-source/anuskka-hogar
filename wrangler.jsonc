@@ -10,14 +10,7 @@
     {
       "binding": "DB",
       "database_name": "anushka-hogar-production",
-      "database_id": "placeholder-will-be-created"
-    }
-  ],
-  "r2_buckets": [
-    {
-      "binding": "IMAGES",
-      "bucket_name": "anushka-hogar-images",
-      "preview_bucket_name": "anushka-hogar-images-dev"
+      "database_id": "bcd7e4b4-baff-4b97-9271-75a5348e0d53"
     }
   ]
 }

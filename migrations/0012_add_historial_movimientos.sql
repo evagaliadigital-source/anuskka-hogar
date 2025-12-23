@@ -30,8 +30,8 @@ CREATE INDEX IF NOT EXISTS idx_historial_seccion ON historial_movimientos(seccio
 CREATE INDEX IF NOT EXISTS idx_historial_fecha ON historial_movimientos(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_historial_entidad ON historial_movimientos(entidad_tipo, entidad_id);
 
--- Registros de ejemplo (para testing)
-INSERT INTO historial_movimientos (usuario_email, usuario_nombre, usuario_rol, accion, seccion, entidad_tipo, entidad_id, detalles_json) VALUES
-  ('anuskka@galia.com', 'Ana Ramos', 'duena', 'login', 'sistema', NULL, NULL, '{"mensaje":"Inicio de sesión exitoso"}'),
-  ('tienda@anushkahogar.com', 'Tienda Anushka', 'tienda', 'login', 'sistema', NULL, NULL, '{"mensaje":"Inicio de sesión exitoso"}'),
-  ('anuskka@galia.com', 'Ana Ramos', 'duena', 'crear', 'clientes', 'cliente', 1, '{"nombre":"Cliente Demo","telefono":"123456789"}');
+-- Registros de ejemplo (para testing) - REMOVIDOS para producción
+-- INSERT INTO historial_movimientos (usuario_email, usuario_nombre, usuario_rol, accion, seccion, entidad_tipo, entidad_id, detalles_json) VALUES
+--   ('anuskka@galia.com', 'Ana Ramos', 'duena', 'login', 'sistema', NULL, NULL, '{"mensaje":"Inicio de sesión exitoso"}'),
+--   ('tienda@anushkahogar.com', 'Tienda Anushka', 'tienda', 'login', 'sistema', NULL, NULL, '{"mensaje":"Inicio de sesión exitoso"}'),
+--   ('anuskka@galia.com', 'Ana Ramos', 'duena', 'crear', 'clientes', 'cliente', 1, '{"nombre":"Cliente Demo","telefono":"123456789"}');
