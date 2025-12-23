@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
 CREATE INDEX IF NOT EXISTS idx_usuarios_email ON usuarios(email);
 
 -- Usuarios por defecto con mismo email, diferentes contraseñas
--- anuskahogar@gmail.com + 1984 → Ana Ramos (admin)
--- anuskahogar@gmail.com + 881917176 → Tienda Anushka (tienda)
+-- anuskkahogar@gmail.com + 1984 → Ana Ramos (admin)
+-- anuskkahogar@gmail.com + 881917176 → Tienda Anushka (tienda)
 INSERT INTO usuarios (email, password_hash, nombre, rol) VALUES 
-  ('anuskahogar@gmail.com', '1984', 'Ana Ramos', 'admin'),
-  ('anuskahogar@gmail.com', '881917176', 'Tienda Anushka', 'tienda');
+  ('anuskkahogar@gmail.com', '1984', 'Ana Ramos', 'admin'),
+  ('anuskkahogar@gmail.com', '881917176', 'Tienda Anushka', 'tienda');
