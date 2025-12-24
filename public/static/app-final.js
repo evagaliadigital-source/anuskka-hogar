@@ -766,7 +766,12 @@ async function loadTrabajos() {
                 ${t.empleada_nombre ? `${t.empleada_nombre} ${t.empleada_apellidos}` : '<span class="text-gray-400">Sin asignar</span>'}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                ${getEstadoBadge(t.estado)}
+                <select onchange="cambiarEstadoTrabajo(${t.id}, this.value, ${t.presupuesto_id || 'null'}, '${(t.descripcion || '').substring(0, 50).replace(/'/g, "\\'")}', ${t.precio_cliente})" class="px-2 py-1 text-xs font-semibold rounded-full border-0 cursor-pointer ${t.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' : t.estado === 'en_proceso' ? 'bg-blue-100 text-blue-800' : t.estado === 'completado' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                  <option value="pendiente" ${t.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
+                  <option value="en_proceso" ${t.estado === 'en_proceso' ? 'selected' : ''}>En Proceso</option>
+                  <option value="completado" ${t.estado === 'completado' ? 'selected' : ''}>Completado</option>
+                  <option value="cancelado" ${t.estado === 'cancelado' ? 'selected' : ''}>Cancelado</option>
+                </select>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">€${t.precio_cliente.toFixed(2)}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
@@ -785,6 +790,63 @@ async function loadTrabajos() {
   } catch (error) {
     console.error('Error cargando trabajos:', error)
     showError('Error al cargar trabajos')
+  }
+}
+
+// Cambiar estado de trabajo con auto-generación de factura
+async function cambiarEstadoTrabajo(id, nuevoEstado, presupuestoId, descripcion, precio) {
+  try {
+    // Actualizar estado
+    const response = await fetch(`${API}/trabajos/${id}/estado`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ estado: nuevoEstado })
+    })
+    
+    const result = await response.json()
+    
+    // Si se completó y tiene presupuesto, preguntar por factura
+    if (nuevoEstado === 'completado' && result.puede_facturar) {
+      const confirmar = confirm(
+        `✅ Trabajo completado\n\n` +
+        `¿Deseas generar la FACTURA automáticamente?\n\n` +
+        `📄 Presupuesto: ${result.presupuesto.numero}\n` +
+        `💰 Total: €${result.presupuesto.total.toFixed(2)}\n\n` +
+        `La factura se creará con todos los datos del presupuesto.`
+      )
+      
+      if (confirmar) {
+        // Generar factura
+        const facturaResponse = await fetch(`${API}/trabajos/${id}/generar-factura`, {
+          method: 'POST'
+        })
+        
+        const facturaResult = await facturaResponse.json()
+        
+        if (facturaResult.success) {
+          showToast(`✅ Trabajo completado y factura ${facturaResult.numero_factura} creada`, 'success')
+          
+          // Preguntar si quiere ver la factura
+          setTimeout(() => {
+            if (confirm('¿Deseas ir a ver la factura creada?')) {
+              showTab('facturas')
+            }
+          }, 1000)
+        } else {
+          showToast('Trabajo completado pero no se pudo crear la factura: ' + facturaResult.error, 'warning')
+        }
+      } else {
+        showToast('Trabajo marcado como completado', 'success')
+      }
+    } else {
+      showToast(`Estado actualizado a ${nuevoEstado}`, 'success')
+    }
+    
+    loadTrabajos()
+  } catch (error) {
+    console.error('Error al cambiar estado:', error)
+    showToast('Error al actualizar el estado', 'error')
+    loadTrabajos()
   }
 }
 

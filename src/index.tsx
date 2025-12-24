@@ -313,6 +313,136 @@ app.put('/api/trabajos/:id', async (c) => {
   return c.json({ success: true })
 })
 
+// Cambiar estado de trabajo (con auto-generación de factura si se completa)
+app.put('/api/trabajos/:id/estado', async (c) => {
+  const id = c.req.param('id')
+  const { estado } = await c.req.json()
+  
+  // Obtener trabajo con presupuesto
+  const trabajo = await c.env.DB.prepare(`
+    SELECT t.*, p.id as presupuesto_id, p.numero_presupuesto, p.total as presupuesto_total
+    FROM trabajos t
+    LEFT JOIN presupuestos p ON t.presupuesto_id = p.id
+    WHERE t.id = ?
+  `).bind(id).first()
+  
+  if (!trabajo) {
+    return c.json({ error: 'Trabajo no encontrado' }, 404)
+  }
+  
+  // Actualizar estado del trabajo
+  await c.env.DB.prepare(`
+    UPDATE trabajos SET estado = ? WHERE id = ?
+  `).bind(estado, id).run()
+  
+  // Si se marca como completado Y tiene presupuesto, devolver info para crear factura
+  if (estado === 'completado' && trabajo.presupuesto_id) {
+    return c.json({ 
+      success: true,
+      puede_facturar: true,
+      presupuesto: {
+        id: trabajo.presupuesto_id,
+        numero: trabajo.numero_presupuesto,
+        total: trabajo.presupuesto_total,
+        cliente_id: trabajo.cliente_id
+      }
+    })
+  }
+  
+  return c.json({ success: true, puede_facturar: false })
+})
+
+// Generar factura desde trabajo/presupuesto
+app.post('/api/trabajos/:id/generar-factura', async (c) => {
+  const trabajoId = c.req.param('id')
+  
+  // Obtener trabajo con presupuesto completo
+  const trabajo = await c.env.DB.prepare(`
+    SELECT t.*, p.*, 
+           c.nombre as cliente_nombre, c.apellidos as cliente_apellidos,
+           c.direccion as cliente_direccion, c.ciudad as cliente_ciudad,
+           c.codigo_postal as cliente_codigo_postal, c.email as cliente_email
+    FROM trabajos t
+    JOIN presupuestos p ON t.presupuesto_id = p.id
+    JOIN clientes c ON t.cliente_id = c.id
+    WHERE t.id = ?
+  `).bind(trabajoId).first()
+  
+  if (!trabajo) {
+    return c.json({ error: 'Trabajo o presupuesto no encontrado' }, 404)
+  }
+  
+  // Verificar si ya existe factura para este presupuesto
+  const facturaExistente = await c.env.DB.prepare(`
+    SELECT id FROM facturas WHERE presupuesto_id = ?
+  `).bind(trabajo.presupuesto_id).first()
+  
+  if (facturaExistente) {
+    return c.json({ error: 'Ya existe una factura para este presupuesto', factura_id: facturaExistente.id }, 400)
+  }
+  
+  // Generar número de factura
+  const year = new Date().getFullYear()
+  const { results: existentes } = await c.env.DB.prepare(`
+    SELECT COUNT(*) as total FROM facturas WHERE numero_factura LIKE ?
+  `).bind(`${year}-%`).all()
+  
+  const numeroSecuencial = (existentes[0]?.total || 0) + 1
+  const numeroFactura = `${year}-${String(numeroSecuencial).padStart(3, '0')}`
+  
+  // Crear factura con datos del presupuesto
+  const resultFactura = await c.env.DB.prepare(`
+    INSERT INTO facturas (
+      cliente_id, trabajo_id, presupuesto_id, numero_factura, fecha_emision,
+      concepto, subtotal, descuento_porcentaje, descuento_importe, 
+      porcentaje_iva, importe_iva, total, estado, forma_pago, notas
+    ) VALUES (?, ?, ?, ?, date('now'), ?, ?, ?, ?, ?, ?, ?, 'pendiente', ?, ?)
+  `).bind(
+    trabajo.cliente_id,
+    trabajoId,
+    trabajo.presupuesto_id,
+    numeroFactura,
+    trabajo.titulo || 'Servicios prestados',
+    trabajo.subtotal,
+    trabajo.descuento_porcentaje || 0,
+    trabajo.descuento_importe || 0,
+    trabajo.porcentaje_iva || 21,
+    trabajo.importe_iva,
+    trabajo.total,
+    trabajo.forma_pago || '',
+    `Factura generada automáticamente desde presupuesto ${trabajo.numero_presupuesto}`
+  ).run()
+  
+  const facturaId = resultFactura.meta.last_row_id
+  
+  // Copiar líneas del presupuesto a líneas de factura
+  const { results: lineasPresupuesto } = await c.env.DB.prepare(`
+    SELECT * FROM presupuesto_lineas WHERE presupuesto_id = ?
+  `).bind(trabajo.presupuesto_id).all()
+  
+  for (const linea of lineasPresupuesto) {
+    await c.env.DB.prepare(`
+      INSERT INTO factura_lineas (
+        factura_id, concepto, cantidad, unidad, precio_unitario, subtotal
+      ) VALUES (?, ?, ?, ?, ?, ?)
+    `).bind(
+      facturaId,
+      linea.concepto,
+      linea.cantidad,
+      linea.unidad,
+      linea.precio_unitario,
+      linea.subtotal
+    ).run()
+  }
+  
+  return c.json({
+    success: true,
+    factura_id: facturaId,
+    numero_factura: numeroFactura,
+    message: `Factura ${numeroFactura} creada correctamente`
+  })
+})
+
 // Obtener fases de un trabajo (con info de personal asignado)
 app.get('/api/trabajos/:id/fases', async (c) => {
   const id = c.req.param('id')
