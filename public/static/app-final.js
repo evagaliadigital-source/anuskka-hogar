@@ -2207,7 +2207,12 @@ async function loadPresupuestos() {
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(p.fecha_emision).toLocaleDateString()}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">€${parseFloat(p.total).toFixed(2)}</td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs font-semibold rounded-full ${estadoColor[p.estado]}">${p.estado}</span>
+                <select onchange="cambiarEstadoPresupuesto(${p.id}, this.value, ${p.cliente_id}, '${p.titulo.replace(/'/g, "\\'")}', ${p.total})" class="px-2 py-1 text-xs font-semibold rounded-full border-0 ${estadoColor[p.estado]} cursor-pointer">
+                  <option value="pendiente" ${p.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
+                  <option value="enviado" ${p.estado === 'enviado' ? 'selected' : ''}>Enviado</option>
+                  <option value="aceptado" ${p.estado === 'aceptado' ? 'selected' : ''}>Aceptado</option>
+                  <option value="rechazado" ${p.estado === 'rechazado' ? 'selected' : ''}>Rechazado</option>
+                </select>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
                 <button onclick="viewPresupuesto(${p.id})" class="text-blue-600 hover:text-blue-800" title="Ver detalles">
@@ -2217,14 +2222,14 @@ async function loadPresupuestos() {
                   <i class="fas fa-edit"></i>
                 </button>
                 <div class="relative inline-block">
-                  <button onclick="togglePDFMenu(${p.id})" class="text-green-600 hover:text-green-800" title="Descargar PDF">
-                    <i class="fas fa-file-pdf"></i>
+                  <button onclick="togglePDFMenu(${p.id})" class="text-green-600 hover:text-green-800 font-bold text-lg" title="Descargar PDF" style="background: yellow; padding: 5px;">
+                    <i class="fas fa-file-pdf"></i> NUEVO
                   </button>
-                  <div id="pdf-menu-${p.id}" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
-                    <button onclick="downloadPresupuestoPDF(${p.id}, 'completo'); togglePDFMenu(${p.id})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <div id="pdf-menu-${p.id}" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border-2 border-green-500">
+                    <button onclick="downloadPresupuestoPDF(${p.id}, 'completo'); togglePDFMenu(${p.id})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-100 font-bold">
                       📄 Presupuesto Completo
                     </button>
-                    <button onclick="downloadPresupuestoPDF(${p.id}, 'final'); togglePDFMenu(${p.id})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    <button onclick="downloadPresupuestoPDF(${p.id}, 'final'); togglePDFMenu(${p.id})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-100 font-bold">
                       📋 Presupuesto Final (Resumen)
                     </button>
                   </div>
@@ -2362,10 +2367,15 @@ async function showPresupuestoForm(presupuestoId = null, preselectedClienteId = 
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Cliente *</label>
-          <select id="presupuesto-cliente" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-800">
-            <option value="">Seleccionar cliente...</option>
-            ${clientes.map(c => `<option value="${c.id}" ${preselectedClienteId && c.id === preselectedClienteId ? 'selected' : ''}>${c.nombre} ${c.apellidos}</option>`).join('')}
-          </select>
+          <div class="flex gap-2">
+            <select id="presupuesto-cliente" required class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-800">
+              <option value="">Seleccionar cliente...</option>
+              ${clientes.map(c => `<option value="${c.id}" ${preselectedClienteId && c.id === preselectedClienteId ? 'selected' : ''}>${c.nombre} ${c.apellidos}</option>`).join('')}
+            </select>
+            <button type="button" onclick="showQuickClienteForm()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 whitespace-nowrap">
+              <i class="fas fa-user-plus"></i> Nuevo
+            </button>
+          </div>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
@@ -2935,6 +2945,140 @@ async function savePresupuesto(event) {
   } catch (error) {
     console.error('Error:', error)
     alert('Error al guardar presupuesto')
+  }
+}
+
+// Formulario rápido para crear cliente desde presupuesto
+function showQuickClienteForm() {
+  const modalContent = `
+    <form onsubmit="saveQuickCliente(event)" class="space-y-4">
+      <h3 class="text-xl font-bold text-gray-900 mb-4">Crear Cliente Rápido</h3>
+      
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
+          <input type="text" id="quick-cliente-nombre" required class="w-full px-4 py-2 border rounded-lg">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Apellidos *</label>
+          <input type="text" id="quick-cliente-apellidos" required class="w-full px-4 py-2 border rounded-lg">
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono *</label>
+          <input type="tel" id="quick-cliente-telefono" required class="w-full px-4 py-2 border rounded-lg">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+          <input type="email" id="quick-cliente-email" class="w-full px-4 py-2 border rounded-lg">
+        </div>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
+        <input type="text" id="quick-cliente-direccion" class="w-full px-4 py-2 border rounded-lg">
+      </div>
+      
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Ciudad</label>
+          <input type="text" id="quick-cliente-ciudad" class="w-full px-4 py-2 border rounded-lg">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Código Postal</label>
+          <input type="text" id="quick-cliente-cp" class="w-full px-4 py-2 border rounded-lg">
+        </div>
+      </div>
+      
+      <div class="flex gap-3 justify-end">
+        <button type="button" onclick="closeModal(); showPresupuestoForm()" class="px-6 py-2 border rounded-lg hover:bg-gray-50">Cancelar</button>
+        <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+          <i class="fas fa-save mr-2"></i>Crear y Seleccionar
+        </button>
+      </div>
+    </form>
+  `
+  
+  showModal(modalContent, 'max-w-2xl')
+}
+
+// Guardar cliente rápido y seleccionarlo automáticamente
+async function saveQuickCliente(event) {
+  event.preventDefault()
+  
+  const data = {
+    nombre: document.getElementById('quick-cliente-nombre').value,
+    apellidos: document.getElementById('quick-cliente-apellidos').value,
+    telefono: document.getElementById('quick-cliente-telefono').value,
+    email: document.getElementById('quick-cliente-email').value,
+    direccion: document.getElementById('quick-cliente-direccion').value,
+    ciudad: document.getElementById('quick-cliente-ciudad').value,
+    codigo_postal: document.getElementById('quick-cliente-cp').value
+  }
+  
+  try {
+    const response = await fetch(`${API}/clientes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+    
+    const result = await response.json()
+    
+    if (result.success) {
+      showToast(`Cliente ${data.nombre} ${data.apellidos} creado correctamente`, 'success')
+      closeModal()
+      // Reabrir formulario de presupuesto con cliente preseleccionado
+      showPresupuestoForm(null, result.id)
+    } else {
+      alert('Error al crear cliente')
+    }
+  } catch (error) {
+    console.error('Error:', error)
+    alert('Error al crear cliente')
+  }
+}
+
+// Cambiar estado de presupuesto con auto-conversión a trabajo
+async function cambiarEstadoPresupuesto(id, nuevoEstado, clienteId, titulo, total) {
+  try {
+    // Actualizar estado
+    await fetch(`${API}/presupuestos/${id}/estado`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ estado: nuevoEstado })
+    })
+    
+    // Si cambió a "aceptado", auto-convertir a trabajo
+    if (nuevoEstado === 'aceptado') {
+      const confirmar = confirm(`¿Deseas crear automáticamente un trabajo para "${titulo}"?\n\nEsto generará las 4 fases: Mediciones → Pedidos → Confección → Instalación`)
+      
+      if (confirmar) {
+        const response = await fetch(`${API}/presupuestos/${id}/convertir-a-trabajo`, {
+          method: 'POST'
+        })
+        
+        const result = await response.json()
+        
+        if (result.success) {
+          showToast(`✅ Presupuesto aceptado y trabajo #${result.trabajo_id} creado`, 'success')
+        } else {
+          showToast('Presupuesto actualizado pero no se pudo crear el trabajo', 'warning')
+        }
+      } else {
+        showToast('Estado actualizado a Aceptado', 'success')
+      }
+    } else {
+      showToast(`Estado actualizado a ${nuevoEstado}`, 'success')
+    }
+    
+    loadPresupuestos()
+  } catch (error) {
+    console.error('Error al cambiar estado:', error)
+    showToast('Error al actualizar el estado', 'error')
+    loadPresupuestos() // Recargar para revertir visualmente
   }
 }
 
