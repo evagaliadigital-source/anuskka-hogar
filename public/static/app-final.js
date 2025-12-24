@@ -3070,12 +3070,18 @@ async function saveQuickCliente(event) {
 // Cambiar estado de presupuesto con auto-conversión a trabajo y auto-facturación
 async function cambiarEstadoPresupuesto(id, nuevoEstado, clienteId, titulo, total) {
   try {
-    // Actualizar estado
-    await fetch(`${API}/presupuestos/${id}/estado`, {
+    // 1. PRIMERO: Actualizar estado y ESPERAR confirmación
+    const updateResponse = await fetch(`${API}/presupuestos/${id}/estado`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ estado: nuevoEstado })
     })
+    
+    if (!updateResponse.ok) {
+      throw new Error('Error al actualizar estado')
+    }
+    
+    // 2. DESPUÉS: Procesar según el nuevo estado (YA GUARDADO en BD)
     
     // Si cambió a "aceptado", auto-convertir a trabajo
     if (nuevoEstado === 'aceptado') {
@@ -3099,6 +3105,9 @@ async function cambiarEstadoPresupuesto(id, nuevoEstado, clienteId, titulo, tota
     }
     // Si cambió a "finalizado", ofrecer auto-facturación
     else if (nuevoEstado === 'finalizado') {
+      // Pequeña pausa para asegurar que BD se actualizó
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
       const confirmar = confirm(`Presupuesto FINALIZADO: "${titulo}"\n\n¿Deseas generar la factura automáticamente?\n\nSe creará con todos los datos del presupuesto:\n- Cliente, total, líneas, condiciones de pago`)
       
       if (confirmar) {
@@ -3110,6 +3119,13 @@ async function cambiarEstadoPresupuesto(id, nuevoEstado, clienteId, titulo, tota
         
         if (result.success) {
           showToast(`✅ Factura ${result.numero_factura} generada correctamente (€${parseFloat(total).toFixed(2)})`, 'success')
+          
+          // Preguntar si quiere ir a ver la factura
+          setTimeout(() => {
+            if (confirm('¿Deseas ir a ver la factura creada?')) {
+              showTab('facturas')
+            }
+          }, 1000)
         } else {
           showToast('Error: ' + (result.error || 'No se pudo generar la factura'), 'error')
         }
