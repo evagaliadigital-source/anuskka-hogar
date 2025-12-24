@@ -772,6 +772,43 @@ app.get('/api/facturas', async (c) => {
   return c.json(results)
 })
 
+// Obtener una factura específica con líneas
+app.get('/api/facturas/:id', async (c) => {
+  const id = c.req.param('id')
+  
+  // Obtener factura
+  const factura = await c.env.DB.prepare(`
+    SELECT f.*, c.nombre as cliente_nombre, c.apellidos as cliente_apellidos,
+           c.direccion as cliente_direccion, c.email as cliente_email, c.telefono as cliente_telefono
+    FROM facturas f
+    LEFT JOIN clientes c ON f.cliente_id = c.id
+    WHERE f.id = ?
+  `).bind(id).first()
+  
+  if (!factura) {
+    return c.json({ error: 'Factura no encontrada' }, 404)
+  }
+  
+  // Obtener líneas
+  const { results: lineas } = await c.env.DB.prepare(`
+    SELECT * FROM factura_lineas WHERE factura_id = ? ORDER BY id
+  `).bind(id).all()
+  
+  return c.json({ ...factura, lineas })
+})
+
+// Eliminar factura
+app.delete('/api/facturas/:id', async (c) => {
+  const id = c.req.param('id')
+  
+  // Las líneas se eliminan automáticamente por CASCADE
+  await c.env.DB.prepare(`
+    DELETE FROM facturas WHERE id = ?
+  `).bind(id).run()
+  
+  return c.json({ success: true })
+})
+
 app.post('/api/facturas', async (c) => {
   const data = await c.req.json()
   const result = await c.env.DB.prepare(`

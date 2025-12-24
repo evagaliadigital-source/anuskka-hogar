@@ -1805,8 +1805,29 @@ async function loadFacturas() {
     currentData.facturas = data
     
     const container = document.getElementById('facturas-lista')
-    container.innerHTML = `
-      <table class="min-w-full">
+    
+    // Filtros de exportación arriba
+    const filtrosHTML = `
+      <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        <div class="flex items-end gap-4">
+          <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Inicio</label>
+            <input type="date" id="export-fecha-inicio" class="w-full px-4 py-2 border rounded-lg">
+          </div>
+          <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Fin</label>
+            <input type="date" id="export-fecha-fin" class="w-full px-4 py-2 border rounded-lg">
+          </div>
+          <button onclick="exportarFacturas()" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+            <i class="fas fa-file-excel"></i>
+            Exportar a Excel
+          </button>
+        </div>
+      </div>
+    `
+    
+    container.innerHTML = filtrosHTML + `
+      <table class="min-w-full bg-white">
         <thead class="bg-gray-50">
           <tr>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nº Factura</th>
@@ -1816,28 +1837,49 @@ async function loadFacturas() {
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">IVA</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           ${data.map(f => `
             <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap font-mono text-sm text-gray-900">${f.numero_factura}</td>
+              <td class="px-6 py-4 whitespace-nowrap font-mono text-sm font-medium text-gray-900">${f.numero_factura}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${f.cliente_nombre} ${f.cliente_apellidos}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${new Date(f.fecha_emision).toLocaleDateString('es-ES')}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">€${f.subtotal.toFixed(2)}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">€${f.iva.toFixed(2)}</td>
-              <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">€${f.total.toFixed(2)}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">€${parseFloat(f.subtotal || 0).toFixed(2)}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">€${parseFloat(f.importe_iva || f.iva || 0).toFixed(2)}</td>
+              <td class="px-6 py-4 whitespace-nowrap font-semibold text-green-600">€${parseFloat(f.total).toFixed(2)}</td>
               <td class="px-6 py-4 whitespace-nowrap">
                 ${getEstadoFacturaBadge(f.estado)}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                <button onclick="viewFactura(${f.id})" class="text-blue-600 hover:text-blue-800" title="Ver detalles">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button onclick="downloadFacturaPDF(${f.id})" class="text-green-600 hover:text-green-800" title="Descargar PDF">
+                  <i class="fas fa-file-pdf"></i>
+                </button>
+                <button onclick="deleteFactura(${f.id})" class="text-red-600 hover:text-red-800" title="Eliminar">
+                  <i class="fas fa-trash"></i>
+                </button>
               </td>
             </tr>
           `).join('')}
         </tbody>
       </table>
     `
+    
+    // Establecer fechas por defecto (mes actual)
+    const hoy = new Date()
+    const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+    const ultimoDia = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0)
+    
+    document.getElementById('export-fecha-inicio').value = primerDia.toISOString().split('T')[0]
+    document.getElementById('export-fecha-fin').value = ultimoDia.toISOString().split('T')[0]
+    
   } catch (error) {
     console.error('Error cargando facturas:', error)
-    showError('Error al cargar facturas')
+    showToast('Error al cargar facturas', 'error')
   }
 }
 
@@ -1848,6 +1890,264 @@ function getEstadoFacturaBadge(estado) {
     'vencida': '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Vencida</span>'
   }
   return badges[estado] || estado
+}
+
+// Ver detalles de factura
+async function viewFactura(id) {
+  try {
+    const response = await fetch(`${API}/facturas/${id}`)
+    const factura = await response.json()
+    
+    const lineasHTML = factura.lineas && factura.lineas.length > 0 ? `
+      <div class="mt-6">
+        <h4 class="font-semibold text-gray-900 mb-3">Líneas de Factura:</h4>
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-2 text-left">Concepto</th>
+              <th class="px-4 py-2 text-right">Cantidad</th>
+              <th class="px-4 py-2 text-right">Precio Unit.</th>
+              <th class="px-4 py-2 text-right">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            ${factura.lineas.map(l => `
+              <tr>
+                <td class="px-4 py-2">${l.concepto}</td>
+                <td class="px-4 py-2 text-right">${l.cantidad} ${l.unidad}</td>
+                <td class="px-4 py-2 text-right">€${parseFloat(l.precio_unitario).toFixed(2)}</td>
+                <td class="px-4 py-2 text-right font-semibold">€${parseFloat(l.subtotal).toFixed(2)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    ` : '<p class="text-gray-500 mt-4">No hay líneas de detalle</p>'
+    
+    openModal(`
+      <div class="space-y-4">
+        <h2 class="text-2xl font-bold text-gray-900">Factura ${factura.numero_factura}</h2>
+        
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <p class="text-gray-600">Cliente:</p>
+            <p class="font-semibold">${factura.cliente_nombre} ${factura.cliente_apellidos}</p>
+          </div>
+          <div>
+            <p class="text-gray-600">Fecha Emisión:</p>
+            <p class="font-semibold">${new Date(factura.fecha_emision).toLocaleDateString('es-ES')}</p>
+          </div>
+          <div>
+            <p class="text-gray-600">Estado:</p>
+            <p>${getEstadoFacturaBadge(factura.estado)}</p>
+          </div>
+          <div>
+            <p class="text-gray-600">Forma de Pago:</p>
+            <p class="font-semibold">${factura.forma_pago || 'No especificado'}</p>
+          </div>
+        </div>
+        
+        ${lineasHTML}
+        
+        <div class="mt-6 border-t pt-4">
+          <div class="flex justify-between text-sm mb-2">
+            <span class="text-gray-600">Subtotal:</span>
+            <span class="font-semibold">€${parseFloat(factura.subtotal).toFixed(2)}</span>
+          </div>
+          <div class="flex justify-between text-sm mb-2">
+            <span class="text-gray-600">IVA (${factura.porcentaje_iva || 21}%):</span>
+            <span class="font-semibold">€${parseFloat(factura.importe_iva || factura.iva || 0).toFixed(2)}</span>
+          </div>
+          <div class="flex justify-between text-lg font-bold border-t pt-2">
+            <span>Total:</span>
+            <span class="text-green-600">€${parseFloat(factura.total).toFixed(2)}</span>
+          </div>
+        </div>
+        
+        ${factura.notas ? `
+          <div class="mt-4">
+            <p class="text-gray-600 text-sm">Notas:</p>
+            <p class="text-sm">${factura.notas}</p>
+          </div>
+        ` : ''}
+        
+        ${factura.condiciones ? `
+          <div class="mt-4">
+            <p class="text-gray-600 text-sm">Condiciones:</p>
+            <p class="text-sm">${factura.condiciones}</p>
+          </div>
+        ` : ''}
+      </div>
+    `)
+  } catch (error) {
+    console.error('Error cargando factura:', error)
+    showToast('Error al cargar los detalles de la factura', 'error')
+  }
+}
+
+// Descargar PDF de factura
+async function downloadFacturaPDF(id) {
+  try {
+    showToast('Generando PDF...', 'info')
+    
+    const response = await fetch(`${API}/facturas/${id}`)
+    const factura = await response.json()
+    
+    const { jsPDF } = window.jspdf
+    const doc = new jsPDF()
+    
+    // Header
+    doc.setFontSize(20)
+    doc.setFont(undefined, 'bold')
+    doc.text('FACTURA', 105, 20, { align: 'center' })
+    
+    doc.setFontSize(12)
+    doc.setFont(undefined, 'bold')
+    doc.text(factura.numero_factura, 105, 28, { align: 'center' })
+    
+    // Empresa
+    doc.setFontSize(10)
+    doc.setFont(undefined, 'normal')
+    doc.text('Anushka Hogar', 20, 45)
+    doc.text('Confección e Instalación de Cortinas', 20, 50)
+    
+    // Cliente
+    doc.setFont(undefined, 'bold')
+    doc.text('Cliente:', 120, 45)
+    doc.setFont(undefined, 'normal')
+    doc.text(`${factura.cliente_nombre} ${factura.cliente_apellidos}`, 120, 50)
+    if (factura.cliente_direccion) doc.text(factura.cliente_direccion, 120, 55)
+    
+    // Fecha
+    doc.text(`Fecha: ${new Date(factura.fecha_emision).toLocaleDateString('es-ES')}`, 20, 65)
+    
+    // Líneas
+    if (factura.lineas && factura.lineas.length > 0) {
+      const tableData = factura.lineas.map(l => [
+        l.concepto,
+        `${l.cantidad} ${l.unidad}`,
+        `€${parseFloat(l.precio_unitario).toFixed(2)}`,
+        `€${parseFloat(l.subtotal).toFixed(2)}`
+      ])
+      
+      doc.autoTable({
+        startY: 75,
+        head: [['Concepto', 'Cantidad', 'Precio Unit.', 'Subtotal']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: { fillColor: [71, 85, 105] }
+      })
+    }
+    
+    // Totales
+    const finalY = factura.lineas && factura.lineas.length > 0 ? doc.lastAutoTable.finalY + 10 : 85
+    
+    doc.setFont(undefined, 'normal')
+    doc.text(`Subtotal:`, 130, finalY)
+    doc.text(`€${parseFloat(factura.subtotal).toFixed(2)}`, 180, finalY, { align: 'right' })
+    
+    doc.text(`IVA (${factura.porcentaje_iva || 21}%):`, 130, finalY + 7)
+    doc.text(`€${parseFloat(factura.importe_iva || factura.iva || 0).toFixed(2)}`, 180, finalY + 7, { align: 'right' })
+    
+    doc.setFont(undefined, 'bold')
+    doc.setFontSize(12)
+    doc.text(`TOTAL:`, 130, finalY + 15)
+    doc.text(`€${parseFloat(factura.total).toFixed(2)}`, 180, finalY + 15, { align: 'right' })
+    
+    // Notas
+    if (factura.notas || factura.condiciones) {
+      doc.setFontSize(9)
+      doc.setFont(undefined, 'normal')
+      let notasY = finalY + 25
+      
+      if (factura.forma_pago) {
+        doc.text(`Forma de pago: ${factura.forma_pago}`, 20, notasY)
+        notasY += 5
+      }
+      
+      if (factura.notas) {
+        doc.text(`Notas: ${factura.notas}`, 20, notasY, { maxWidth: 170 })
+      }
+    }
+    
+    // Guardar
+    doc.save(`Factura_${factura.numero_factura}_${factura.cliente_apellidos}.pdf`)
+    showToast('PDF generado correctamente', 'success')
+    
+  } catch (error) {
+    console.error('Error generando PDF:', error)
+    showToast('Error al generar el PDF', 'error')
+  }
+}
+
+// Eliminar factura
+async function deleteFactura(id) {
+  if (!confirm('¿Está seguro de eliminar esta factura?\n\nEsta acción no se puede deshacer.')) return
+  
+  try {
+    await fetch(`${API}/facturas/${id}`, { method: 'DELETE' })
+    showToast('Factura eliminada correctamente', 'success')
+    loadFacturas()
+  } catch (error) {
+    console.error('Error eliminando factura:', error)
+    showToast('Error al eliminar la factura', 'error')
+  }
+}
+
+// Exportar facturas a Excel
+async function exportarFacturas() {
+  try {
+    const fechaInicio = document.getElementById('export-fecha-inicio').value
+    const fechaFin = document.getElementById('export-fecha-fin').value
+    
+    if (!fechaInicio || !fechaFin) {
+      showToast('Por favor selecciona ambas fechas', 'error')
+      return
+    }
+    
+    // Filtrar facturas por rango de fechas
+    const facturasFiltradas = currentData.facturas.filter(f => {
+      const fecha = new Date(f.fecha_emision).toISOString().split('T')[0]
+      return fecha >= fechaInicio && fecha <= fechaFin
+    })
+    
+    if (facturasFiltradas.length === 0) {
+      showToast('No hay facturas en el rango seleccionado', 'error')
+      return
+    }
+    
+    // Crear CSV
+    const headers = ['Número Factura', 'Cliente', 'Fecha Emisión', 'Subtotal', 'IVA', 'Total', 'Estado', 'Forma Pago']
+    const rows = facturasFiltradas.map(f => [
+      f.numero_factura,
+      `${f.cliente_nombre} ${f.cliente_apellidos}`,
+      new Date(f.fecha_emision).toLocaleDateString('es-ES'),
+      parseFloat(f.subtotal).toFixed(2),
+      parseFloat(f.importe_iva || f.iva || 0).toFixed(2),
+      parseFloat(f.total).toFixed(2),
+      f.estado,
+      f.forma_pago || ''
+    ])
+    
+    // Generar CSV
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n')
+    
+    // Descargar
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `Facturas_${fechaInicio}_${fechaFin}.csv`
+    link.click()
+    
+    showToast(`${facturasFiltradas.length} facturas exportadas correctamente`, 'success')
+    
+  } catch (error) {
+    console.error('Error exportando facturas:', error)
+    showToast('Error al exportar facturas', 'error')
+  }
 }
 
 async function showFacturaForm() {
