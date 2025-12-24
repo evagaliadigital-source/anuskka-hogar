@@ -313,43 +313,16 @@ app.put('/api/trabajos/:id', async (c) => {
   return c.json({ success: true })
 })
 
-// Cambiar estado de trabajo (con auto-generación de factura si se completa)
+// Cambiar estado de trabajo (simplificado, sin auto-factura)
 app.put('/api/trabajos/:id/estado', async (c) => {
   const id = c.req.param('id')
   const { estado } = await c.req.json()
   
-  // Obtener trabajo con presupuesto
-  const trabajo = await c.env.DB.prepare(`
-    SELECT t.*, p.id as presupuesto_id, p.numero_presupuesto, p.total as presupuesto_total
-    FROM trabajos t
-    LEFT JOIN presupuestos p ON t.presupuesto_id = p.id
-    WHERE t.id = ?
-  `).bind(id).first()
-  
-  if (!trabajo) {
-    return c.json({ error: 'Trabajo no encontrado' }, 404)
-  }
-  
-  // Actualizar estado del trabajo
   await c.env.DB.prepare(`
     UPDATE trabajos SET estado = ? WHERE id = ?
   `).bind(estado, id).run()
   
-  // Si se marca como completado Y tiene presupuesto, devolver info para crear factura
-  if (estado === 'completado' && trabajo.presupuesto_id) {
-    return c.json({ 
-      success: true,
-      puede_facturar: true,
-      presupuesto: {
-        id: trabajo.presupuesto_id,
-        numero: trabajo.numero_presupuesto,
-        total: trabajo.presupuesto_total,
-        cliente_id: trabajo.cliente_id
-      }
-    })
-  }
-  
-  return c.json({ success: true, puede_facturar: false })
+  return c.json({ success: true })
 })
 
 // Generar factura desde trabajo/presupuesto

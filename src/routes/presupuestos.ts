@@ -435,6 +435,108 @@ presupuestos.post('/:id/convertir-a-trabajo', async (c) => {
   })
 })
 
+// Generar factura desde presupuesto finalizado
+presupuestos.post('/:id/generar-factura', async (c) => {
+  const id = c.req.param('id')
+  
+  // Verificar que el presupuesto existe
+  const presupuesto = await c.env.DB.prepare(`
+    SELECT p.*, c.nombre as cliente_nombre, c.apellidos as cliente_apellidos
+    FROM presupuestos p
+    JOIN clientes c ON p.cliente_id = c.id
+    WHERE p.id = ?
+  `).bind(id).first()
+  
+  if (!presupuesto) {
+    return c.json({ error: 'Presupuesto no encontrado' }, 404)
+  }
+  
+  if (presupuesto.estado !== 'finalizado') {
+    return c.json({ error: 'Solo se pueden facturar presupuestos finalizados' }, 400)
+  }
+  
+  // Verificar que no existe ya una factura para este presupuesto
+  const facturaExistente = await c.env.DB.prepare(`
+    SELECT id FROM facturas WHERE presupuesto_id = ?
+  `).bind(id).first()
+  
+  if (facturaExistente) {
+    return c.json({ error: 'Ya existe una factura para este presupuesto', factura_id: facturaExistente.id }, 400)
+  }
+  
+  // Generar número de factura único (YYYY-NNN)
+  const year = new Date().getFullYear()
+  const lastFactura = await c.env.DB.prepare(`
+    SELECT numero_factura 
+    FROM facturas 
+    WHERE numero_factura LIKE ? 
+    ORDER BY numero_factura DESC 
+    LIMIT 1
+  `).bind(`${year}-%`).first()
+  
+  let numeroFactura
+  if (lastFactura) {
+    const lastNumber = parseInt(lastFactura.numero_factura.split('-')[1])
+    numeroFactura = `${year}-${String(lastNumber + 1).padStart(3, '0')}`
+  } else {
+    numeroFactura = `${year}-001`
+  }
+  
+  // Obtener líneas del presupuesto
+  const { results: lineas } = await c.env.DB.prepare(`
+    SELECT * FROM presupuesto_lineas WHERE presupuesto_id = ? ORDER BY tipo, id
+  `).bind(id).all()
+  
+  // Crear factura
+  const facturaResult = await c.env.DB.prepare(`
+    INSERT INTO facturas (
+      numero_factura, cliente_id, presupuesto_id, trabajo_id,
+      fecha_emision, estado, subtotal, importe_iva, total,
+      porcentaje_iva, descuento_porcentaje, forma_pago, notas, condiciones
+    ) VALUES (?, ?, ?, ?, datetime('now'), 'pendiente', ?, ?, ?, ?, ?, ?, ?, ?)
+  `).bind(
+    numeroFactura,
+    presupuesto.cliente_id,
+    id,
+    presupuesto.trabajo_id || null,
+    presupuesto.subtotal,
+    presupuesto.importe_iva,
+    presupuesto.total,
+    presupuesto.porcentaje_iva,
+    presupuesto.descuento_porcentaje,
+    presupuesto.forma_pago,
+    `Factura generada desde presupuesto ${presupuesto.numero_presupuesto}`,
+    presupuesto.condiciones
+  ).run()
+  
+  const facturaId = facturaResult.meta.last_row_id
+  
+  // Copiar líneas del presupuesto a líneas de factura
+  for (const linea of lineas as any[]) {
+    await c.env.DB.prepare(`
+      INSERT INTO factura_lineas (
+        factura_id, concepto, cantidad, unidad, precio_unitario, subtotal, tipo
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      facturaId,
+      linea.concepto,
+      linea.cantidad,
+      linea.unidad,
+      linea.precio_unitario,
+      linea.subtotal,
+      linea.tipo
+    ).run()
+  }
+  
+  return c.json({
+    success: true,
+    factura_id: facturaId,
+    numero_factura: numeroFactura,
+    total: presupuesto.total,
+    message: `Factura ${numeroFactura} generada correctamente`
+  })
+})
+
 // Obtener configuración de empresa
 presupuestos.get('/configuracion-empresa', async (c) => {
   const empresa = await c.env.DB.prepare(`

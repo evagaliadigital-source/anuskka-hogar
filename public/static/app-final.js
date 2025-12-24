@@ -766,7 +766,7 @@ async function loadTrabajos() {
                 ${t.empleada_nombre ? `${t.empleada_nombre} ${t.empleada_apellidos}` : '<span class="text-gray-400">Sin asignar</span>'}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <select onchange="cambiarEstadoTrabajo(${t.id}, this.value, ${t.presupuesto_id || 'null'}, '${(t.descripcion || '').substring(0, 50).replace(/'/g, "\\'")}', ${t.precio_cliente})" class="px-2 py-1 text-xs font-semibold rounded-full border-0 cursor-pointer ${t.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' : t.estado === 'en_proceso' ? 'bg-blue-100 text-blue-800' : t.estado === 'completado' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                <select onchange="cambiarEstadoTrabajo(${t.id}, this.value)" class="px-2 py-1 text-xs font-semibold rounded-full border-0 cursor-pointer ${t.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' : t.estado === 'en_proceso' ? 'bg-blue-100 text-blue-800' : t.estado === 'completado' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
                   <option value="pendiente" ${t.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
                   <option value="en_proceso" ${t.estado === 'en_proceso' ? 'selected' : ''}>En Proceso</option>
                   <option value="completado" ${t.estado === 'completado' ? 'selected' : ''}>Completado</option>
@@ -793,55 +793,17 @@ async function loadTrabajos() {
   }
 }
 
-// Cambiar estado de trabajo con auto-generación de factura
-async function cambiarEstadoTrabajo(id, nuevoEstado, presupuestoId, descripcion, precio) {
+// Cambiar estado de trabajo (SIN auto-factura - se hace desde presupuesto)
+async function cambiarEstadoTrabajo(id, nuevoEstado) {
   try {
     // Actualizar estado
-    const response = await fetch(`${API}/trabajos/${id}/estado`, {
+    await fetch(`${API}/trabajos/${id}/estado`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ estado: nuevoEstado })
     })
     
-    const result = await response.json()
-    
-    // Si se completó y tiene presupuesto, preguntar por factura
-    if (nuevoEstado === 'completado' && result.puede_facturar) {
-      const confirmar = confirm(
-        `✅ Trabajo completado\n\n` +
-        `¿Deseas generar la FACTURA automáticamente?\n\n` +
-        `📄 Presupuesto: ${result.presupuesto.numero}\n` +
-        `💰 Total: €${result.presupuesto.total.toFixed(2)}\n\n` +
-        `La factura se creará con todos los datos del presupuesto.`
-      )
-      
-      if (confirmar) {
-        // Generar factura
-        const facturaResponse = await fetch(`${API}/trabajos/${id}/generar-factura`, {
-          method: 'POST'
-        })
-        
-        const facturaResult = await facturaResponse.json()
-        
-        if (facturaResult.success) {
-          showToast(`✅ Trabajo completado y factura ${facturaResult.numero_factura} creada`, 'success')
-          
-          // Preguntar si quiere ver la factura
-          setTimeout(() => {
-            if (confirm('¿Deseas ir a ver la factura creada?')) {
-              showTab('facturas')
-            }
-          }, 1000)
-        } else {
-          showToast('Trabajo completado pero no se pudo crear la factura: ' + facturaResult.error, 'warning')
-        }
-      } else {
-        showToast('Trabajo marcado como completado', 'success')
-      }
-    } else {
-      showToast(`Estado actualizado a ${nuevoEstado}`, 'success')
-    }
-    
+    showToast(`Estado actualizado a ${nuevoEstado}`, 'success')
     loadTrabajos()
   } catch (error) {
     console.error('Error al cambiar estado:', error)
@@ -2240,7 +2202,8 @@ async function loadPresupuestos() {
       pendiente: 'bg-yellow-100 text-yellow-800',
       enviado: 'bg-blue-100 text-blue-800',
       aceptado: 'bg-green-100 text-green-800',
-      rechazado: 'bg-red-100 text-red-800'
+      rechazado: 'bg-red-100 text-red-800',
+      finalizado: 'bg-purple-100 text-purple-800'
     }
     
     lista.innerHTML = `
@@ -2274,6 +2237,7 @@ async function loadPresupuestos() {
                   <option value="enviado" ${p.estado === 'enviado' ? 'selected' : ''}>Enviado</option>
                   <option value="aceptado" ${p.estado === 'aceptado' ? 'selected' : ''}>Aceptado</option>
                   <option value="rechazado" ${p.estado === 'rechazado' ? 'selected' : ''}>Rechazado</option>
+                  <option value="finalizado" ${p.estado === 'finalizado' ? 'selected' : ''}>Finalizado</option>
                 </select>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
@@ -3103,7 +3067,7 @@ async function saveQuickCliente(event) {
   }
 }
 
-// Cambiar estado de presupuesto con auto-conversión a trabajo
+// Cambiar estado de presupuesto con auto-conversión a trabajo y auto-facturación
 async function cambiarEstadoPresupuesto(id, nuevoEstado, clienteId, titulo, total) {
   try {
     // Actualizar estado
@@ -3132,7 +3096,28 @@ async function cambiarEstadoPresupuesto(id, nuevoEstado, clienteId, titulo, tota
       } else {
         showToast('Estado actualizado a Aceptado', 'success')
       }
-    } else {
+    }
+    // Si cambió a "finalizado", ofrecer auto-facturación
+    else if (nuevoEstado === 'finalizado') {
+      const confirmar = confirm(`Presupuesto FINALIZADO: "${titulo}"\n\n¿Deseas generar la factura automáticamente?\n\nSe creará con todos los datos del presupuesto:\n- Cliente, total, líneas, condiciones de pago`)
+      
+      if (confirmar) {
+        const response = await fetch(`${API}/presupuestos/${id}/generar-factura`, {
+          method: 'POST'
+        })
+        
+        const result = await response.json()
+        
+        if (result.success) {
+          showToast(`✅ Factura ${result.numero_factura} generada correctamente (€${parseFloat(total).toFixed(2)})`, 'success')
+        } else {
+          showToast('Error: ' + (result.error || 'No se pudo generar la factura'), 'error')
+        }
+      } else {
+        showToast('Estado actualizado a Finalizado', 'success')
+      }
+    }
+    else {
       showToast(`Estado actualizado a ${nuevoEstado}`, 'success')
     }
     
@@ -3552,7 +3537,8 @@ async function showClientePresupuestos(clienteId) {
       pendiente: 'bg-yellow-100 text-yellow-800',
       enviado: 'bg-blue-100 text-blue-800',
       aceptado: 'bg-green-100 text-green-800',
-      rechazado: 'bg-red-100 text-red-800'
+      rechazado: 'bg-red-100 text-red-800',
+      finalizado: 'bg-purple-100 text-purple-800'
     }
     
     const html = `
