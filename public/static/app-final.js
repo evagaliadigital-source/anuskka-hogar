@@ -2222,15 +2222,15 @@ async function loadPresupuestos() {
                   <i class="fas fa-edit"></i>
                 </button>
                 <div class="relative inline-block">
-                  <button onclick="togglePDFMenu(${p.id})" class="text-green-600 hover:text-green-800 font-bold text-lg" title="Descargar PDF" style="background: yellow; padding: 5px;">
-                    <i class="fas fa-file-pdf"></i> NUEVO
+                  <button onclick="togglePDFMenu(${p.id})" class="text-green-600 hover:text-green-800" title="Descargar PDF">
+                    <i class="fas fa-file-pdf"></i>
                   </button>
-                  <div id="pdf-menu-${p.id}" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 border-2 border-green-500">
-                    <button onclick="downloadPresupuestoPDF(${p.id}, 'completo'); togglePDFMenu(${p.id})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-100 font-bold">
-                      📄 Presupuesto Completo
+                  <div id="pdf-menu-${p.id}" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-md shadow-xl z-50 border border-gray-200">
+                    <button onclick="downloadPresupuestoPDF(${p.id}, 'completo'); togglePDFMenu(${p.id})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-50 border-b">
+                      <i class="fas fa-file-alt mr-2"></i>Presupuesto Completo
                     </button>
-                    <button onclick="downloadPresupuestoPDF(${p.id}, 'final'); togglePDFMenu(${p.id})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-100 font-bold">
-                      📋 Presupuesto Final (Resumen)
+                    <button onclick="downloadPresupuestoPDF(${p.id}, 'final'); togglePDFMenu(${p.id})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-50">
+                      <i class="fas fa-file-invoice mr-2"></i>Presupuesto Final (Resumen)
                     </button>
                   </div>
                 </div>
