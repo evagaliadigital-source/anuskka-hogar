@@ -4000,17 +4000,6 @@ async function downloadPresupuestoPDF(id, tipo = 'completo') {
     showToast('Error al generar el PDF', 'error')
   }
 }
-          0: { cellWidth: 90, halign: 'left' },
-          1: { cellWidth: 18, halign: 'right' },
-          2: { cellWidth: 18, halign: 'center' },
-          3: { cellWidth: 22, halign: 'right' },
-          4: { cellWidth: 24, halign: 'right', fontStyle: 'bold' }
-        },
-        margin: { left: 20, right: 20 }
-      })
-      
-      yPos = doc.lastAutoTable.finalY + 5
-    }
     
     // Telas
     if (telas.length > 0) {
