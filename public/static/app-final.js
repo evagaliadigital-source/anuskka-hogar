@@ -1936,6 +1936,22 @@ async function viewFactura(id) {
           </div>
           
           <div class="space-y-4">
+            ${factura.presupuesto_titulo ? `
+              <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                <div class="flex">
+                  <div class="flex-shrink-0">
+                    <i class="fas fa-info-circle text-yellow-400"></i>
+                  </div>
+                  <div class="ml-3">
+                    <p class="text-sm text-yellow-700">
+                      <span class="font-semibold">Trabajo:</span> ${factura.presupuesto_titulo}
+                    </p>
+                    ${factura.numero_presupuesto ? `<p class="text-xs text-yellow-600 mt-1">Presupuesto: ${factura.numero_presupuesto}</p>` : ''}
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+            
             <div class="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p class="text-gray-600">Cliente:</p>
@@ -2095,6 +2111,21 @@ async function downloadFacturaPDF(id) {
     doc.text(new Date(factura.fecha_emision).toLocaleDateString('es-ES'), 160, yPos - 10)
     
     yPos += 10
+    
+    // ====================================
+    // TÍTULO DEL TRABAJO (si viene de presupuesto)
+    // ====================================
+    if (factura.presupuesto_titulo) {
+      doc.setFillColor(...accentGold)
+      doc.rect(20, yPos, 170, 8, 'F')
+      
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(11)
+      doc.setFont(undefined, 'bold')
+      doc.text(factura.presupuesto_titulo, 105, yPos + 5.5, { align: 'center' })
+      
+      yPos += 12
+    }
     
     // ====================================
     // LÍNEAS DE FACTURA

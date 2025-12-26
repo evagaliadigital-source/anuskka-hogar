@@ -776,12 +776,15 @@ app.get('/api/facturas', async (c) => {
 app.get('/api/facturas/:id', async (c) => {
   const id = c.req.param('id')
   
-  // Obtener factura
+  // Obtener factura con título del presupuesto
   const factura = await c.env.DB.prepare(`
-    SELECT f.*, c.nombre as cliente_nombre, c.apellidos as cliente_apellidos,
-           c.direccion as cliente_direccion, c.email as cliente_email, c.telefono as cliente_telefono
+    SELECT f.*, 
+           c.nombre as cliente_nombre, c.apellidos as cliente_apellidos,
+           c.direccion as cliente_direccion, c.email as cliente_email, c.telefono as cliente_telefono,
+           p.titulo as presupuesto_titulo, p.numero_presupuesto
     FROM facturas f
     LEFT JOIN clientes c ON f.cliente_id = c.id
+    LEFT JOIN presupuestos p ON f.presupuesto_id = p.id
     WHERE f.id = ?
   `).bind(id).first()
   
