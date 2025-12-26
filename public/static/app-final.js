@@ -2116,15 +2116,26 @@ async function downloadFacturaPDF(id) {
     // TÍTULO DEL TRABAJO (si viene de presupuesto)
     // ====================================
     if (factura.presupuesto_titulo) {
-      doc.setFillColor(...accentGold)
-      doc.rect(20, yPos, 170, 8, 'F')
+      // Box sutil con borde fino
+      doc.setDrawColor(...softGray)
+      doc.setLineWidth(0.3)
+      doc.roundedRect(20, yPos, 170, 10, 1, 1, 'S')
       
-      doc.setTextColor(255, 255, 255)
-      doc.setFontSize(11)
+      yPos += 3
+      
+      // Icono y label
+      doc.setTextColor(...softGray)
+      doc.setFontSize(8)
+      doc.setFont(undefined, 'normal')
+      doc.text('Trabajo:', 25, yPos)
+      
+      // Título
+      doc.setTextColor(...primaryBlack)
       doc.setFont(undefined, 'bold')
-      doc.text(factura.presupuesto_titulo, 105, yPos + 5.5, { align: 'center' })
+      doc.setFontSize(10)
+      doc.text(factura.presupuesto_titulo, 42, yPos)
       
-      yPos += 12
+      yPos += 10
     }
     
     // ====================================
