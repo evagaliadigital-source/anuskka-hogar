@@ -1606,11 +1606,12 @@ async function loadStock(bajoStock = false) {
       <table class="min-w-full">
         <thead class="bg-gray-50">
           <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Código</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoría</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cantidad</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mínimo</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Precio Unit.</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Precio Venta</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Proveedor</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
           </tr>
@@ -1620,15 +1621,16 @@ async function loadStock(bajoStock = false) {
             const bajoCantidad = s.cantidad_actual <= s.cantidad_minima
             return `
               <tr class="hover:bg-gray-50 ${bajoCantidad ? 'bg-red-50' : ''}">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-sm font-mono font-medium text-gray-900">${s.codigo || '-'}</span>
+                </td>
                 <td class="px-6 py-4">
                   <div class="font-medium text-gray-900">${s.nombre}</div>
                   ${s.descripcion ? `<div class="text-sm text-gray-500">${s.descripcion}</div>` : ''}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   ${s.categoria_nombre ? `
-                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm" 
-                          style="background-color: ${s.categoria_color}20; color: ${s.categoria_color}">
-                      <i class="fas ${s.categoria_icono}"></i>
+                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700">
                       ${s.categoria_nombre}
                     </span>
                   ` : '<span class="text-gray-400">Sin categoría</span>'}
@@ -1640,11 +1642,20 @@ async function loadStock(bajoStock = false) {
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${s.cantidad_minima} ${s.unidad}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">€${s.precio_unitario.toFixed(2)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">€${(s.precio_venta || 0).toFixed(2)}</td>
                 <td class="px-6 py-4 text-sm text-gray-900">${s.proveedor || '-'}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                  <button onclick="editStock(${s.id})" class="text-green-600 hover:text-green-800">
+                <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                  <button onclick="editStock(${s.id})" class="text-blue-600 hover:text-blue-800" title="Editar">
                     <i class="fas fa-edit"></i>
+                  </button>
+                  <button onclick="showMovimientos(${s.id})" class="text-green-600 hover:text-green-800" title="Ver movimientos">
+                    <i class="fas fa-history"></i>
+                  </button>
+                  <button onclick="ajustarStock(${s.id})" class="text-purple-600 hover:text-purple-800" title="Ajustar stock">
+                    <i class="fas fa-exchange-alt"></i>
+                  </button>
+                  <button onclick="deleteStock(${s.id})" class="text-red-600 hover:text-red-800" title="Eliminar">
+                    <i class="fas fa-trash"></i>
                   </button>
                 </td>
               </tr>

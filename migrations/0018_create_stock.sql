@@ -1,0 +1,8 @@
+-- Añadir campos faltantes a tabla stock existente
+ALTER TABLE stock ADD COLUMN codigo TEXT;
+ALTER TABLE stock ADD COLUMN precio_compra REAL DEFAULT 0;
+ALTER TABLE stock ADD COLUMN precio_venta REAL DEFAULT 0;
+ALTER TABLE stock ADD COLUMN imagen_url TEXT;
+ALTER TABLE stock ADD COLUMN documento_url TEXT;
+ALTER TABLE stock ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE stock ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP;

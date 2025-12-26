@@ -1387,6 +1387,354 @@ app.get('/api/historial/stats', async (c) => {
 })
 
 // ============================================
+// STOCK - Gestión de Inventario
+// ============================================
+
+// Obtener todas las categorías de stock
+app.get('/api/stock/categorias', async (c) => {
+  try {
+    const { results } = await c.env.DB.prepare(`
+      SELECT * FROM stock_categorias ORDER BY nombre
+    `).all()
+    
+    return c.json(results)
+  } catch (error) {
+    console.error('Error al obtener categorías:', error)
+    return c.json({ error: 'Error al obtener categorías' }, 500)
+  }
+})
+
+// Generar código automático para stock
+async function generarCodigoStock(db: any, categoriaId: number): Promise<string> {
+  // Obtener prefijo y último número de la categoría
+  const categoria = await db.prepare(`
+    SELECT prefijo, ultimo_numero FROM stock_categorias WHERE id = ?
+  `).bind(categoriaId).first()
+  
+  if (!categoria) {
+    throw new Error('Categoría no encontrada')
+  }
+  
+  const nuevoNumero = categoria.ultimo_numero + 1
+  const codigo = `${categoria.prefijo}-${String(nuevoNumero).padStart(4, '0')}`
+  
+  // Actualizar último número en la categoría
+  await db.prepare(`
+    UPDATE stock_categorias SET ultimo_numero = ? WHERE id = ?
+  `).bind(nuevoNumero, categoriaId).run()
+  
+  return codigo
+}
+
+// Obtener todo el stock
+app.get('/api/stock', async (c) => {
+  try {
+    const { results } = await c.env.DB.prepare(`
+      SELECT 
+        s.*,
+        sc.nombre as categoria_nombre,
+        sc.prefijo as categoria_prefijo
+      FROM stock s
+      LEFT JOIN stock_categorias sc ON s.categoria_id = sc.id
+      ORDER BY s.created_at DESC
+    `).all()
+    
+    return c.json(results)
+  } catch (error) {
+    console.error('Error al obtener stock:', error)
+    return c.json({ error: 'Error al obtener stock' }, 500)
+  }
+})
+
+// Obtener stock por ID
+app.get('/api/stock/:id', async (c) => {
+  try {
+    const id = c.req.param('id')
+    const stock = await c.env.DB.prepare(`
+      SELECT 
+        s.*,
+        sc.nombre as categoria_nombre,
+        sc.prefijo as categoria_prefijo
+      FROM stock s
+      LEFT JOIN stock_categorias sc ON s.categoria_id = sc.id
+      WHERE s.id = ?
+    `).bind(id).first()
+    
+    if (!stock) {
+      return c.json({ error: 'Item no encontrado' }, 404)
+    }
+    
+    return c.json(stock)
+  } catch (error) {
+    console.error('Error al obtener item:', error)
+    return c.json({ error: 'Error al obtener item' }, 500)
+  }
+})
+
+// Crear nuevo item de stock
+app.post('/api/stock', async (c) => {
+  try {
+    const data = await c.req.json()
+    
+    // Generar código automático
+    const codigo = await generarCodigoStock(c.env.DB, data.categoria_id)
+    
+    const result = await c.env.DB.prepare(`
+      INSERT INTO stock (
+        codigo, categoria_id, nombre, descripcion, unidad,
+        precio_compra, precio_venta, cantidad_actual, cantidad_minima,
+        proveedor, imagen_url, documento_url, fecha_ultima_compra
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      codigo,
+      data.categoria_id,
+      data.nombre,
+      data.descripcion || null,
+      data.unidad || 'unidad',
+      data.precio_compra || 0,
+      data.precio_venta || 0,
+      data.cantidad_actual || 0,
+      data.cantidad_minima || 10,
+      data.proveedor || null,
+      data.imagen_url || null,
+      data.documento_url || null,
+      data.fecha_ultima_compra || null
+    ).run()
+    
+    // Registrar movimiento si hay cantidad inicial
+    if (data.cantidad_actual && data.cantidad_actual > 0) {
+      await c.env.DB.prepare(`
+        INSERT INTO stock_movimientos (
+          stock_id, tipo, cantidad, stock_anterior, stock_nuevo,
+          motivo, documento_url
+        ) VALUES (?, 'entrada', ?, 0, ?, 'Stock inicial', ?)
+      `).bind(
+        result.meta.last_row_id,
+        data.cantidad_actual,
+        data.cantidad_actual,
+        data.documento_url || null
+      ).run()
+    }
+    
+    return c.json({ 
+      id: result.meta.last_row_id, 
+      codigo,
+      ...data 
+    })
+  } catch (error) {
+    console.error('Error al crear item:', error)
+    return c.json({ error: 'Error al crear item' }, 500)
+  }
+})
+
+// Actualizar item de stock
+app.put('/api/stock/:id', async (c) => {
+  try {
+    const id = c.req.param('id')
+    const data = await c.req.json()
+    
+    await c.env.DB.prepare(`
+      UPDATE stock SET
+        nombre = ?,
+        descripcion = ?,
+        unidad = ?,
+        precio_compra = ?,
+        precio_venta = ?,
+        cantidad_minima = ?,
+        proveedor = ?,
+        imagen_url = ?,
+        documento_url = ?,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).bind(
+      data.nombre,
+      data.descripcion,
+      data.unidad,
+      data.precio_compra,
+      data.precio_venta,
+      data.cantidad_minima,
+      data.proveedor,
+      data.imagen_url,
+      data.documento_url,
+      id
+    ).run()
+    
+    return c.json({ success: true })
+  } catch (error) {
+    console.error('Error al actualizar item:', error)
+    return c.json({ error: 'Error al actualizar item' }, 500)
+  }
+})
+
+// Eliminar item de stock
+app.delete('/api/stock/:id', async (c) => {
+  try {
+    const id = c.req.param('id')
+    
+    await c.env.DB.prepare(`
+      DELETE FROM stock WHERE id = ?
+    `).bind(id).run()
+    
+    return c.json({ success: true })
+  } catch (error) {
+    console.error('Error al eliminar item:', error)
+    return c.json({ error: 'Error al eliminar item' }, 500)
+  }
+})
+
+// Ajustar stock (entrada/salida)
+app.post('/api/stock/:id/ajustar', async (c) => {
+  try {
+    const id = c.req.param('id')
+    const { tipo, cantidad, motivo, documento_url } = await c.req.json()
+    
+    // Obtener stock actual
+    const stock = await c.env.DB.prepare(`
+      SELECT cantidad_actual FROM stock WHERE id = ?
+    `).bind(id).first()
+    
+    if (!stock) {
+      return c.json({ error: 'Item no encontrado' }, 404)
+    }
+    
+    const stockAnterior = stock.cantidad_actual
+    let stockNuevo = stockAnterior
+    
+    if (tipo === 'entrada') {
+      stockNuevo = stockAnterior + cantidad
+    } else if (tipo === 'salida') {
+      stockNuevo = Math.max(0, stockAnterior - cantidad)
+    } else if (tipo === 'ajuste') {
+      stockNuevo = cantidad
+    }
+    
+    // Actualizar stock
+    await c.env.DB.prepare(`
+      UPDATE stock SET cantidad_actual = ? WHERE id = ?
+    `).bind(stockNuevo, id).run()
+    
+    // Registrar movimiento
+    await c.env.DB.prepare(`
+      INSERT INTO stock_movimientos (
+        stock_id, tipo, cantidad, stock_anterior, stock_nuevo,
+        motivo, documento_url
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      id,
+      tipo,
+      cantidad,
+      stockAnterior,
+      stockNuevo,
+      motivo || null,
+      documento_url || null
+    ).run()
+    
+    return c.json({ 
+      success: true,
+      stock_anterior: stockAnterior,
+      stock_nuevo: stockNuevo
+    })
+  } catch (error) {
+    console.error('Error al ajustar stock:', error)
+    return c.json({ error: 'Error al ajustar stock' }, 500)
+  }
+})
+
+// Obtener movimientos de un item
+app.get('/api/stock/:id/movimientos', async (c) => {
+  try {
+    const id = c.req.param('id')
+    
+    const { results } = await c.env.DB.prepare(`
+      SELECT * FROM stock_movimientos
+      WHERE stock_id = ?
+      ORDER BY created_at DESC
+    `).bind(id).all()
+    
+    return c.json(results)
+  } catch (error) {
+    console.error('Error al obtener movimientos:', error)
+    return c.json({ error: 'Error al obtener movimientos' }, 500)
+  }
+})
+
+// Importación masiva de stock desde Excel/CSV
+app.post('/api/stock/importar', async (c) => {
+  try {
+    const { items, documento_url } = await c.req.json()
+    
+    const resultados = []
+    
+    for (const item of items) {
+      try {
+        // Generar código automático
+        const codigo = await generarCodigoStock(c.env.DB, item.categoria_id)
+        
+        const result = await c.env.DB.prepare(`
+          INSERT INTO stock (
+            codigo, categoria_id, nombre, descripcion, unidad,
+            precio_compra, precio_venta, cantidad_actual, cantidad_minima,
+            proveedor, imagen_url, documento_url, fecha_ultima_compra
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).bind(
+          codigo,
+          item.categoria_id,
+          item.nombre,
+          item.descripcion || null,
+          item.unidad || 'unidad',
+          item.precio_compra || 0,
+          item.precio_venta || 0,
+          item.cantidad_actual || 0,
+          item.cantidad_minima || 10,
+          item.proveedor || null,
+          item.imagen_url || null,
+          documento_url || null,
+          item.fecha_ultima_compra || null
+        ).run()
+        
+        // Registrar movimiento si hay cantidad
+        if (item.cantidad_actual && item.cantidad_actual > 0) {
+          await c.env.DB.prepare(`
+            INSERT INTO stock_movimientos (
+              stock_id, tipo, cantidad, stock_anterior, stock_nuevo,
+              motivo, documento_url
+            ) VALUES (?, 'entrada', ?, 0, ?, 'Importación masiva', ?)
+          `).bind(
+            result.meta.last_row_id,
+            item.cantidad_actual,
+            item.cantidad_actual,
+            documento_url || null
+          ).run()
+        }
+        
+        resultados.push({ 
+          success: true,
+          codigo,
+          nombre: item.nombre
+        })
+      } catch (error) {
+        resultados.push({ 
+          success: false,
+          nombre: item.nombre,
+          error: error.message
+        })
+      }
+    }
+    
+    return c.json({ 
+      success: true,
+      total: items.length,
+      exitosos: resultados.filter(r => r.success).length,
+      fallidos: resultados.filter(r => !r.success).length,
+      resultados
+    })
+  } catch (error) {
+    console.error('Error en importación masiva:', error)
+    return c.json({ error: 'Error en importación masiva' }, 500)
+  }
+})
+
+// ============================================
 // MOUNT EXTERNAL ROUTES
 // ============================================
 app.route('/api/presupuestos', presupuestos)
@@ -2317,6 +2665,8 @@ app.get('/', (c) => {
     </button>
 
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+    <!-- SheetJS para parsear Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="/static/app-final.js?v=${Date.now()}"></script>
 </body>
 </html>
