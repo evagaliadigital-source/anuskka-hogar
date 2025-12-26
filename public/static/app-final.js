@@ -1822,6 +1822,10 @@ async function loadFacturas() {
             <i class="fas fa-file-excel"></i>
             Exportar a Excel
           </button>
+          <button onclick="descargarFacturasPDF()" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2">
+            <i class="fas fa-file-pdf"></i>
+            Descargar PDFs
+          </button>
         </div>
       </div>
     `
@@ -2365,6 +2369,240 @@ async function exportarFacturas() {
     console.error('Error exportando facturas:', error)
     showToast('Error al exportar facturas', 'error')
   }
+}
+
+// Descargar PDFs de facturas en ZIP
+async function descargarFacturasPDF() {
+  try {
+    const fechaInicio = document.getElementById('export-fecha-inicio').value
+    const fechaFin = document.getElementById('export-fecha-fin').value
+    
+    if (!fechaInicio || !fechaFin) {
+      showToast('Por favor selecciona ambas fechas', 'error')
+      return
+    }
+    
+    // Filtrar facturas por rango de fechas
+    const facturasFiltradas = currentData.facturas.filter(f => {
+      const fecha = new Date(f.fecha_emision).toISOString().split('T')[0]
+      return fecha >= fechaInicio && fecha <= fechaFin
+    })
+    
+    if (facturasFiltradas.length === 0) {
+      showToast('No hay facturas en el rango seleccionado', 'error')
+      return
+    }
+    
+    showToast(`Generando ${facturasFiltradas.length} PDFs...`, 'info')
+    
+    const zip = new JSZip()
+    let generados = 0
+    
+    // Generar PDF para cada factura
+    for (const factura of facturasFiltradas) {
+      try {
+        // Obtener detalles completos de la factura
+        const response = await fetch(`${API}/facturas/${factura.id}`)
+        const facturaCompleta = await response.json()
+        
+        // Generar PDF usando la misma lógica que downloadFacturaPDF
+        const { jsPDF } = window.jspdf
+        const doc = new jsPDF()
+        
+        // Reutilizar lógica de generación de PDF
+        await generarPDFFactura(doc, facturaCompleta)
+        
+        // Añadir al ZIP
+        const pdfBlob = doc.output('blob')
+        const nombreArchivo = `Factura_${facturaCompleta.numero_factura}_${facturaCompleta.cliente_apellidos}.pdf`
+        zip.file(nombreArchivo, pdfBlob)
+        
+        generados++
+        
+        // Mostrar progreso
+        if (generados % 5 === 0 || generados === facturasFiltradas.length) {
+          showToast(`Generados ${generados}/${facturasFiltradas.length} PDFs...`, 'info')
+        }
+      } catch (error) {
+        console.error(`Error generando PDF para factura ${factura.numero_factura}:`, error)
+      }
+    }
+    
+    // Generar y descargar ZIP
+    const zipBlob = await zip.generateAsync({ type: 'blob' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(zipBlob)
+    link.download = `Facturas_${fechaInicio}_${fechaFin}.zip`
+    link.click()
+    
+    showToast(`${generados} facturas descargadas en ZIP`, 'success')
+    
+  } catch (error) {
+    console.error('Error descargando PDFs:', error)
+    showToast('Error al descargar los PDFs', 'error')
+  }
+}
+
+// Helper: Generar PDF de factura (código reutilizable)
+async function generarPDFFactura(doc, factura) {
+  // Colores corporativos
+  const primaryBlack = [0, 0, 0]
+  const softGray = [128, 128, 128]
+  const lightGray = [245, 245, 245]
+  const accentGold = [212, 175, 55]
+  
+  let yPos = 20
+  
+  // Logo
+  try {
+    const logoImg = await loadImage('/static/logo.jpg')
+    doc.addImage(logoImg, 'JPEG', 20, yPos, 60, 33.75)
+  } catch (e) {
+    doc.setTextColor(...primaryBlack)
+    doc.setFontSize(16)
+    doc.setFont(undefined, 'bold')
+    doc.text('Anushka Hogar', 20, yPos + 8)
+  }
+  
+  // Info empresa
+  doc.setTextColor(...softGray)
+  doc.setFontSize(9)
+  doc.setFont(undefined, 'normal')
+  doc.text('Confección e Instalación de Cortinas', 190, yPos + 2, { align: 'right' })
+  doc.setFontSize(8)
+  doc.text('Av. de Monelos 109, 15008 A Coruña', 190, yPos + 7, { align: 'right' })
+  doc.text('Tel: 666 777 888', 190, yPos + 12, { align: 'right' })
+  
+  yPos += 40
+  
+  // Línea dorada
+  doc.setDrawColor(...accentGold)
+  doc.setLineWidth(0.5)
+  doc.line(20, yPos, 190, yPos)
+  yPos += 8
+  
+  // Título
+  doc.setTextColor(...primaryBlack)
+  doc.setFontSize(18)
+  doc.setFont(undefined, 'bold')
+  doc.text('FACTURA', 105, yPos, { align: 'center' })
+  yPos += 3
+  doc.setFontSize(12)
+  doc.setTextColor(...accentGold)
+  doc.text(factura.numero_factura, 105, yPos, { align: 'center' })
+  yPos += 10
+  
+  // Box cliente
+  doc.setFillColor(...lightGray)
+  doc.roundedRect(20, yPos, 170, 22, 2, 2, 'F')
+  yPos += 6
+  doc.setTextColor(...primaryBlack)
+  doc.setFontSize(10)
+  doc.setFont(undefined, 'bold')
+  doc.text('Cliente:', 25, yPos)
+  doc.setFont(undefined, 'normal')
+  doc.text(`${factura.cliente_nombre} ${factura.cliente_apellidos}`, 45, yPos)
+  yPos += 5
+  doc.setFontSize(8)
+  doc.setTextColor(...softGray)
+  if (factura.cliente_direccion) doc.text(factura.cliente_direccion, 25, yPos)
+  yPos += 5
+  doc.text(`Tel: ${factura.cliente_telefono || '-'} | Email: ${factura.cliente_email || '-'}`, 25, yPos)
+  yPos += 5
+  doc.setTextColor(...primaryBlack)
+  doc.setFontSize(9)
+  doc.setFont(undefined, 'bold')
+  doc.text('Fecha:', 145, yPos - 10)
+  doc.setFont(undefined, 'normal')
+  doc.text(new Date(factura.fecha_emision).toLocaleDateString('es-ES'), 160, yPos - 10)
+  yPos += 10
+  
+  // Título del trabajo
+  if (factura.presupuesto_titulo) {
+    doc.setDrawColor(...softGray)
+    doc.setLineWidth(0.3)
+    doc.roundedRect(20, yPos, 170, 10, 1, 1, 'S')
+    yPos += 3
+    doc.setTextColor(...softGray)
+    doc.setFontSize(8)
+    doc.setFont(undefined, 'normal')
+    doc.text('Trabajo:', 25, yPos)
+    doc.setTextColor(...primaryBlack)
+    doc.setFont(undefined, 'bold')
+    doc.setFontSize(10)
+    doc.text(factura.presupuesto_titulo, 42, yPos)
+    yPos += 10
+  }
+  
+  // Tabla líneas
+  if (factura.lineas && factura.lineas.length > 0) {
+    const tableData = factura.lineas.map(l => [
+      l.concepto,
+      `${l.cantidad} ${l.unidad}`,
+      `€${parseFloat(l.precio_unitario).toFixed(2)}`,
+      `€${parseFloat(l.subtotal).toFixed(2)}`
+    ])
+    
+    doc.autoTable({
+      startY: yPos,
+      head: [['Concepto', 'Cantidad', 'Precio Unit.', 'Subtotal']],
+      body: tableData,
+      theme: 'striped',
+      styles: { fontSize: 9, cellPadding: 4, lineColor: [230, 230, 230], lineWidth: 0.1 },
+      headStyles: { fillColor: primaryBlack, textColor: [255, 255, 255], fontStyle: 'bold', halign: 'left', fontSize: 10 },
+      columnStyles: {
+        0: { cellWidth: 90 },
+        1: { halign: 'center', cellWidth: 30 },
+        2: { halign: 'right', cellWidth: 25 },
+        3: { halign: 'right', cellWidth: 30, fontStyle: 'bold' }
+      },
+      alternateRowStyles: { fillColor: lightGray }
+    })
+    yPos = doc.lastAutoTable.finalY + 15
+  }
+  
+  // Totales
+  const boxX = 115
+  const boxY = yPos
+  const boxWidth = 75
+  doc.setFillColor(...lightGray)
+  doc.roundedRect(boxX, boxY, boxWidth, 30, 2, 2, 'F')
+  yPos += 7
+  doc.setFontSize(10)
+  doc.setFont(undefined, 'normal')
+  doc.setTextColor(...softGray)
+  doc.text('Subtotal:', boxX + 5, yPos)
+  doc.setTextColor(...primaryBlack)
+  doc.setFont(undefined, 'bold')
+  doc.text(`€${parseFloat(factura.subtotal).toFixed(2)}`, boxX + boxWidth - 5, yPos, { align: 'right' })
+  yPos += 6
+  doc.setFont(undefined, 'normal')
+  doc.setTextColor(...softGray)
+  doc.text(`IVA (${factura.porcentaje_iva || 21}%):`, boxX + 5, yPos)
+  doc.setTextColor(...primaryBlack)
+  doc.setFont(undefined, 'bold')
+  doc.text(`€${parseFloat(factura.importe_iva || factura.iva || 0).toFixed(2)}`, boxX + boxWidth - 5, yPos, { align: 'right' })
+  yPos += 8
+  doc.setDrawColor(...accentGold)
+  doc.setLineWidth(1)
+  doc.line(boxX + 5, yPos, boxX + boxWidth - 5, yPos)
+  yPos += 6
+  doc.setFontSize(13)
+  doc.setFont(undefined, 'bold')
+  doc.setTextColor(...primaryBlack)
+  doc.text('TOTAL:', boxX + 5, yPos)
+  doc.setFontSize(14)
+  doc.setTextColor(...accentGold)
+  doc.text(`€${parseFloat(factura.total).toFixed(2)}`, boxX + boxWidth - 5, yPos, { align: 'right' })
+  
+  // Footer
+  doc.setDrawColor(...accentGold)
+  doc.setLineWidth(0.5)
+  doc.line(20, 285, 190, 285)
+  doc.setFontSize(8)
+  doc.setTextColor(...softGray)
+  doc.setFont(undefined, 'normal')
+  doc.text('Anushka Hogar - Confección e Instalación de Cortinas', 105, 290, { align: 'center' })
 }
 
 async function showFacturaForm() {
