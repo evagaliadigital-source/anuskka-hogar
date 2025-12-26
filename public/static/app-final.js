@@ -1996,32 +1996,99 @@ async function downloadFacturaPDF(id) {
     const { jsPDF } = window.jspdf
     const doc = new jsPDF()
     
-    // Header
-    doc.setFontSize(20)
-    doc.setFont(undefined, 'bold')
-    doc.text('FACTURA', 105, 20, { align: 'center' })
+    // Colores corporativos
+    const primaryBlack = [0, 0, 0]
+    const softGray = [128, 128, 128]
+    const lightGray = [245, 245, 245]
+    const accentGold = [212, 175, 55]
     
+    let yPos = 20
+    
+    // ====================================
+    // HEADER CON LOGO (proporción 16:9 respetada)
+    // ====================================
+    
+    // Logo Anushka Hogar (1024x576 = 16:9)
+    // Calculamos proporciones: ancho 60mm → alto 33.75mm (60 * 9/16)
+    try {
+      const logoImg = await loadImage('/static/logo.jpg')
+      doc.addImage(logoImg, 'JPEG', 20, yPos, 60, 33.75)
+    } catch (e) {
+      console.warn('No se pudo cargar el logo:', e)
+      // Fallback: texto
+      doc.setTextColor(...primaryBlack)
+      doc.setFontSize(16)
+      doc.setFont(undefined, 'bold')
+      doc.text('Anushka Hogar', 20, yPos + 8)
+    }
+    
+    // Información empresa (derecha)
+    doc.setTextColor(...softGray)
+    doc.setFontSize(9)
+    doc.setFont(undefined, 'normal')
+    doc.text('Confección e Instalación de Cortinas', 190, yPos + 2, { align: 'right' })
+    doc.setFontSize(8)
+    doc.text('Av. de Monelos 109, 15008 A Coruña', 190, yPos + 7, { align: 'right' })
+    doc.text('Tel: 666 777 888', 190, yPos + 12, { align: 'right' })
+    
+    yPos += 40
+    
+    // Línea dorada separadora
+    doc.setDrawColor(...accentGold)
+    doc.setLineWidth(0.5)
+    doc.line(20, yPos, 190, yPos)
+    yPos += 8
+    
+    // ====================================
+    // TÍTULO FACTURA
+    // ====================================
+    doc.setTextColor(...primaryBlack)
+    doc.setFontSize(18)
+    doc.setFont(undefined, 'bold')
+    doc.text('FACTURA', 105, yPos, { align: 'center' })
+    
+    yPos += 3
     doc.setFontSize(12)
-    doc.setFont(undefined, 'bold')
-    doc.text(factura.numero_factura, 105, 28, { align: 'center' })
+    doc.setTextColor(...accentGold)
+    doc.text(factura.numero_factura, 105, yPos, { align: 'center' })
     
-    // Empresa
+    yPos += 10
+    
+    // ====================================
+    // DATOS DEL CLIENTE (Box elegante)
+    // ====================================
+    doc.setFillColor(...lightGray)
+    doc.roundedRect(20, yPos, 170, 22, 2, 2, 'F')
+    
+    yPos += 6
+    doc.setTextColor(...primaryBlack)
     doc.setFontSize(10)
-    doc.setFont(undefined, 'normal')
-    doc.text('Anushka Hogar', 20, 45)
-    doc.text('Confección e Instalación de Cortinas', 20, 50)
-    
-    // Cliente
     doc.setFont(undefined, 'bold')
-    doc.text('Cliente:', 120, 45)
+    doc.text('Cliente:', 25, yPos)
     doc.setFont(undefined, 'normal')
-    doc.text(`${factura.cliente_nombre} ${factura.cliente_apellidos}`, 120, 50)
-    if (factura.cliente_direccion) doc.text(factura.cliente_direccion, 120, 55)
+    doc.text(`${factura.cliente_nombre} ${factura.cliente_apellidos}`, 45, yPos)
     
-    // Fecha
-    doc.text(`Fecha: ${new Date(factura.fecha_emision).toLocaleDateString('es-ES')}`, 20, 65)
+    yPos += 5
+    doc.setFontSize(8)
+    doc.setTextColor(...softGray)
+    if (factura.cliente_direccion) doc.text(factura.cliente_direccion, 25, yPos)
     
-    // Líneas
+    yPos += 5
+    doc.text(`Tel: ${factura.cliente_telefono || '-'} | Email: ${factura.cliente_email || '-'}`, 25, yPos)
+    
+    yPos += 5
+    doc.setTextColor(...primaryBlack)
+    doc.setFontSize(9)
+    doc.setFont(undefined, 'bold')
+    doc.text('Fecha:', 145, yPos - 10)
+    doc.setFont(undefined, 'normal')
+    doc.text(new Date(factura.fecha_emision).toLocaleDateString('es-ES'), 160, yPos - 10)
+    
+    yPos += 10
+    
+    // ====================================
+    // LÍNEAS DE FACTURA
+    // ====================================
     if (factura.lineas && factura.lineas.length > 0) {
       const tableData = factura.lineas.map(l => [
         l.concepto,
@@ -2031,12 +2098,35 @@ async function downloadFacturaPDF(id) {
       ])
       
       doc.autoTable({
-        startY: 75,
+        startY: yPos,
         head: [['Concepto', 'Cantidad', 'Precio Unit.', 'Subtotal']],
         body: tableData,
-        theme: 'grid',
-        headStyles: { fillColor: [71, 85, 105] }
+        theme: 'striped',
+        styles: {
+          fontSize: 9,
+          cellPadding: 4,
+          lineColor: [230, 230, 230],
+          lineWidth: 0.1
+        },
+        headStyles: {
+          fillColor: primaryBlack,
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          halign: 'left',
+          fontSize: 10
+        },
+        columnStyles: {
+          0: { cellWidth: 90 },
+          1: { halign: 'center', cellWidth: 30 },
+          2: { halign: 'right', cellWidth: 25 },
+          3: { halign: 'right', cellWidth: 30, fontStyle: 'bold' }
+        },
+        alternateRowStyles: {
+          fillColor: lightGray
+        }
       })
+      
+      yPos = doc.lastAutoTable.finalY + 15
     }
     
     // Totales
@@ -2052,23 +2142,67 @@ async function downloadFacturaPDF(id) {
     doc.setFont(undefined, 'bold')
     doc.setFontSize(12)
     doc.text(`TOTAL:`, 130, finalY + 15)
-    doc.text(`€${parseFloat(factura.total).toFixed(2)}`, 180, finalY + 15, { align: 'right' })
+    doc.text(`€${parseFloat(factura.total).toFixed(2)}`, boxX + boxWidth - 5, yPos, { align: 'right' })
     
-    // Notas
-    if (factura.notas || factura.condiciones) {
+    yPos += 15
+    
+    // ====================================
+    // NOTAS Y CONDICIONES
+    // ====================================
+    if (factura.notas || factura.condiciones || factura.forma_pago) {
+      if (yPos > 240) {
+        doc.addPage()
+        yPos = 30
+      }
+      
       doc.setFontSize(9)
-      doc.setFont(undefined, 'normal')
-      let notasY = finalY + 25
+      doc.setFont(undefined, 'bold')
+      doc.setTextColor(...primaryBlack)
       
       if (factura.forma_pago) {
-        doc.text(`Forma de pago: ${factura.forma_pago}`, 20, notasY)
-        notasY += 5
+        doc.text('FORMA DE PAGO:', 20, yPos)
+        yPos += 5
+        doc.setFont(undefined, 'normal')
+        doc.setTextColor(...softGray)
+        doc.text(factura.forma_pago, 20, yPos)
+        yPos += 8
       }
       
       if (factura.notas) {
-        doc.text(`Notas: ${factura.notas}`, 20, notasY, { maxWidth: 170 })
+        doc.setFont(undefined, 'bold')
+        doc.setTextColor(...primaryBlack)
+        doc.text('NOTAS:', 20, yPos)
+        yPos += 5
+        doc.setFont(undefined, 'normal')
+        doc.setTextColor(...softGray)
+        const splitNotas = doc.splitTextToSize(factura.notas, 170)
+        doc.text(splitNotas, 20, yPos)
+        yPos += splitNotas.length * 4 + 6
+      }
+      
+      if (factura.condiciones) {
+        doc.setFont(undefined, 'bold')
+        doc.setTextColor(...primaryBlack)
+        doc.text('CONDICIONES:', 20, yPos)
+        yPos += 5
+        doc.setFont(undefined, 'normal')
+        doc.setTextColor(...softGray)
+        const splitCond = doc.splitTextToSize(factura.condiciones, 170)
+        doc.text(splitCond, 20, yPos)
       }
     }
+    
+    // ====================================
+    // PIE DE PÁGINA ELEGANTE
+    // ====================================
+    doc.setDrawColor(...accentGold)
+    doc.setLineWidth(0.5)
+    doc.line(20, 285, 190, 285)
+    
+    doc.setFontSize(8)
+    doc.setTextColor(...softGray)
+    doc.setFont(undefined, 'normal')
+    doc.text('Anushka Hogar - Confección e Instalación de Cortinas', 105, 290, { align: 'center' })
     
     // Guardar
     doc.save(`Factura_${factura.numero_factura}_${factura.cliente_apellidos}.pdf`)
@@ -3511,69 +3645,64 @@ async function downloadPresupuestoPDF(id, tipo = 'completo') {
     const { jsPDF } = window.jspdf
     const doc = new jsPDF()
     
-    // Configuración de colores minimalistas
-    const primaryColor = [45, 55, 72] // gray-800
-    const secondaryColor = [113, 128, 150] // gray-500
-    const accentColor = [56, 178, 172] // teal-500
-    const lightGray = [247, 250, 252] // gray-50
-    const darkGray = [26, 32, 44] // gray-900
+    // Colores corporativos
+    const primaryBlack = [0, 0, 0]
+    const softGray = [128, 128, 128]
+    const lightGray = [245, 245, 245]
+    const accentGold = [212, 175, 55]
     
-    let yPos = 10
+    let yPos = 20
     
     // ====================================
-    // HEADER COMPACTO Y LIMPIO
+    // HEADER CON LOGO (proporción 16:9 respetada)
     // ====================================
     
-    // Logo de Anushka Hogar (más pequeño)
+    // Logo Anushka Hogar (1024x576 = 16:9)
+    // Calculamos proporciones: ancho 60mm → alto 33.75mm (60 * 9/16)
     try {
       const logoImg = await loadImage('/static/logo.jpg')
-      doc.addImage(logoImg, 'JPEG', 20, yPos, 28, 20)
+      doc.addImage(logoImg, 'JPEG', 20, yPos, 60, 33.75)
     } catch (e) {
       console.warn('No se pudo cargar el logo:', e)
-      // Fallback: texto estilizado
-      doc.setFillColor(...primaryColor)
-      doc.rect(20, yPos, 28, 20, 'F')
-      doc.setTextColor(255, 255, 255)
-      doc.setFontSize(10)
+      // Fallback: texto
+      doc.setTextColor(...primaryBlack)
+      doc.setFontSize(16)
       doc.setFont(undefined, 'bold')
-      doc.text('ANUSHKA', 34, yPos + 11, { align: 'center' })
-      doc.setFontSize(7)
-      doc.text('HOGAR', 34, yPos + 16, { align: 'center' })
+      doc.text('Anushka Hogar', 20, yPos + 8)
     }
     
-    // Datos de empresa (compactos)
-    doc.setTextColor(...primaryColor)
-    doc.setFontSize(8)
-    doc.setFont(undefined, 'bold')
-    doc.text('Anushka Hogar', 190, yPos + 2, { align: 'right' })
-    doc.setFontSize(7)
+    // Información empresa (derecha)
+    doc.setTextColor(...softGray)
+    doc.setFontSize(9)
     doc.setFont(undefined, 'normal')
-    doc.setTextColor(...secondaryColor)
+    doc.text('Confección e Instalación de Cortinas', 190, yPos + 2, { align: 'right' })
+    doc.setFontSize(8)
     doc.text('Av. de Monelos 109, 15008 A Coruña', 190, yPos + 7, { align: 'right' })
-    doc.text('Tel: 666777888', 190, yPos + 11, { align: 'right' })
+    doc.text('Tel: 666 777 888', 190, yPos + 12, { align: 'right' })
     
-    yPos += 22
+    yPos += 40
     
-    // ====================================
-    // TÍTULO Y DATOS COMPACTOS
-    // ====================================
-    doc.setDrawColor(...secondaryColor)
-    doc.setLineWidth(0.3)
+    // Línea dorada separadora
+    doc.setDrawColor(...accentGold)
+    doc.setLineWidth(0.5)
     doc.line(20, yPos, 190, yPos)
-    yPos += 5
+    yPos += 8
     
-    // Título presupuesto
-    doc.setTextColor(...primaryColor)
-    doc.setFontSize(11)
+    // ====================================
+    // TÍTULO DEL DOCUMENTO
+    // ====================================
+    doc.setTextColor(...primaryBlack)
+    doc.setFontSize(16)
     doc.setFont(undefined, 'bold')
     const tituloDoc = tipo === 'completo' ? 'PRESUPUESTO COMPLETO' : 'PRESUPUESTO FINAL'
-    doc.text(tituloDoc, 20, yPos)
+    doc.text(tituloDoc, 105, yPos, { align: 'center' })
     
-    doc.setFontSize(10)
-    doc.setTextColor(...accentColor)
-    doc.text(data.numero_presupuesto, 190, yPos, { align: 'right' })
+    yPos += 3
+    doc.setFontSize(11)
+    doc.setTextColor(...accentGold)
+    doc.text(data.numero_presupuesto, 105, yPos, { align: 'center' })
     
-    yPos += 6
+    yPos += 10
     
     // Cliente y fecha en una línea compacta
     doc.setFontSize(8)
