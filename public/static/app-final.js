@@ -1924,59 +1924,69 @@ async function viewFactura(id) {
       </div>
     ` : '<p class="text-gray-500 mt-4">No hay líneas de detalle</p>'
     
-    openModal(`
-      <div class="space-y-4">
-        <h2 class="text-2xl font-bold text-gray-900">Factura ${factura.numero_factura}</h2>
-        
-        <div class="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <p class="text-gray-600">Cliente:</p>
-            <p class="font-semibold">${factura.cliente_nombre} ${factura.cliente_apellidos}</p>
+    // Crear modal manualmente
+    document.body.insertAdjacentHTML('beforeend', `
+      <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) this.remove()">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Factura ${factura.numero_factura}</h2>
+            <button onclick="document.getElementById('modal-overlay').remove()" class="text-gray-500 hover:text-gray-700">
+              <i class="fas fa-times text-2xl"></i>
+            </button>
           </div>
-          <div>
-            <p class="text-gray-600">Fecha Emisión:</p>
-            <p class="font-semibold">${new Date(factura.fecha_emision).toLocaleDateString('es-ES')}</p>
-          </div>
-          <div>
-            <p class="text-gray-600">Estado:</p>
-            <p>${getEstadoFacturaBadge(factura.estado)}</p>
-          </div>
-          <div>
-            <p class="text-gray-600">Forma de Pago:</p>
-            <p class="font-semibold">${factura.forma_pago || 'No especificado'}</p>
+          
+          <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p class="text-gray-600">Cliente:</p>
+                <p class="font-semibold">${factura.cliente_nombre} ${factura.cliente_apellidos}</p>
+              </div>
+              <div>
+                <p class="text-gray-600">Fecha Emisión:</p>
+                <p class="font-semibold">${new Date(factura.fecha_emision).toLocaleDateString('es-ES')}</p>
+              </div>
+              <div>
+                <p class="text-gray-600">Estado:</p>
+                <p>${getEstadoFacturaBadge(factura.estado)}</p>
+              </div>
+              <div>
+                <p class="text-gray-600">Forma de Pago:</p>
+                <p class="font-semibold">${factura.forma_pago || 'No especificado'}</p>
+              </div>
+            </div>
+            
+            ${lineasHTML}
+            
+            <div class="mt-6 border-t pt-4">
+              <div class="flex justify-between text-sm mb-2">
+                <span class="text-gray-600">Subtotal:</span>
+                <span class="font-semibold">€${parseFloat(factura.subtotal).toFixed(2)}</span>
+              </div>
+              <div class="flex justify-between text-sm mb-2">
+                <span class="text-gray-600">IVA (${factura.porcentaje_iva || 21}%):</span>
+                <span class="font-semibold">€${parseFloat(factura.importe_iva || factura.iva || 0).toFixed(2)}</span>
+              </div>
+              <div class="flex justify-between text-lg font-bold border-t pt-2">
+                <span>Total:</span>
+                <span class="text-green-600">€${parseFloat(factura.total).toFixed(2)}</span>
+              </div>
+            </div>
+            
+            ${factura.notas ? `
+              <div class="mt-4">
+                <p class="text-gray-600 text-sm">Notas:</p>
+                <p class="text-sm">${factura.notas}</p>
+              </div>
+            ` : ''}
+            
+            ${factura.condiciones ? `
+              <div class="mt-4">
+                <p class="text-gray-600 text-sm">Condiciones:</p>
+                <p class="text-sm">${factura.condiciones}</p>
+              </div>
+            ` : ''}
           </div>
         </div>
-        
-        ${lineasHTML}
-        
-        <div class="mt-6 border-t pt-4">
-          <div class="flex justify-between text-sm mb-2">
-            <span class="text-gray-600">Subtotal:</span>
-            <span class="font-semibold">€${parseFloat(factura.subtotal).toFixed(2)}</span>
-          </div>
-          <div class="flex justify-between text-sm mb-2">
-            <span class="text-gray-600">IVA (${factura.porcentaje_iva || 21}%):</span>
-            <span class="font-semibold">€${parseFloat(factura.importe_iva || factura.iva || 0).toFixed(2)}</span>
-          </div>
-          <div class="flex justify-between text-lg font-bold border-t pt-2">
-            <span>Total:</span>
-            <span class="text-green-600">€${parseFloat(factura.total).toFixed(2)}</span>
-          </div>
-        </div>
-        
-        ${factura.notas ? `
-          <div class="mt-4">
-            <p class="text-gray-600 text-sm">Notas:</p>
-            <p class="text-sm">${factura.notas}</p>
-          </div>
-        ` : ''}
-        
-        ${factura.condiciones ? `
-          <div class="mt-4">
-            <p class="text-gray-600 text-sm">Condiciones:</p>
-            <p class="text-sm">${factura.condiciones}</p>
-          </div>
-        ` : ''}
       </div>
     `)
   } catch (error) {
@@ -2129,19 +2139,50 @@ async function downloadFacturaPDF(id) {
       yPos = doc.lastAutoTable.finalY + 15
     }
     
-    // Totales
-    const finalY = factura.lineas && factura.lineas.length > 0 ? doc.lastAutoTable.finalY + 10 : 85
+    // ====================================
+    // TOTALES ELEGANTES
+    // ====================================
+    const boxX = 115
+    const boxY = yPos
+    const boxWidth = 75
     
+    doc.setFillColor(...lightGray)
+    doc.roundedRect(boxX, boxY, boxWidth, 30, 2, 2, 'F')
+    
+    yPos += 7
+    
+    // Subtotal
+    doc.setFontSize(10)
     doc.setFont(undefined, 'normal')
-    doc.text(`Subtotal:`, 130, finalY)
-    doc.text(`€${parseFloat(factura.subtotal).toFixed(2)}`, 180, finalY, { align: 'right' })
-    
-    doc.text(`IVA (${factura.porcentaje_iva || 21}%):`, 130, finalY + 7)
-    doc.text(`€${parseFloat(factura.importe_iva || factura.iva || 0).toFixed(2)}`, 180, finalY + 7, { align: 'right' })
-    
+    doc.setTextColor(...softGray)
+    doc.text('Subtotal:', boxX + 5, yPos)
+    doc.setTextColor(...primaryBlack)
     doc.setFont(undefined, 'bold')
-    doc.setFontSize(12)
-    doc.text(`TOTAL:`, 130, finalY + 15)
+    doc.text(`€${parseFloat(factura.subtotal).toFixed(2)}`, boxX + boxWidth - 5, yPos, { align: 'right' })
+    yPos += 6
+    
+    // IVA
+    doc.setFont(undefined, 'normal')
+    doc.setTextColor(...softGray)
+    doc.text(`IVA (${factura.porcentaje_iva || 21}%):`, boxX + 5, yPos)
+    doc.setTextColor(...primaryBlack)
+    doc.setFont(undefined, 'bold')
+    doc.text(`€${parseFloat(factura.importe_iva || factura.iva || 0).toFixed(2)}`, boxX + boxWidth - 5, yPos, { align: 'right' })
+    yPos += 8
+    
+    // Línea dorada
+    doc.setDrawColor(...accentGold)
+    doc.setLineWidth(1)
+    doc.line(boxX + 5, yPos, boxX + boxWidth - 5, yPos)
+    yPos += 6
+    
+    // TOTAL FINAL
+    doc.setFontSize(13)
+    doc.setFont(undefined, 'bold')
+    doc.setTextColor(...primaryBlack)
+    doc.text('TOTAL:', boxX + 5, yPos)
+    doc.setFontSize(14)
+    doc.setTextColor(...accentGold)
     doc.text(`€${parseFloat(factura.total).toFixed(2)}`, boxX + boxWidth - 5, yPos, { align: 'right' })
     
     yPos += 15
