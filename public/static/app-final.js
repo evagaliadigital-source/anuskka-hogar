@@ -6380,6 +6380,192 @@ window.continuarATelas = continuarATelas
 window.seleccionarTipoCortina = seleccionarTipoCortina
 window.toggleSubirTela = toggleSubirTela
 window.handleTelaUpload = handleTelaUpload
+// ============================================
+// STOCK - Funciones adicionales
+// ============================================
+
+async function ajustarStock(id) {
+  const stock = currentData.stock.find(s => s.id === id)
+  if (!stock) return
+  
+  const html = `
+    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) this.remove()">
+      <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full">
+        <h3 class="text-2xl font-bold mb-6">
+          <i class="fas fa-exchange-alt text-purple-600 mr-2"></i>
+          Ajustar Stock
+        </h3>
+        <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+          <div class="font-medium text-gray-900">${stock.nombre}</div>
+          <div class="text-sm text-gray-500">Stock actual: <span class="font-bold">${stock.cantidad_actual} ${stock.unidad}</span></div>
+        </div>
+        <form id="ajustar-form" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Movimiento *</label>
+            <select name="tipo" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">
+              <option value="entrada">Entrada</option>
+              <option value="salida">Salida</option>
+              <option value="ajuste">Ajuste Manual</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad *</label>
+            <input type="number" name="cantidad" required min="0" step="0.01"
+                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Motivo</label>
+            <textarea name="motivo" rows="2" 
+                      class="w-full px-4 py-2 border rounded-lg" 
+                      placeholder="Ej: Compra, Venta, Devolución, Inventario"></textarea>
+          </div>
+          <div class="flex gap-3 pt-4">
+            <button type="button" onclick="this.closest('#modal-overlay').remove()"
+                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+              Cancelar
+            </button>
+            <button type="submit"
+                    class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+              <i class="fas fa-check mr-2"></i>Guardar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `
+  
+  document.body.insertAdjacentHTML('beforeend', html)
+  
+  document.getElementById('ajustar-form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const formData = new FormData(e.target)
+    const data = {
+      tipo: formData.get('tipo'),
+      cantidad: parseFloat(formData.get('cantidad')),
+      motivo: formData.get('motivo')
+    }
+    
+    try {
+      await axios.post(`${API}/stock/${id}/ajustar`, data)
+      showToast('Stock ajustado correctamente', 'success')
+      document.getElementById('modal-overlay').remove()
+      loadStock()
+    } catch (error) {
+      console.error('Error ajustando stock:', error)
+      showToast('Error al ajustar stock', 'error')
+    }
+  })
+}
+
+async function showMovimientos(id) {
+  try {
+    const { data: movimientos } = await axios.get(`${API}/stock/${id}/movimientos`)
+    const stock = currentData.stock.find(s => s.id === id)
+    
+    const html = `
+      <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) this.remove()">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <h3 class="text-2xl font-bold mb-6">
+            <i class="fas fa-history text-green-600 mr-2"></i>
+            Historial de Movimientos
+          </h3>
+          <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+            <div class="font-medium text-gray-900">${stock.nombre}</div>
+            <div class="text-sm text-gray-500">Código: ${stock.codigo || '-'}</div>
+          </div>
+          
+          ${movimientos.length === 0 ? `
+            <div class="text-center py-8 text-gray-500">
+              <i class="fas fa-inbox text-4xl mb-2"></i>
+              <div>No hay movimientos registrados</div>
+            </div>
+          ` : `
+            <table class="min-w-full">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Cantidad</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Stock Anterior</th>
+                  <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Stock Nuevo</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Motivo</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                ${movimientos.map(m => {
+                  const tipoColors = {
+                    entrada: 'bg-green-100 text-green-800',
+                    salida: 'bg-red-100 text-red-800',
+                    ajuste: 'bg-blue-100 text-blue-800'
+                  }
+                  return `
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-4 py-3 text-sm text-gray-900">
+                        ${new Date(m.created_at).toLocaleDateString('es-ES', {
+                          year: 'numeric', month: 'short', day: 'numeric',
+                          hour: '2-digit', minute: '2-digit'
+                        })}
+                      </td>
+                      <td class="px-4 py-3">
+                        <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full ${tipoColors[m.tipo] || 'bg-gray-100 text-gray-800'}">
+                          ${m.tipo.toUpperCase()}
+                        </span>
+                      </td>
+                      <td class="px-4 py-3 text-sm text-right font-medium">${m.cantidad} ${stock.unidad}</td>
+                      <td class="px-4 py-3 text-sm text-right text-gray-500">${m.stock_anterior}</td>
+                      <td class="px-4 py-3 text-sm text-right font-medium">${m.stock_nuevo}</td>
+                      <td class="px-4 py-3 text-sm text-gray-600">${m.motivo || '-'}</td>
+                    </tr>
+                  `
+                }).join('')}
+              </tbody>
+            </table>
+          `}
+          
+          <div class="mt-6 flex justify-end">
+            <button onclick="this.closest('#modal-overlay').remove()"
+                    class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    `
+    
+    document.body.insertAdjacentHTML('beforeend', html)
+  } catch (error) {
+    console.error('Error cargando movimientos:', error)
+    showToast('Error al cargar movimientos', 'error')
+  }
+}
+
+async function deleteStock(id) {
+  const stock = currentData.stock.find(s => s.id === id)
+  if (!stock) return
+  
+  if (!confirm(`¿Eliminar "${stock.nombre}"?\n\nEsta acción no se puede deshacer.`)) {
+    return
+  }
+  
+  try {
+    await axios.delete(`${API}/stock/${id}`)
+    showToast('Item eliminado correctamente', 'success')
+    loadStock()
+  } catch (error) {
+    console.error('Error eliminando item:', error)
+    showToast('Error al eliminar item', 'error')
+  }
+}
+
+// Exponer funciones globalmente
+window.ajustarStock = ajustarStock
+window.showMovimientos = showMovimientos
+window.deleteStock = deleteStock
+
+// ============================================
+// FIN STOCK
+// ============================================
+
 window.usarTelaSubida = usarTelaSubida
 window.cancelarTelaSubida = cancelarTelaSubida
 window.generarVisualizaciones = generarVisualizaciones
