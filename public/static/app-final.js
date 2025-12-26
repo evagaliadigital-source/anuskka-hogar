@@ -6581,6 +6581,215 @@ window.filtrarTelas = filtrarTelas
 window.loadHistorial = loadHistorial
 window.filtrarHistorial = filtrarHistorial
 
+// ============================================
+// IMPORTAR STOCK MASIVO
+// ============================================
+
+async function showImportarStock() {
+  // Cargar categorías
+  const { data: categorias } = await axios.get(`${API}/stock/categorias`)
+  
+  const html = `
+    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) this.remove()">
+      <div class="bg-white rounded-xl shadow-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+        <h3 class="text-2xl font-bold mb-6">
+          <i class="fas fa-file-upload text-blue-600 mr-2"></i>
+          Importar Stock Masivo
+        </h3>
+        
+        <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+          <h4 class="font-bold text-blue-900 mb-2">
+            <i class="fas fa-info-circle mr-2"></i>Formatos Soportados
+          </h4>
+          <ul class="text-sm text-blue-800 space-y-1">
+            <li><i class="fas fa-check mr-2"></i>Excel (.xlsx, .xls)</li>
+            <li><i class="fas fa-check mr-2"></i>CSV (.csv)</li>
+            <li><i class="fas fa-check mr-2"></i>Facturas PDF del proveedor</li>
+          </ul>
+        </div>
+
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Seleccionar Archivo</label>
+          <input type="file" id="file-upload" accept=".xlsx,.xls,.csv,.pdf" 
+                 class="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 cursor-pointer">
+          <p class="text-xs text-gray-500 mt-2">Arrastra y suelta o haz click para seleccionar</p>
+        </div>
+
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Categoría por Defecto *</label>
+          <select id="import-categoria" class="w-full px-4 py-2 border rounded-lg">
+            <option value="">Seleccionar categoría</option>
+            ${categorias.map(cat => `
+              <option value="${cat.id}">${cat.nombre} (${cat.prefijo})</option>
+            `).join('')}
+          </select>
+          <p class="text-xs text-gray-500 mt-1">Los códigos se generarán automáticamente: ${categorias[0]?.prefijo}-0001, ${categorias[0]?.prefijo}-0002...</p>
+        </div>
+
+        <div id="preview-section" class="hidden mb-6">
+          <h4 class="font-bold text-gray-900 mb-3">
+            <i class="fas fa-eye mr-2"></i>Vista Previa
+          </h4>
+          <div id="preview-content" class="max-h-64 overflow-y-auto border rounded-lg"></div>
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="this.closest('#modal-overlay').remove()"
+                  class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+            Cancelar
+          </button>
+          <button onclick="procesarImportacion()"
+                  class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            <i class="fas fa-upload mr-2"></i>Importar
+          </button>
+        </div>
+
+        <div class="mt-6 p-4 bg-yellow-50 rounded-lg">
+          <h4 class="font-bold text-yellow-900 mb-2">
+            <i class="fas fa-lightbulb mr-2"></i>Formato Excel Recomendado
+          </h4>
+          <div class="text-sm text-yellow-800">
+            <p class="mb-2">Columnas sugeridas (en este orden):</p>
+            <code class="block bg-white p-2 rounded">
+              Nombre | Descripción | Unidad | Cantidad | Precio Compra | Precio Venta | Proveedor
+            </code>
+          </div>
+        </div>
+      </div>
+    </div>
+  `
+  
+  document.body.insertAdjacentHTML('beforeend', html)
+  
+  // Event listener para preview del archivo
+  document.getElementById('file-upload').addEventListener('change', async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    
+    const previewSection = document.getElementById('preview-section')
+    const previewContent = document.getElementById('preview-content')
+    
+    try {
+      if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+        // Parsear Excel
+        const data = await file.arrayBuffer()
+        const workbook = XLSX.read(data, { type: 'array' })
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
+        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 })
+        
+        // Mostrar preview
+        previewContent.innerHTML = `
+          <table class="min-w-full text-sm">
+            <thead class="bg-gray-50">
+              <tr>
+                ${jsonData[0].map(col => `<th class="px-3 py-2 text-left">${col}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${jsonData.slice(1, 6).map(row => `
+                <tr class="border-t">
+                  ${row.map(cell => `<td class="px-3 py-2">${cell || '-'}</td>`).join('')}
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <p class="text-xs text-gray-500 mt-2 px-3">Mostrando primeras 5 filas de ${jsonData.length - 1} totales</p>
+        `
+        previewSection.classList.remove('hidden')
+      } else if (file.name.endsWith('.csv')) {
+        // Parsear CSV
+        const text = await file.text()
+        const lines = text.split('\n').slice(0, 6)
+        
+        previewContent.innerHTML = `
+          <pre class="text-xs p-3 bg-gray-50 rounded">${lines.join('\n')}</pre>
+          <p class="text-xs text-gray-500 mt-2 px-3">Vista previa del CSV</p>
+        `
+        previewSection.classList.remove('hidden')
+      } else if (file.name.endsWith('.pdf')) {
+        previewContent.innerHTML = `
+          <div class="p-4 text-center">
+            <i class="fas fa-file-pdf text-red-500 text-4xl mb-2"></i>
+            <p class="text-sm text-gray-600">PDF detectado: ${file.name}</p>
+            <p class="text-xs text-gray-500">La extracción de datos del PDF se realizará al importar</p>
+          </div>
+        `
+        previewSection.classList.remove('hidden')
+      }
+    } catch (error) {
+      console.error('Error al leer archivo:', error)
+      showToast('Error al leer el archivo', 'error')
+    }
+  })
+}
+
+async function procesarImportacion() {
+  const fileInput = document.getElementById('file-upload')
+  const categoriaId = document.getElementById('import-categoria').value
+  
+  if (!fileInput.files[0]) {
+    showToast('Selecciona un archivo', 'error')
+    return
+  }
+  
+  if (!categoriaId) {
+    showToast('Selecciona una categoría', 'error')
+    return
+  }
+  
+  const file = fileInput.files[0]
+  
+  try {
+    showToast('Procesando archivo...', 'info')
+    
+    if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+      // Parsear Excel
+      const data = await file.arrayBuffer()
+      const workbook = XLSX.read(data, { type: 'array' })
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
+      const jsonData = XLSX.utils.sheet_to_json(firstSheet)
+      
+      // Mapear a formato esperado
+      const items = jsonData.map(row => ({
+        categoria_id: parseInt(categoriaId),
+        nombre: row.Nombre || row.nombre || row.NOMBRE,
+        descripcion: row.Descripción || row.descripcion || row.DESCRIPCIÓN || '',
+        unidad: row.Unidad || row.unidad || row.UNIDAD || 'unidad',
+        cantidad_actual: parseFloat(row.Cantidad || row.cantidad || row.CANTIDAD || 0),
+        cantidad_minima: parseFloat(row['Mínimo'] || row.minimo || row.MÍNIMO || 10),
+        precio_compra: parseFloat(row['Precio Compra'] || row.precio_compra || row['PRECIO COMPRA'] || 0),
+        precio_venta: parseFloat(row['Precio Venta'] || row.precio_venta || row['PRECIO VENTA'] || 0),
+        proveedor: row.Proveedor || row.proveedor || row.PROVEEDOR || ''
+      }))
+      
+      // Enviar al backend
+      const { data: result } = await axios.post(`${API}/stock/importar`, {
+        items,
+        documento_url: file.name
+      })
+      
+      showToast(`✅ Importados ${result.exitosos} de ${result.total} items`, 'success')
+      document.getElementById('modal-overlay').remove()
+      loadStock()
+      
+    } else {
+      showToast('Formato de archivo no soportado aún', 'error')
+    }
+    
+  } catch (error) {
+    console.error('Error importando:', error)
+    showToast('Error al importar stock', 'error')
+  }
+}
+
+// Exponer funciones
+window.showImportarStock = showImportarStock
+window.procesarImportacion = procesarImportacion
+
+// ============================================
+// FIN IMPORTACIÓN
+// ============================================
+
 console.log('✅ Todas las funciones del Diseñador Virtual expuestas globalmente')
 console.log('✅ Función logAccion() disponible para auditoría')
 

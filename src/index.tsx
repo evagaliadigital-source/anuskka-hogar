@@ -2028,13 +2028,16 @@ app.get('/', (c) => {
                         Control de Inventario
                     </h2>
                     <div class="flex gap-3">
-                        <button onclick="showGestionCategorias()" class="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900">
+                        <button onclick="showGestionCategorias()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
                             <i class="fas fa-tags mr-2"></i>Categorías
                         </button>
                         <button onclick="loadStock(true)" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
                             <i class="fas fa-exclamation-circle mr-2"></i>Bajo Stock
                         </button>
-                        <button onclick="showStockForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                        <button onclick="showImportarStock()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-file-upload mr-2"></i>Importar Masivo
+                        </button>
+                        <button onclick="showStockForm()" class="bg-gradient-to-r from-teal-600 to-teal-700 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
                             <i class="fas fa-plus mr-2"></i>Nuevo Artículo
                         </button>
                     </div>
