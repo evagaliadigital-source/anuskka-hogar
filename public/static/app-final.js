@@ -3707,10 +3707,10 @@ async function downloadPresupuestoPDF(id, tipo = 'completo') {
     // Cliente y fecha en una línea compacta
     doc.setFontSize(8)
     doc.setFont(undefined, 'normal')
-    doc.setTextColor(...primaryColor)
+    doc.setTextColor(...primaryBlack)
     doc.text(`Cliente: ${data.cliente_nombre} ${data.cliente_apellidos}`, 20, yPos)
     
-    doc.setTextColor(...secondaryColor)
+    doc.setTextColor(...softGray)
     doc.text(`Fecha: ${new Date(data.fecha_emision).toLocaleDateString('es-ES')}`, 190, yPos, { align: 'right' })
     
     yPos += 4
@@ -3725,7 +3725,7 @@ async function downloadPresupuestoPDF(id, tipo = 'completo') {
     if (data.titulo) {
       doc.setFontSize(9)
       doc.setFont(undefined, 'bold')
-      doc.setTextColor(...primaryColor)
+      doc.setTextColor(...primaryBlack)
       doc.text(data.titulo, 20, yPos)
       yPos += 5
     }
@@ -3742,7 +3742,7 @@ async function downloadPresupuestoPDF(id, tipo = 'completo') {
       // Título de sección simple y limpio
       doc.setFontSize(9)
       doc.setFont(undefined, 'bold')
-      doc.setTextColor(...primaryColor)
+      doc.setTextColor(...primaryBlack)
       doc.text(title.toUpperCase(), 20, yPos)
       yPos += 5
       
@@ -3768,7 +3768,7 @@ async function downloadPresupuestoPDF(id, tipo = 'completo') {
         },
         headStyles: {
           fillColor: lightGray,
-          textColor: primaryColor,
+          textColor: primaryBlack,
           fontStyle: 'bold',
           halign: 'center',
           fontSize: 7
@@ -3820,7 +3820,7 @@ async function downloadPresupuestoPDF(id, tipo = 'completo') {
     const boxWidth = 65
     
     // Línea superior
-    doc.setDrawColor(...secondaryColor)
+    doc.setDrawColor(...softGray)
     doc.setLineWidth(0.2)
     doc.line(boxX, boxY, boxX + boxWidth, boxY)
     
@@ -3829,15 +3829,15 @@ async function downloadPresupuestoPDF(id, tipo = 'completo') {
     // Subtotal
     doc.setFontSize(7)
     doc.setFont(undefined, 'normal')
-    doc.setTextColor(...secondaryColor)
+    doc.setTextColor(...softGray)
     doc.text('Subtotal:', boxX + 2, yPos, { align: 'left' })
-    doc.setTextColor(...primaryColor)
+    doc.setTextColor(...primaryBlack)
     doc.text(`€${data.subtotal.toFixed(2)}`, boxX + boxWidth - 2, yPos, { align: 'right' })
     yPos += 4
     
     // Descuento (si existe)
     if (data.descuento_porcentaje > 0) {
-      doc.setTextColor(...secondaryColor)
+      doc.setTextColor(...softGray)
       doc.text(`Descuento (${data.descuento_porcentaje}%):`, boxX + 2, yPos, { align: 'left' })
       doc.setTextColor(220, 38, 38)
       doc.text(`-€${data.descuento_importe.toFixed(2)}`, boxX + boxWidth - 2, yPos, { align: 'right' })
@@ -3845,20 +3845,20 @@ async function downloadPresupuestoPDF(id, tipo = 'completo') {
     }
     
     // IVA
-    doc.setTextColor(...secondaryColor)
+    doc.setTextColor(...softGray)
     doc.text(`IVA (${data.porcentaje_iva}%):`, boxX + 2, yPos, { align: 'left' })
-    doc.setTextColor(...primaryColor)
+    doc.setTextColor(...primaryBlack)
     doc.text(`€${data.importe_iva.toFixed(2)}`, boxX + boxWidth - 2, yPos, { align: 'right' })
     yPos += 4
     
     // Línea separadora
-    doc.setDrawColor(...accentColor)
+    doc.setDrawColor(...accentGold)
     doc.setLineWidth(0.5)
     doc.line(boxX, yPos, boxX + boxWidth, yPos)
     yPos += 5
     
     // TOTAL FINAL
-    doc.setFillColor(...accentColor)
+    doc.setFillColor(...accentGold)
     doc.rect(boxX, yPos - 4, boxWidth, 8, 'F')
     
     doc.setFontSize(9)
@@ -3882,13 +3882,13 @@ async function downloadPresupuestoPDF(id, tipo = 'completo') {
       
       doc.setFontSize(8)
       doc.setFont(undefined, 'bold')
-      doc.setTextColor(...primaryColor)
+      doc.setTextColor(...primaryBlack)
       
       if (data.notas) {
         doc.text('NOTAS:', 20, yPos)
         yPos += 5
         doc.setFont(undefined, 'normal')
-        doc.setTextColor(...secondaryColor)
+        doc.setTextColor(...softGray)
         const splitNotas = doc.splitTextToSize(data.notas, 170)
         doc.text(splitNotas, 20, yPos)
         yPos += splitNotas.length * 3.5 + 5
@@ -3896,11 +3896,11 @@ async function downloadPresupuestoPDF(id, tipo = 'completo') {
       
       if (data.condiciones) {
         doc.setFont(undefined, 'bold')
-        doc.setTextColor(...primaryColor)
+        doc.setTextColor(...primaryBlack)
         doc.text('CONDICIONES:', 20, yPos)
         yPos += 5
         doc.setFont(undefined, 'normal')
-        doc.setTextColor(...secondaryColor)
+        doc.setTextColor(...softGray)
         const splitCond = doc.splitTextToSize(data.condiciones, 170)
         doc.text(splitCond, 20, yPos)
         yPos += splitCond.length * 3.5 + 5
@@ -3908,11 +3908,11 @@ async function downloadPresupuestoPDF(id, tipo = 'completo') {
       
       if (data.forma_pago) {
         doc.setFont(undefined, 'bold')
-        doc.setTextColor(...primaryColor)
+        doc.setTextColor(...primaryBlack)
         doc.text('FORMA DE PAGO:', 20, yPos)
         yPos += 5
         doc.setFont(undefined, 'normal')
-        doc.setTextColor(...secondaryColor)
+        doc.setTextColor(...softGray)
         doc.text(data.forma_pago, 20, yPos)
       }
     }
@@ -3925,14 +3925,14 @@ async function downloadPresupuestoPDF(id, tipo = 'completo') {
       doc.setPage(i)
       
       // Línea superior simple
-      doc.setDrawColor(...secondaryColor)
+      doc.setDrawColor(...softGray)
       doc.setLineWidth(0.2)
       doc.line(20, 285, 190, 285)
       
       // Texto del pie de página compacto
       doc.setFontSize(6)
       doc.setFont(undefined, 'normal')
-      doc.setTextColor(...secondaryColor)
+      doc.setTextColor(...softGray)
       doc.text(
         `Anushka Hogar - Av. de Monelos 109, 15008 A Coruña - Tel: 666777888`,
         105,
