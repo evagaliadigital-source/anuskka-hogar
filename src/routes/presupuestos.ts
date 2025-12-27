@@ -339,7 +339,7 @@ presupuestos.put('/:id/estado', async (c) => {
         // Registrar movimiento de salida
         await c.env.DB.prepare(`
           INSERT INTO stock_movimientos (
-            stock_id, tipo, cantidad, cantidad_anterior, cantidad_nueva,
+            stock_id, tipo, cantidad, stock_anterior, stock_nuevo,
             motivo, referencia
           ) VALUES (?, 'salida', ?, ?, ?, ?, ?)
         `).bind(
@@ -634,6 +634,56 @@ presupuestos.get('/configuracion-empresa', async (c) => {
   `).first()
   
   return c.json(empresa || {})
+})
+
+// Vincular líneas de presupuesto con stock automáticamente
+presupuestos.post('/:id/vincular-stock', async (c) => {
+  const id = c.req.param('id')
+  
+  // Obtener líneas del presupuesto que sean de tipo 'tela' o 'material'
+  const { results: lineas } = await c.env.DB.prepare(`
+    SELECT * FROM presupuesto_lineas 
+    WHERE presupuesto_id = ? 
+    AND tipo IN ('tela', 'material')
+    AND stock_id IS NULL
+  `).bind(id).all()
+  
+  const vinculaciones = []
+  
+  for (const linea of lineas as any[]) {
+    // Buscar en stock por nombre similar (usando LIKE)
+    const concepto = linea.concepto.toLowerCase()
+    
+    const stock = await c.env.DB.prepare(`
+      SELECT * FROM stock 
+      WHERE LOWER(nombre) LIKE ? 
+      OR LOWER(descripcion) LIKE ?
+      LIMIT 1
+    `).bind(`%${concepto}%`, `%${concepto}%`).first() as any
+    
+    if (stock) {
+      // Vincular línea con stock
+      await c.env.DB.prepare(`
+        UPDATE presupuesto_lineas 
+        SET stock_id = ? 
+        WHERE id = ?
+      `).bind(stock.id, linea.id).run()
+      
+      vinculaciones.push({
+        linea_id: linea.id,
+        concepto: linea.concepto,
+        stock_id: stock.id,
+        stock_codigo: stock.codigo,
+        stock_nombre: stock.nombre
+      })
+    }
+  }
+  
+  return c.json({
+    success: true,
+    vinculaciones,
+    total: vinculaciones.length
+  })
 })
 
 export default presupuestos
