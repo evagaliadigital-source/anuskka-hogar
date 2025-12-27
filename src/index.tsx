@@ -1735,6 +1735,78 @@ app.post('/api/stock/importar', async (c) => {
 })
 
 // ============================================
+// AVISOS / NOTIFICACIONES
+// ============================================
+
+// Obtener todos los avisos (con filtro opcional)
+app.get('/api/avisos', async (c) => {
+  const { leido, tipo, prioridad } = c.req.query()
+  
+  let sql = 'SELECT * FROM avisos WHERE 1=1'
+  const bindings: any[] = []
+  
+  if (leido !== undefined) {
+    sql += ' AND leido = ?'
+    bindings.push(leido === 'true' ? 1 : 0)
+  }
+  
+  if (tipo) {
+    sql += ' AND tipo = ?'
+    bindings.push(tipo)
+  }
+  
+  if (prioridad) {
+    sql += ' AND prioridad = ?'
+    bindings.push(prioridad)
+  }
+  
+  sql += ' ORDER BY created_at DESC'
+  
+  const { results } = await c.env.DB.prepare(sql).bind(...bindings).all()
+  return c.json(results)
+})
+
+// Obtener contador de avisos no leídos
+app.get('/api/avisos/contador', async (c) => {
+  const result = await c.env.DB.prepare(`
+    SELECT COUNT(*) as total FROM avisos WHERE leido = 0
+  `).first() as any
+  
+  return c.json({ total: result.total })
+})
+
+// Marcar aviso como leído
+app.put('/api/avisos/:id/leer', async (c) => {
+  const id = c.req.param('id')
+  
+  await c.env.DB.prepare(`
+    UPDATE avisos SET leido = 1, leido_at = datetime('now') WHERE id = ?
+  `).bind(id).run()
+  
+  return c.json({ success: true })
+})
+
+// Marcar todos los avisos como leídos
+app.put('/api/avisos/leer-todos', async (c) => {
+  await c.env.DB.prepare(`
+    UPDATE avisos SET leido = 1, leido_at = datetime('now') WHERE leido = 0
+  `).run()
+  
+  return c.json({ success: true })
+})
+
+// Eliminar aviso
+app.delete('/api/avisos/:id', async (c) => {
+  const id = c.req.param('id')
+  
+  await c.env.DB.prepare(`
+    DELETE FROM avisos WHERE id = ?
+  `).bind(id).run()
+  
+  return c.json({ success: true })
+})
+
+// ============================================
 // MOUNT EXTERNAL ROUTES
 // ============================================
 app.route('/api/presupuestos', presupuestos)
@@ -1812,6 +1884,12 @@ app.get('/', (c) => {
                     <img src="/static/logo.jpg" alt="Anushka Hogar" class="h-16 object-contain">
                 </div>
                 <div class="flex items-center space-x-4">
+                    <!-- Botón de Avisos -->
+                    <button onclick="toggleAvisos()" class="relative bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span id="avisos-badge" class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">0</span>
+                    </button>
+                    
                     <div class="text-right">
                         <p class="text-sm text-gray-600">Bienvenida</p>
                         <p class="font-semibold text-gray-800">Admin</p>
@@ -1823,6 +1901,27 @@ app.get('/', (c) => {
             </div>
         </div>
     </header>
+
+    <!-- Panel de Avisos (flotante) -->
+    <div id="avisos-panel" class="hidden fixed top-20 right-6 w-96 max-h-[600px] bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
+        <div class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-4 flex items-center justify-between">
+            <h3 class="text-lg font-bold">
+                <i class="fas fa-bell mr-2"></i>Avisos
+            </h3>
+            <div class="flex items-center space-x-2">
+                <button onclick="marcarTodosLeidos()" class="text-sm hover:bg-white/20 px-3 py-1 rounded transition-all">
+                    <i class="fas fa-check-double mr-1"></i>Marcar todos
+                </button>
+                <button onclick="toggleAvisos()" class="hover:bg-white/20 p-2 rounded transition-all">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div id="avisos-lista" class="overflow-y-auto max-h-[500px] p-4">
+            <!-- Avisos se cargan dinámicamente -->
+        </div>
+    </div>
 
     <!-- Navigation Tabs -->
     <div class="container mx-auto px-6 mt-6">

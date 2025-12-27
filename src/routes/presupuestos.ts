@@ -288,6 +288,96 @@ presupuestos.put('/:id/estado', async (c) => {
   const id = c.req.param('id')
   const { estado } = await c.req.json()
   
+  // Si se está aceptando el presupuesto, descontar stock automáticamente
+  if (estado === 'aceptado') {
+    // Obtener líneas del presupuesto que tienen stock_id
+    const { results: lineas } = await c.env.DB.prepare(`
+      SELECT pl.*, s.codigo, s.nombre as stock_nombre, s.cantidad_actual
+      FROM presupuesto_lineas pl
+      LEFT JOIN stock s ON pl.stock_id = s.id
+      WHERE pl.presupuesto_id = ? AND pl.stock_id IS NOT NULL
+    `).bind(id).all()
+    
+    const avisos = []
+    
+    // Verificar stock suficiente y descontar
+    for (const linea of lineas as any[]) {
+      if (!linea.stock_id) continue
+      
+      const cantidadNecesaria = parseFloat(linea.cantidad) || 0
+      const stockActual = parseFloat(linea.cantidad_actual) || 0
+      
+      // Verificar si hay stock suficiente
+      if (stockActual < cantidadNecesaria) {
+        // Crear aviso de stock insuficiente
+        await c.env.DB.prepare(`
+          INSERT INTO avisos (tipo, titulo, mensaje, entidad_tipo, entidad_id, prioridad)
+          VALUES ('pedido_sin_stock', ?, ?, 'presupuesto', ?, 'alta')
+        `).bind(
+          `Stock insuficiente para ${linea.stock_nombre}`,
+          `El presupuesto requiere ${cantidadNecesaria}m pero solo hay ${stockActual}m disponibles del artículo ${linea.codigo}`,
+          id
+        ).run()
+        
+        avisos.push({
+          tipo: 'error',
+          stock_codigo: linea.codigo,
+          stock_nombre: linea.stock_nombre,
+          necesario: cantidadNecesaria,
+          disponible: stockActual,
+          faltante: cantidadNecesaria - stockActual
+        })
+      } else {
+        // Descontar del stock
+        const nuevaCantidad = stockActual - cantidadNecesaria
+        
+        await c.env.DB.prepare(`
+          UPDATE stock SET cantidad_actual = ?, updated_at = datetime('now')
+          WHERE id = ?
+        `).bind(nuevaCantidad, linea.stock_id).run()
+        
+        // Registrar movimiento de salida
+        await c.env.DB.prepare(`
+          INSERT INTO stock_movimientos (
+            stock_id, tipo, cantidad, cantidad_anterior, cantidad_nueva,
+            motivo, referencia
+          ) VALUES (?, 'salida', ?, ?, ?, ?, ?)
+        `).bind(
+          linea.stock_id,
+          cantidadNecesaria,
+          stockActual,
+          nuevaCantidad,
+          `Presupuesto aceptado: ${linea.concepto}`,
+          `PRESUP-${id}`
+        ).run()
+        
+        // Si quedó por debajo del mínimo, crear aviso
+        const stockMinimo = await c.env.DB.prepare(`
+          SELECT cantidad_minima FROM stock WHERE id = ?
+        `).bind(linea.stock_id).first() as any
+        
+        if (nuevaCantidad < (stockMinimo?.cantidad_minima || 0)) {
+          await c.env.DB.prepare(`
+            INSERT INTO avisos (tipo, titulo, mensaje, entidad_tipo, entidad_id, prioridad)
+            VALUES ('stock_bajo', ?, ?, 'stock', ?, 'media')
+          `).bind(
+            `Stock bajo de ${linea.stock_nombre}`,
+            `El artículo ${linea.codigo} tiene ${nuevaCantidad}m (mínimo: ${stockMinimo?.cantidad_minima}m)`,
+            linea.stock_id
+          ).run()
+        }
+      }
+    }
+    
+    // Si hay avisos de stock insuficiente, no aceptar el presupuesto
+    if (avisos.length > 0) {
+      return c.json({ 
+        error: 'Stock insuficiente para algunos artículos',
+        avisos 
+      }, 400)
+    }
+  }
+  
   await c.env.DB.prepare(`
     UPDATE presupuestos SET estado = ? WHERE id = ?
   `).bind(estado, id).run()

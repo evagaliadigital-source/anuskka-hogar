@@ -6796,3 +6796,132 @@ console.log('✅ Función logAccion() disponible para auditoría')
 
 // Actualizar contador al cargar dashboard
 // REMOVIDO: DOMContentLoaded duplicado (consolidado arriba)
+
+// ============================================
+// SISTEMA DE AVISOS / NOTIFICACIONES
+// ============================================
+
+async function cargarAvisos() {
+  try {
+    const { data } = await axios.get(`${API}/avisos?leido=false`)
+    
+    const lista = document.getElementById('avisos-lista')
+    const badge = document.getElementById('avisos-badge')
+    
+    // Actualizar badge
+    if (data.length > 0) {
+      badge.textContent = data.length
+      badge.classList.remove('hidden')
+    } else {
+      badge.classList.add('hidden')
+    }
+    
+    // Si no hay avisos
+    if (data.length === 0) {
+      lista.innerHTML = `
+        <div class="text-center py-8 text-gray-500">
+          <i class="fas fa-check-circle text-4xl mb-2"></i>
+          <p>No hay avisos pendientes</p>
+        </div>
+      `
+      return
+    }
+    
+    // Renderizar avisos
+    lista.innerHTML = data.map(aviso => {
+      const iconos = {
+        'stock_bajo': 'fa-exclamation-triangle text-yellow-500',
+        'stock_agotado': 'fa-times-circle text-red-500',
+        'pedido_sin_stock': 'fa-shopping-cart text-red-500'
+      }
+      
+      const colores = {
+        'alta': 'border-l-4 border-red-500 bg-red-50',
+        'media': 'border-l-4 border-yellow-500 bg-yellow-50',
+        'baja': 'border-l-4 border-blue-500 bg-blue-50'
+      }
+      
+      const icono = iconos[aviso.tipo] || 'fa-bell text-gray-500'
+      const color = colores[aviso.prioridad] || 'border-l-4 border-gray-500 bg-gray-50'
+      
+      return `
+        <div class="mb-3 p-4 rounded-lg ${color} hover:shadow-md transition-all">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <div class="flex items-center mb-2">
+                <i class="fas ${icono} mr-2"></i>
+                <h4 class="font-semibold text-gray-800">${aviso.titulo}</h4>
+              </div>
+              <p class="text-sm text-gray-600 mb-2">${aviso.mensaje}</p>
+              <p class="text-xs text-gray-400">
+                <i class="far fa-clock mr-1"></i>
+                ${new Date(aviso.created_at).toLocaleString('es-ES')}
+              </p>
+            </div>
+            <button onclick="marcarLeido(${aviso.id})" 
+                    class="ml-2 text-gray-400 hover:text-gray-600 transition-all">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      `
+    }).join('')
+    
+  } catch (error) {
+    console.error('Error cargando avisos:', error)
+  }
+}
+
+function toggleAvisos() {
+  const panel = document.getElementById('avisos-panel')
+  if (panel.classList.contains('hidden')) {
+    panel.classList.remove('hidden')
+    cargarAvisos()
+  } else {
+    panel.classList.add('hidden')
+  }
+}
+
+async function marcarLeido(id) {
+  try {
+    await axios.put(`${API}/avisos/${id}/leer`)
+    await cargarAvisos()
+  } catch (error) {
+    console.error('Error marcando aviso como leído:', error)
+  }
+}
+
+async function marcarTodosLeidos() {
+  try {
+    await axios.put(`${API}/avisos/leer-todos`)
+    await cargarAvisos()
+  } catch (error) {
+    console.error('Error marcando todos como leídos:', error)
+  }
+}
+
+// Cargar contador de avisos cada 30 segundos
+setInterval(async () => {
+  try {
+    const { data } = await axios.get(`${API}/avisos/contador`)
+    const badge = document.getElementById('avisos-badge')
+    if (data.total > 0) {
+      badge.textContent = data.total
+      badge.classList.remove('hidden')
+    } else {
+      badge.classList.add('hidden')
+    }
+  } catch (error) {
+    console.error('Error actualizando contador de avisos:', error)
+  }
+}, 30000)
+
+// Cargar avisos al inicio
+setTimeout(cargarAvisos, 1000)
+
+// Exponer funciones globalmente
+window.toggleAvisos = toggleAvisos
+window.cargarAvisos = cargarAvisos
+window.marcarLeido = marcarLeido
+window.marcarTodosLeidos = marcarTodosLeidos
+
