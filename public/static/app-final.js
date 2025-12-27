@@ -1677,7 +1677,7 @@ async function showStockForm(id = null, preselectedCategoriaId = null) {
     descripcion: '',
     categoria: '',
     categoria_id: preselectedCategoriaId || null,
-    unidad: 'unidades',
+    unidad: 'metro',
     cantidad_actual: 0,
     cantidad_minima: 10,
     precio_unitario: 0,
@@ -1730,11 +1730,12 @@ async function showStockForm(id = null, preselectedCategoriaId = null) {
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Unidad *</label>
               <select name="unidad" required class="w-full px-4 py-2 border rounded-lg">
+                <option value="metro" ${stock.unidad === 'metro' ? 'selected' : ''}>Metro</option>
                 <option value="unidades" ${stock.unidad === 'unidades' ? 'selected' : ''}>Unidades</option>
-                <option value="litros" ${stock.unidad === 'litros' ? 'selected' : ''}>Litros</option>
-                <option value="kilos" ${stock.unidad === 'kilos' ? 'selected' : ''}>Kilos</option>
-                <option value="cajas" ${stock.unidad === 'cajas' ? 'selected' : ''}>Cajas</option>
-                <option value="rollos" ${stock.unidad === 'rollos' ? 'selected' : ''}>Rollos</option>
+                <option value="rollo" ${stock.unidad === 'rollo' ? 'selected' : ''}>Rollo</option>
+                <option value="caja" ${stock.unidad === 'caja' ? 'selected' : ''}>Caja</option>
+                <option value="kg" ${stock.unidad === 'kg' ? 'selected' : ''}>Kilogramo</option>
+                <option value="litro" ${stock.unidad === 'litro' ? 'selected' : ''}>Litro</option>
               </select>
             </div>
             <div>
