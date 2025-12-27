@@ -2037,7 +2037,7 @@ app.get('/', (c) => {
                         <button onclick="showImportarStock()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all">
                             <i class="fas fa-file-upload mr-2"></i>Importar Masivo
                         </button>
-                        <button onclick="showStockForm()" class="bg-gradient-to-r from-teal-600 to-teal-700 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                        <button onclick="showStockForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
                             <i class="fas fa-plus mr-2"></i>Nuevo Artículo
                         </button>
                     </div>
