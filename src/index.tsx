@@ -3033,14 +3033,14 @@ app.get('/', (c) => {
 
     </div>
 
-    <!-- 📝 NOTAS - Botón Flotante -->
+    <!-- 📝 NOTAS - Botón Flotante (Lado Izquierdo) -->
     <button id="notas-float-btn" onclick="abrirNotasFlotante()" 
-            class="fixed bottom-8 right-44 w-20 h-20 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 z-50 bg-gradient-to-br from-yellow-300 to-yellow-500 flex items-center justify-center hover:shadow-yellow-500/50"
+            class="fixed bottom-8 left-8 w-20 h-20 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 z-50 bg-gradient-to-br from-yellow-300 to-yellow-500 flex items-center justify-center hover:shadow-yellow-500/50"
             title="Notas rápidas">
         <i class="fas fa-sticky-note text-white text-3xl"></i>
     </button>
 
-    <!-- 🐙 GAL IA - Asistente Flotante -->
+    <!-- 🐙 GAL IA - Asistente Flotante (Lado Derecho) -->
     <button id="galia-float-btn" onclick="openGalIA()" 
             class="fixed bottom-8 right-8 w-20 h-20 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 z-50 bg-white p-2 hover:animate-none"
             title="¡Hola! Soy GAL IA, tu asistente virtual">

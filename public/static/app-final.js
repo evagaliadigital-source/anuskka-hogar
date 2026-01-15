@@ -7511,8 +7511,8 @@ function abrirNotasFlotante() {
   
   const panel = document.createElement('div')
   panel.id = 'notas-panel-flotante'
-  // Cambiado a horizontal: bottom-0 left-0 right-0 height 50vh
-  panel.className = 'fixed bottom-0 left-0 right-0 h-[50vh] bg-white shadow-2xl z-40 flex flex-col overflow-hidden border-t-4 border-yellow-400'
+  // Panel horizontal más alto: 70vh para que no se corten las notas
+  panel.className = 'fixed bottom-0 left-0 right-0 h-[70vh] bg-white shadow-2xl z-40 flex flex-col overflow-hidden border-t-4 border-yellow-400'
   panel.innerHTML = `
     <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white px-6 py-3 flex items-center justify-between">
       <h3 class="text-lg font-bold">
@@ -7567,7 +7567,7 @@ async function cargarNotasEnPanel() {
     contenedor.innerHTML = `
       <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         ${data.map(nota => `
-          <div class="rounded-lg shadow-md p-4 cursor-pointer hover:shadow-lg transition-all relative h-48 flex flex-col" 
+          <div class="rounded-lg shadow-md p-4 cursor-pointer hover:shadow-lg transition-all relative min-h-[200px] flex flex-col" 
                style="background-color: ${nota.color}"
                onclick="editarNota(${nota.id})">
             <button onclick="event.stopPropagation(); eliminarNotaYRecargar(${nota.id})" 
@@ -7576,7 +7576,7 @@ async function cargarNotasEnPanel() {
             </button>
             
             <h4 class="font-bold text-gray-800 mb-2 pr-6 text-sm">${nota.titulo}</h4>
-            <p class="text-gray-700 text-xs whitespace-pre-wrap flex-1 overflow-hidden">${nota.contenido.substring(0, 150)}${nota.contenido.length > 150 ? '...' : ''}</p>
+            <p class="text-gray-700 text-xs whitespace-pre-wrap flex-1 overflow-auto">${nota.contenido}</p>
             
             <div class="mt-auto pt-2 border-t border-gray-400/30 text-xs text-gray-600">
               <i class="far fa-clock mr-1"></i>
