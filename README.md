@@ -6,7 +6,27 @@
 
 ## ✨ Características Completadas
 
-### 🤖 Consultor IA - GALI (NUEVO)
+### 📋 Sistema de Tareas Completo (NUEVO)
+- **3 Vistas interactivas**:
+  - 📝 **Vista Lista**: Tareas con filtros y acciones rápidas
+  - 📊 **Vista Kanban**: Drag & drop entre estados (pendiente/proceso/completada)
+  - 📅 **Vista Calendario**: Calendario mensual con tareas por día
+- **Gestión completa**:
+  - Crear, editar y eliminar tareas
+  - Asignar tareas a usuarios (Ana Ramos, Tienda)
+  - Prioridades: 🔥 Alta / 🟡 Media / 🟢 Baja
+  - Estados: Pendiente / En Proceso / Completada
+  - Fechas límite con recordatorios configurables
+- **Sistema de alertas automáticas**:
+  - Recordatorios X minutos antes del vencimiento
+  - Integración con sistema de avisos (campana 🔔)
+  - Endpoint automático para procesar alertas: POST `/api/tareas/alertas/procesar`
+- **Estadísticas en header**: Pendientes, En Proceso, Urgentes (alta prioridad)
+- **Filtros avanzados**: Por prioridad, asignado, estado
+- **Kanban drag & drop**: Arrastra tareas entre columnas para cambiar estado
+- **Calendario interactivo**: Click en cualquier día para ver tareas
+
+### 🤖 Consultor IA - GALI
 - **Agente especializado** integrado en el sistema
 - **4 áreas de expertise**:
   - 🪡 Negocio de cortinas (metraje, confección, instalación)
@@ -105,6 +125,8 @@
 ### Estructura de Base de Datos
 - `usuarios` - Sistema de autenticación con roles
 - `categorias` - **NUEVO** - Categorías dinámicas para stock (colores, iconos, orden)
+- `tareas_pendientes` - **NUEVO** - Sistema de tareas con alertas
+- `tareas_alertas` - **NUEVO** - Recordatorios automáticos de tareas
 - `clientes` - Información de clientes
 - `empleadas` - Datos de empleadas
 - `trabajos` - Órdenes de trabajo
@@ -117,7 +139,14 @@
 
 ### API REST Endpoints
 **Autenticación**: POST `/api/login`
-**Consultor IA**: POST `/api/chat` - **NUEVO**
+**Consultor IA**: POST `/api/chat`
+**Tareas**: GET, POST, PUT, DELETE `/api/tareas` - **NUEVO**
+  - GET `/api/tareas/contador` - Contadores de tareas
+  - GET `/api/tareas/calendario/mes` - Vista mensual
+  - GET `/api/tareas/calendario/dia` - Tareas de un día
+  - GET `/api/tareas/calendario/semana` - Tareas de rango
+  - POST `/api/tareas/alertas/procesar` - Procesar alertas automáticas
+  - PUT `/api/tareas/:id/estado` - Cambiar estado rápido
 **Categorías**: GET, POST, PUT, DELETE `/api/categorias`
 **Clientes**: GET, POST, PUT `/api/clientes`
 **Empleadas**: GET, POST, PUT `/api/empleadas`
@@ -285,15 +314,21 @@ npx wrangler d1 execute anushka-hogar-production --local --command="SELECT * FRO
 
 1. **Login**: Elegir rol (Ana Ramos o Tienda) → Ingresar credenciales
 2. **🤖 Consultar a GALI**: Click en "Consultor IA" → Pregunta lo que necesites sobre cortinas, facturación, ventas o el sistema
-3. **Gestionar Categorías**: Ir a "Stock" → "Categorías" → Crear/Editar categorías con colores e iconos
-4. **Crear Productos desde Categoría**: En "Categorías" → Click en "Añadir Artículo" en cualquier categoría
-5. **Crear Cliente**: Ir a "Clientes" → "Nuevo Cliente" → Rellenar formulario
-6. **Crear Empleada**: Ir a "Personal" → "Nueva Empleada" → Rellenar datos (solo Ana Ramos)
-7. **Programar Trabajo**: Ir a "Trabajos" → "Nuevo Trabajo" → Asignar cliente y empleada
-8. **Gestionar Stock**: Ir a "Stock" → "Nuevo Artículo" → Seleccionar categoría → Configurar alertas
-9. **Filtrar Stock**: Usar dropdown de categorías para filtrar inventario
-10. **Generar Factura**: Ir a "Facturación" → "Nueva Factura" → Asociar a trabajo (solo Ana Ramos)
-11. **Ver Reportes**: Ir a "Reportes" → Seleccionar mes → Ver métricas (solo Ana Ramos)
+3. **📋 Gestionar Tareas**:
+   - Ir a "Tareas" → Elegir vista (Lista/Kanban/Calendario)
+   - **Nueva Tarea**: Botón "Nueva Tarea" → Rellenar título, prioridad, fecha límite
+   - **Vista Kanban**: Arrastrar tareas entre columnas para cambiar estado
+   - **Vista Calendario**: Click en día → Ver/editar tareas de ese día
+   - **Recordatorios**: Configurar minutos antes del vencimiento para recibir alerta
+4. **Gestionar Categorías**: Ir a "Stock" → "Categorías" → Crear/Editar categorías con colores e iconos
+5. **Crear Productos desde Categoría**: En "Categorías" → Click en "Añadir Artículo" en cualquier categoría
+6. **Crear Cliente**: Ir a "Clientes" → "Nuevo Cliente" → Rellenar formulario
+7. **Crear Empleada**: Ir a "Personal" → "Nueva Empleada" → Rellenar datos (solo Ana Ramos)
+8. **Programar Trabajo**: Ir a "Trabajos" → "Nuevo Trabajo" → Asignar cliente y empleada
+9. **Gestionar Stock**: Ir a "Stock" → "Nuevo Artículo" → Seleccionar categoría → Configurar alertas
+10. **Filtrar Stock**: Usar dropdown de categorías para filtrar inventario
+11. **Generar Factura**: Ir a "Facturación" → "Nueva Factura" → Asociar a trabajo (solo Ana Ramos)
+12. **Ver Reportes**: Ir a "Reportes" → Seleccionar mes → Ver métricas (solo Ana Ramos)
 
 ## 🔐 Seguridad
 
@@ -315,15 +350,40 @@ Dashboard desarrollado para uso interno de Anushka Hogar.
 
 ---
 
-**Última actualización**: 2025-10-28  
-**Estado**: ✅ Completado - Sistema de roles y categorías dinámicas funcionando  
-**Próximo paso**: Deploy a producción en Cloudflare Pages
+**Última actualización**: 2026-01-15  
+**Estado**: ✅ Sistema de Tareas Completo con 3 vistas (Lista, Kanban, Calendario)  
+**Nueva URL de Producción**: https://c7dda5c7.anushka-hogar.pages.dev  
+**Próximo paso**: Testear sistema de alertas automáticas y configurar job periódico
 
 ---
 
-## 🆕 Cambios Recientes (28/10/2025)
+## 🆕 Cambios Recientes (15/01/2026)
 
-### 🤖 Consultor IA - GALI (NUEVO)
+### 📋 Sistema de Tareas Completo (NUEVO)
+✅ **Backend completo** - Endpoints CRUD + alertas  
+✅ **3 Vistas interactivas**: Lista, Kanban (drag & drop), Calendario  
+✅ **Sistema de alertas automáticas** con recordatorios configurables  
+✅ **Integración con avisos** (campana 🔔)  
+✅ **Estadísticas en header**: Pendientes, En Proceso, Urgentes  
+✅ **Filtros avanzados**: Prioridad, asignado, estado  
+✅ **Calendario mensual interactivo** con tareas por día  
+✅ **Kanban con drag & drop** entre estados  
+✅ **Endpoint automático**: POST `/api/tareas/alertas/procesar`
+
+**Características técnicas:**
+- Tabla `tareas_pendientes` con todos los campos necesarios
+- Tabla `tareas_alertas` para recordatorios automáticos
+- 13 endpoints REST completos
+- Drag & Drop HTML5 nativo
+- Calendario generado dinámicamente
+- Contadores en tiempo real
+
+**Ejemplos de uso:**
+- Crear tarea urgente: Prioridad Alta + Fecha hoy + Recordatorio 60min
+- Vista Kanban: Arrastra de "Pendiente" a "En Proceso"
+- Vista Calendario: Click en día para ver/editar tareas
+
+### 🤖 Consultor IA - GALI
 ✅ **Agente especializado** integrado en el sistema  
 ✅ **4 áreas de expertise**: Cortinas, Facturación, Ventas, Herramienta  
 ✅ Chat interactivo con respuestas contextuales  
