@@ -2942,7 +2942,7 @@ app.get('/', (c) => {
 
     <!-- 🐙 GAL IA - Asistente Flotante -->
     <button id="galia-float-btn" onclick="openGalIA()" 
-            class="fixed bottom-8 right-8 w-32 h-32 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 z-50 bg-white p-3 animate-bounce hover:animate-none"
+            class="fixed bottom-8 right-8 w-20 h-20 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 z-50 bg-white p-2 hover:animate-none"
             title="¡Hola! Soy GAL IA, tu asistente virtual">
         <img src="/static/galia-pulpo.png" alt="GAL IA" class="w-full h-full object-contain">
         <span id="galia-badge" class="hidden absolute -top-2 -right-2 bg-brand-orange text-white text-sm rounded-full w-7 h-7 flex items-center justify-center font-bold shadow-lg">!</span>

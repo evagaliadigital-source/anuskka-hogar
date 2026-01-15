@@ -2844,29 +2844,201 @@ window.editStock = (id) => showStockForm(id)
 
 // Abrir GAL IA (Consultor IA)
 function openGalIA() {
-  // Cambiar a la pestaña del Consultor IA
-  showTab('consultor')
-  
-  // Scroll suave al inicio
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-  
-  // Animación del botón
-  const btn = document.getElementById('galia-float-btn')
-  if (btn) {
-    btn.classList.add('scale-95')
-    setTimeout(() => btn.classList.remove('scale-95'), 200)
+  // Crear modal flotante GRANDE si no existe
+  if (document.getElementById('galia-modal-flotante')) {
+    document.getElementById('galia-modal-flotante').remove()
+    return
   }
   
-  // Opcional: Agregar mensaje de bienvenida si el textarea está vacío
-  const textarea = document.getElementById('consultor-input')
-  if (textarea && !textarea.value.trim()) {
-    setTimeout(() => {
-      // Puedes agregar un mensaje de sugerencia aquí
-      console.log('🐙 GAL IA: ¡Hola! ¿En qué puedo ayudarte hoy?')
-    }, 500)
+  const modal = document.createElement('div')
+  modal.id = 'galia-modal-flotante'
+  modal.className = 'fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4'
+  modal.innerHTML = `
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden">
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-teal-700 via-blue-900 to-purple-800 p-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg p-2">
+              <img src="/static/galia-pulpo.png" alt="GAL IA" class="w-full h-full object-contain">
+            </div>
+            <div class="text-white">
+              <h2 class="text-2xl font-bold">GAL IA - Tu Consultora</h2>
+              <p class="text-teal-200 text-sm">Experta en Cortinas • Gestión • Innovación</p>
+            </div>
+          </div>
+          <button onclick="openGalIA()" class="text-white hover:bg-white/20 p-3 rounded-full transition-all">
+            <i class="fas fa-times text-2xl"></i>
+          </button>
+        </div>
+        <div class="mt-4 flex flex-wrap gap-2">
+          <span class="bg-white/25 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium">
+            <i class="fas fa-cut mr-1"></i>Cortinas
+          </span>
+          <span class="bg-white/25 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium">
+            <i class="fas fa-file-invoice mr-1"></i>Facturación
+          </span>
+          <span class="bg-white/25 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium">
+            <i class="fas fa-users mr-1"></i>Clientes
+          </span>
+        </div>
+      </div>
+      
+      <!-- Área de Mensajes -->
+      <div id="chat-messages-modal" class="flex-1 p-6 overflow-y-auto bg-gradient-to-b from-white to-slate-50">
+        <!-- Mensaje de Bienvenida -->
+        <div class="mb-4">
+          <div class="flex items-start gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-teal-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 p-1">
+              <img src="/static/galia-pulpo.png" alt="GAL IA" class="w-full h-full object-contain">
+            </div>
+            <div class="bg-white rounded-xl p-5 shadow-md max-w-3xl border-l-4 border-teal-500">
+              <p class="text-gray-800 mb-3 text-base">
+                ¡Hola! Soy <strong class="text-teal-700">GAL IA</strong> 🐙, tu consultora especializada. 👋
+              </p>
+              <p class="text-gray-700 mb-2 text-sm">Puedo ayudarte con:</p>
+              <ul class="list-disc list-inside text-gray-700 space-y-1 text-sm mb-3">
+                <li><strong>Cortinas</strong>: Confección, instalación, propuestas, tips de venta</li>
+                <li><strong>Facturación</strong>: VerificaTu, normativa fiscal, gestión de cobros</li>
+                <li><strong>Clientes</strong>: Fidelización, seguimiento, presupuestos</li>
+                <li><strong>Sistema</strong>: Guía completa, mejores prácticas</li>
+              </ul>
+              <p class="text-gray-600 text-xs italic">
+                💡 Pregúntame lo que quieras sobre tu negocio o el sistema.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Área de Input -->
+      <div class="border-t bg-white p-4">
+        <div class="flex gap-3 mb-3">
+          <input 
+            type="text" 
+            id="chat-input-modal" 
+            placeholder="Escribe tu consulta... (ej: ¿Cómo calculo el metraje?)"
+            class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-base"
+            onkeypress="if(event.key==='Enter') sendMessageModal()"
+          >
+          <button 
+            onclick="sendMessageModal()" 
+            class="bg-gradient-to-r from-teal-600 to-purple-700 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all"
+          >
+            <i class="fas fa-paper-plane mr-2"></i>Enviar
+          </button>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="sendQuickQuestionModal('¿Cómo calculo el metraje de cortinas?')" class="text-xs bg-gradient-to-r from-teal-50 to-purple-50 hover:from-teal-100 hover:to-purple-100 px-3 py-2 rounded-full text-teal-800 font-medium border border-teal-200">
+            📏 Calcular metraje
+          </button>
+          <button onclick="sendQuickQuestionModal('¿Qué es VerificaTu?')" class="text-xs bg-gradient-to-r from-teal-50 to-purple-50 hover:from-teal-100 hover:to-purple-100 px-3 py-2 rounded-full text-teal-800 font-medium border border-teal-200">
+            📄 VerificaTu
+          </button>
+          <button onclick="sendQuickQuestionModal('Tips para cerrar ventas')" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-full text-gray-700">
+            💰 Tips venta
+          </button>
+        </div>
+      </div>
+    </div>
+  `
+  
+  document.body.appendChild(modal)
+  
+  // Focus en input
+  setTimeout(() => {
+    document.getElementById('chat-input-modal')?.focus()
+  }, 100)
+}
+
+async function sendMessageModal() {
+  const input = document.getElementById('chat-input-modal')
+  const message = input?.value?.trim()
+  
+  if (!message) return
+  
+  // Limpiar input
+  input.value = ''
+  
+  // Añadir mensaje del usuario
+  const chatContainer = document.getElementById('chat-messages-modal')
+  chatContainer.innerHTML += `
+    <div class="mb-4 flex justify-end">
+      <div class="bg-gradient-to-r from-teal-600 to-purple-700 text-white rounded-xl p-4 max-w-2xl shadow-md">
+        <p class="text-sm">${message}</p>
+      </div>
+    </div>
+  `
+  
+  // Scroll al final
+  chatContainer.scrollTop = chatContainer.scrollHeight
+  
+  // Mostrar indicador de "escribiendo..."
+  chatContainer.innerHTML += `
+    <div id="typing-indicator" class="mb-4">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 bg-gradient-to-br from-teal-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 p-1">
+          <img src="/static/galia-pulpo.png" alt="GAL IA" class="w-full h-full object-contain">
+        </div>
+        <div class="bg-white rounded-xl p-4 shadow-md">
+          <i class="fas fa-circle-notch fa-spin text-teal-600"></i>
+          <span class="text-gray-600 text-sm ml-2">Escribiendo...</span>
+        </div>
+      </div>
+    </div>
+  `
+  chatContainer.scrollTop = chatContainer.scrollHeight
+  
+  try {
+    // Enviar a la API
+    const { data } = await axios.post(`${API}/chat`, { message })
+    
+    // Quitar indicador
+    document.getElementById('typing-indicator')?.remove()
+    
+    // Añadir respuesta de GAL IA
+    chatContainer.innerHTML += `
+      <div class="mb-4">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-teal-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 p-1">
+            <img src="/static/galia-pulpo.png" alt="GAL IA" class="w-full h-full object-contain">
+          </div>
+          <div class="bg-white rounded-xl p-5 shadow-md max-w-3xl border-l-4 border-teal-500">
+            <div class="prose prose-sm max-w-none text-gray-800">
+              ${data.response.replace(/\n/g, '<br>')}
+            </div>
+          </div>
+        </div>
+      </div>
+    `
+    
+    // Scroll al final
+    chatContainer.scrollTop = chatContainer.scrollHeight
+    
+  } catch (error) {
+    console.error('Error en chat:', error)
+    document.getElementById('typing-indicator')?.remove()
+    chatContainer.innerHTML += `
+      <div class="mb-4">
+        <div class="bg-red-50 rounded-xl p-4 border-l-4 border-red-500">
+          <p class="text-red-800 text-sm">Lo siento, hubo un error. Por favor intenta de nuevo.</p>
+        </div>
+      </div>
+    `
   }
 }
+
+function sendQuickQuestionModal(question) {
+  const input = document.getElementById('chat-input-modal')
+  if (input) {
+    input.value = question
+    sendMessageModal()
+  }
+}
+
 window.openGalIA = openGalIA
+window.sendMessageModal = sendMessageModal
+window.sendQuickQuestionModal = sendQuickQuestionModal
 
 // ============================================
 // INICIALIZACIÓN
