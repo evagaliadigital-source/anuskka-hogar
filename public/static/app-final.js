@@ -3097,7 +3097,7 @@ function ocultarPestanasSegunRol() {
   
   if (rol === 'tienda') {
     // Ocultar pestañas sensibles para tienda
-    const pestanasSensibles = ['personal', 'facturas', 'reportes', 'presupuestos']
+    const pestanasSensibles = ['personal', 'facturas', 'reportes', 'presupuestos', 'historial']
     
     pestanasSensibles.forEach(tab => {
       const button = document.querySelector(`button[onclick="showTab('${tab}')"]`)
@@ -3106,7 +3106,7 @@ function ocultarPestanasSegunRol() {
       }
     })
     
-    console.log('🏪 Modo Tienda: Pestañas sensibles ocultas (incluye Presupuestos)')
+    console.log('🏪 Modo Tienda: Pestañas sensibles ocultas (incluye Presupuestos e Historial)')
   } else if (rol === 'duena') {
     console.log('👑 Modo Ana Ramos: Acceso completo')
   }
