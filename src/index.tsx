@@ -1932,8 +1932,9 @@ app.get('/', (c) => {
             <button onclick="showTab('clientes')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-users mr-2"></i>Clientes
             </button>
-            <button onclick="showTab('presupuestos')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
-                <i class="fas fa-file-alt mr-2"></i>Presupuestos
+            <button id="tareas-btn" onclick="showTab('tareas')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100 relative">
+                <i class="fas fa-clipboard-list mr-2"></i>Tareas
+                <span id="tareas-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">0</span>
             </button>
             <button onclick="showTab('trabajos')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-briefcase mr-2"></i>Trabajos
@@ -1941,12 +1942,11 @@ app.get('/', (c) => {
             <button onclick="showTab('stock')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-boxes mr-2"></i>Stock
             </button>
+            <button onclick="showTab('presupuestos')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-file-alt mr-2"></i>Presupuestos
+            </button>
             <button onclick="showTab('facturas')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-file-invoice-dollar mr-2"></i>Facturación
-            </button>
-            <button id="tareas-btn" onclick="showTab('tareas')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100 relative">
-                <i class="fas fa-clipboard-list mr-2"></i>Tareas
-                <span id="tareas-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">0</span>
             </button>
             <button onclick="showTab('personal')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-user-tie mr-2"></i>Personal
