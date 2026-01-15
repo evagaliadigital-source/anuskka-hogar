@@ -2512,28 +2512,28 @@ app.get('/', (c) => {
             <div class="space-y-6">
                 
                 <!-- Header con estadísticas -->
-                <div class="bg-gradient-to-r from-red-600 to-pink-600 rounded-xl shadow-lg p-8 text-white">
+                <div class="bg-gradient-to-r from-teal-600 to-blue-600 rounded-xl shadow-lg p-8 text-white">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-4">
                             <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-                                <i class="fas fa-clipboard-list text-red-600 text-3xl"></i>
+                                <i class="fas fa-clipboard-list text-teal-600 text-3xl"></i>
                             </div>
                             <div>
                                 <h1 class="text-3xl font-bold">Gestión de Tareas</h1>
-                                <p class="text-red-100 mt-2">Organiza, programa y completa tus tareas</p>
+                                <p class="text-teal-100 mt-2">Organiza, programa y completa tus tareas</p>
                             </div>
                         </div>
                         <div class="grid grid-cols-3 gap-6 text-center">
                             <div>
-                                <p class="text-sm text-red-100">Pendientes</p>
+                                <p class="text-sm text-teal-100">Pendientes</p>
                                 <p class="text-3xl font-bold" id="tareas-count-pendientes">0</p>
                             </div>
                             <div>
-                                <p class="text-sm text-red-100">En Proceso</p>
+                                <p class="text-sm text-teal-100">En Proceso</p>
                                 <p class="text-3xl font-bold" id="tareas-count-proceso">0</p>
                             </div>
                             <div>
-                                <p class="text-sm text-red-100">🔥 Urgentes</p>
+                                <p class="text-sm text-teal-100">🔥 Urgentes</p>
                                 <p class="text-3xl font-bold" id="tareas-count-urgentes">0</p>
                             </div>
                         </div>
@@ -2545,7 +2545,7 @@ app.get('/', (c) => {
                     <div class="flex flex-wrap gap-4 items-center justify-between">
                         <!-- Selector de vista -->
                         <div class="flex gap-2">
-                            <button onclick="cambiarVistaTareas('lista')" id="vista-lista-btn" class="vista-tareas-btn bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-all">
+                            <button onclick="cambiarVistaTareas('lista')" id="vista-lista-btn" class="vista-tareas-btn bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition-all">
                                 <i class="fas fa-list mr-2"></i>Lista
                             </button>
                             <button onclick="cambiarVistaTareas('kanban')" id="vista-kanban-btn" class="vista-tareas-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-all">
@@ -2558,20 +2558,21 @@ app.get('/', (c) => {
                         
                         <!-- Filtros rápidos -->
                         <div class="flex gap-3 items-center">
-                            <select id="filtro-prioridad-tareas" onchange="loadTareas()" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+                            <select id="filtro-prioridad-tareas" onchange="loadTareas()" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
                                 <option value="">Todas las prioridades</option>
                                 <option value="1">🔥 Alta</option>
                                 <option value="2">🟡 Media</option>
                                 <option value="3">🟢 Baja</option>
                             </select>
                             
-                            <select id="filtro-asignado-tareas" onchange="loadTareas()" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+                            <select id="filtro-asignado-tareas" onchange="loadTareas()" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
                                 <option value="">Todos los asignados</option>
                                 <option value="Ana Ramos">Ana Ramos</option>
+                                <option value="Lourdes">Lourdes</option>
                                 <option value="Tienda">Tienda</option>
                             </select>
                             
-                            <button onclick="showNuevaTarea()" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-all shadow-md">
+                            <button onclick="showNuevaTarea()" class="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition-all shadow-md">
                                 <i class="fas fa-plus mr-2"></i>Nueva Tarea
                             </button>
                         </div>

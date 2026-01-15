@@ -1040,6 +1040,7 @@ async function viewTrabajo(id) {
                         <div class="flex flex-wrap gap-2 text-xs text-gray-500">
                           ${tarea.asignado_a ? `<span><i class="fas fa-user mr-1"></i>${tarea.asignado_a}</span>` : ''}
                           ${tarea.fecha_limite ? `<span><i class="far fa-calendar mr-1"></i>${new Date(tarea.fecha_limite).toLocaleDateString('es-ES')} ${new Date(tarea.fecha_limite).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}</span>` : ''}
+                          ${tarea.recordatorio_minutos ? `<span class="text-orange-600"><i class="fas fa-bell mr-1"></i>${tarea.recordatorio_minutos} min antes</span>` : ''}
                           <span><i class="far fa-clock mr-1"></i>${new Date(tarea.created_at).toLocaleDateString('es-ES')}</span>
                         </div>
                       </div>
@@ -6649,13 +6650,16 @@ async function showNuevaTarea() {
         closeModal()
         showNotification('Tarea creada correctamente', 'success')
         
-        // Recargar vista actual
-        if (vistaActualTareas === 'lista') {
+        // Recargar vista actual (forzar recarga siempre)
+        if (typeof vistaActualTareas === 'undefined' || vistaActualTareas === 'lista') {
           loadTareas()
         } else if (vistaActualTareas === 'kanban') {
           loadTareasKanban()
         } else if (vistaActualTareas === 'calendario') {
           cargarCalendarioTareas()
+        } else {
+          // Fallback: recargar lista por defecto
+          loadTareas()
         }
         
         // Actualizar contadores
