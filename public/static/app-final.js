@@ -6401,16 +6401,19 @@ async function loadTareas() {
             ${t.completada_en ? `<span><i class="fas fa-check-circle mr-1"></i>Completada: ${new Date(t.completada_en).toLocaleString('es-ES')}</span>` : ''}
           </div>
           
-          ${t.estado === 'pendiente' && t.tipo !== 'añadir_tela_stock' ? `
-            <div class="mt-3 flex gap-2">
+          <div class="mt-3 flex gap-2">
+            <button onclick="editarTarea(${t.id})" class="flex-1 bg-blue-600 text-white px-3 py-1.5 text-sm rounded-lg hover:bg-blue-700 transition-all">
+              <i class="fas fa-edit mr-1"></i>Editar
+            </button>
+            ${t.estado === 'pendiente' && t.tipo !== 'añadir_tela_stock' ? `
               <button onclick="marcarTareaCompletada(${t.id})" class="flex-1 bg-green-600 text-white px-3 py-1.5 text-sm rounded-lg hover:bg-green-700 transition-all">
                 <i class="fas fa-check mr-1"></i>Completar
               </button>
               <button onclick="cancelarTarea(${t.id})" class="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50 transition-all">
                 <i class="fas fa-times mr-1"></i>Cancelar
               </button>
-            </div>
-          ` : ''}
+            ` : ''}
+          </div>
         </div>
       `
     }).join('')
@@ -6681,6 +6684,198 @@ async function showNuevaTarea() {
       showNotification('Error al crear tarea', 'error')
     }
   })
+}
+
+// Editar tarea existente
+async function editarTarea(tareaId) {
+  try {
+    // Cargar datos de la tarea
+    const { data: tarea } = await axios.get(`${API}/tareas/${tareaId}`)
+    
+    // Cargar trabajos activos para el dropdown
+    let trabajosOptions = '<option value="">Sin asociar a trabajo</option>';
+    try {
+      const response = await axios.get(`${API}/trabajos`);
+      if (response.data && Array.isArray(response.data)) {
+        const trabajosActivos = response.data.filter(t => t.estado !== 'completado' && t.estado !== 'cancelado');
+        trabajosOptions += trabajosActivos.map(t => 
+          `<option value="${t.id}" ${tarea.trabajo_id === t.id ? 'selected' : ''}>${t.nombre_cliente || 'Sin nombre'} - ${t.nombre_trabajo || 'Sin descripción'}</option>`
+        ).join('');
+      }
+    } catch (error) {
+      console.error('Error cargando trabajos:', error);
+    }
+    
+    const html = `
+      <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+          <h3 class="text-2xl font-bold mb-6">
+            <i class="fas fa-edit text-gray-700 mr-2"></i>
+            Editar Tarea
+          </h3>
+          <form id="tarea-form" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Título <span class="text-gray-500">*</span>
+                </label>
+                <input type="text" name="titulo" required value="${tarea.titulo}"
+                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500"
+                       placeholder="Ej: Llamar a cliente María García">
+              </div>
+              
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                <textarea name="descripcion" rows="3"
+                          class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500"
+                          placeholder="Detalles adicionales de la tarea...">${tarea.descripcion || ''}</textarea>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                <select name="tipo" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
+                  <option value="general" ${tarea.tipo === 'general' ? 'selected' : ''}>General</option>
+                  <option value="seguimiento_cliente" ${tarea.tipo === 'seguimiento_cliente' ? 'selected' : ''}>Seguimiento Cliente</option>
+                  <option value="revisar_presupuesto" ${tarea.tipo === 'revisar_presupuesto' ? 'selected' : ''}>Revisar Presupuesto</option>
+                  <option value="añadir_tela_stock" ${tarea.tipo === 'añadir_tela_stock' ? 'selected' : ''}>Añadir Tela a Stock</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Prioridad <span class="text-gray-500">*</span>
+                </label>
+                <select name="prioridad" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
+                  <option value="3" ${tarea.prioridad === 3 ? 'selected' : ''}>🟢 Baja</option>
+                  <option value="2" ${tarea.prioridad === 2 ? 'selected' : ''}>🟡 Media</option>
+                  <option value="1" ${tarea.prioridad === 1 ? 'selected' : ''}>🔥 Alta</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                <select name="estado" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
+                  <option value="pendiente" ${tarea.estado === 'pendiente' ? 'selected' : ''}>⏳ Pendiente</option>
+                  <option value="en_proceso" ${tarea.estado === 'en_proceso' ? 'selected' : ''}>🔄 En Proceso</option>
+                  <option value="completada" ${tarea.estado === 'completada' ? 'selected' : ''}>✅ Completada</option>
+                  <option value="cancelada" ${tarea.estado === 'cancelada' ? 'selected' : ''}>❌ Cancelada</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Asignado a</label>
+                <select name="asignado_a" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
+                  <option value="" ${!tarea.asignado_a ? 'selected' : ''}>Sin asignar</option>
+                  <option value="Ana Ramos" ${tarea.asignado_a === 'Ana Ramos' ? 'selected' : ''}>Ana Ramos</option>
+                  <option value="Lourdes" ${tarea.asignado_a === 'Lourdes' ? 'selected' : ''}>Lourdes</option>
+                  <option value="Tienda" ${tarea.asignado_a === 'Tienda' ? 'selected' : ''}>Tienda</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <i class="fas fa-briefcase mr-1"></i>Trabajo asociado
+                </label>
+                <select id="tarea-trabajo-selector" name="trabajo_id" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
+                  ${trabajosOptions}
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Límite</label>
+                <input type="datetime-local" name="fecha_limite" value="${tarea.fecha_limite ? new Date(tarea.fecha_limite).toISOString().slice(0, 16) : ''}"
+                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Recordatorio (minutos antes)
+                </label>
+                <select name="recordatorio_minutos" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
+                  <option value="" ${!tarea.recordatorio_minutos ? 'selected' : ''}>Sin recordatorio</option>
+                  <option value="15" ${tarea.recordatorio_minutos === 15 ? 'selected' : ''}>15 minutos antes</option>
+                  <option value="30" ${tarea.recordatorio_minutos === 30 ? 'selected' : ''}>30 minutos antes</option>
+                  <option value="60" ${tarea.recordatorio_minutos === 60 ? 'selected' : ''}>1 hora antes</option>
+                  <option value="120" ${tarea.recordatorio_minutos === 120 ? 'selected' : ''}>2 horas antes</option>
+                  <option value="1440" ${tarea.recordatorio_minutos === 1440 ? 'selected' : ''}>1 día antes</option>
+                </select>
+              </div>
+              
+              <div class="col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
+                <textarea name="notas" rows="2"
+                          class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500"
+                          placeholder="Notas adicionales...">${tarea.notas || ''}</textarea>
+              </div>
+            </div>
+            
+            <div class="flex space-x-3 pt-4 border-t">
+              <button type="submit" class="flex-1 bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-lg transition-all">
+                <i class="fas fa-save mr-2"></i>Guardar Cambios
+              </button>
+              <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-all">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `
+    
+    document.body.insertAdjacentHTML('beforeend', html)
+    
+    document.getElementById('tarea-form').addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const formData = new FormData(e.target)
+      
+      try {
+        const res = await fetch(`${API}/tareas/${tareaId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tipo: formData.get('tipo'),
+            titulo: formData.get('titulo'),
+            descripcion: formData.get('descripcion') || null,
+            prioridad: parseInt(formData.get('prioridad')),
+            estado: formData.get('estado'),
+            asignado_a: formData.get('asignado_a') || null,
+            trabajo_id: formData.get('trabajo_id') ? parseInt(formData.get('trabajo_id')) : null,
+            fecha_limite: formData.get('fecha_limite') || null,
+            recordatorio_minutos: formData.get('recordatorio_minutos') ? parseInt(formData.get('recordatorio_minutos')) : null,
+            notas: formData.get('notas') || null
+          })
+        })
+        
+        if (res.ok) {
+          closeModal()
+          showNotification('Tarea actualizada correctamente', 'success')
+          
+          // Recargar vista actual
+          if (typeof vistaActualTareas === 'undefined' || vistaActualTareas === 'lista') {
+            loadTareas()
+          } else if (vistaActualTareas === 'kanban') {
+            loadTareasKanban()
+          } else if (vistaActualTareas === 'calendario') {
+            cargarCalendarioTareas()
+          } else {
+            loadTareas()
+          }
+          
+          // Actualizar contadores
+          actualizarContadorTareas()
+          actualizarContadoresTareasHeader()
+        } else {
+          throw new Error('Error al actualizar tarea')
+        }
+      } catch (error) {
+        console.error('Error actualizando tarea:', error)
+        showNotification('Error al actualizar tarea', 'error')
+      }
+    })
+  } catch (error) {
+    console.error('Error cargando tarea:', error)
+    showNotification('Error al cargar tarea', 'error')
+  }
 }
 
 // ============================================
@@ -7146,6 +7341,7 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
 }
 
 window.showNuevaTarea = showNuevaTarea
+window.editarTarea = editarTarea
 window.crearTareaParaTrabajo = crearTareaParaTrabajo
 window.marcarTareaCompletada = marcarTareaCompletada
 window.cancelarTarea = cancelarTarea
