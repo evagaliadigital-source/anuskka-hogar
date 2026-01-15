@@ -7161,6 +7161,121 @@ window.editarNota = editarNota
 window.eliminarNota = eliminarNota
 
 // ============================================
+// PANEL FLOTANTE DE NOTAS
+// ============================================
+
+function abrirNotasFlotante() {
+  // Crear panel flotante si no existe
+  if (document.getElementById('notas-panel-flotante')) {
+    document.getElementById('notas-panel-flotante').remove()
+    return
+  }
+  
+  const panel = document.createElement('div')
+  panel.id = 'notas-panel-flotante'
+  panel.className = 'fixed bottom-32 right-8 w-96 h-[600px] bg-white rounded-xl shadow-2xl z-40 flex flex-col overflow-hidden'
+  panel.innerHTML = `
+    <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white px-6 py-4 flex items-center justify-between">
+      <h3 class="text-lg font-bold">
+        <i class="fas fa-sticky-note mr-2"></i>Notas Rápidas
+      </h3>
+      <div class="flex items-center space-x-2">
+        <button onclick="nuevaNota()" class="hover:bg-white/20 p-2 rounded transition-all" title="Nueva nota">
+          <i class="fas fa-plus"></i>
+        </button>
+        <button onclick="abrirNotasFlotante()" class="hover:bg-white/20 p-2 rounded transition-all" title="Cerrar">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+    
+    <div id="notas-panel-contenido" class="flex-1 overflow-y-auto p-4 bg-gradient-to-br from-yellow-50 to-orange-50">
+      <div class="text-center py-8 text-gray-500">
+        <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
+        <p>Cargando notas...</p>
+      </div>
+    </div>
+  `
+  
+  document.body.appendChild(panel)
+  
+  // Cargar notas en el panel
+  cargarNotasEnPanel()
+}
+
+async function cargarNotasEnPanel() {
+  try {
+    const { data } = await axios.get(`${API}/notas`)
+    
+    const contenedor = document.getElementById('notas-panel-contenido')
+    
+    if (!contenedor) return
+    
+    if (data.length === 0) {
+      contenedor.innerHTML = `
+        <div class="text-center py-12 text-gray-500">
+          <i class="fas fa-sticky-note text-6xl mb-4 opacity-30"></i>
+          <p class="text-lg">No hay notas</p>
+          <button onclick="nuevaNota()" class="mt-4 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition-all">
+            <i class="fas fa-plus mr-2"></i>Crear primera nota
+          </button>
+        </div>
+      `
+      return
+    }
+    
+    contenedor.innerHTML = data.map(nota => `
+      <div class="mb-3 rounded-lg shadow-md p-4 cursor-pointer hover:shadow-lg transition-all relative" 
+           style="background-color: ${nota.color}"
+           onclick="editarNota(${nota.id})">
+        <button onclick="event.stopPropagation(); eliminarNotaYRecargar(${nota.id})" 
+                class="absolute top-2 right-2 text-gray-600 hover:text-red-500 transition-all">
+          <i class="fas fa-trash text-xs"></i>
+        </button>
+        
+        <h4 class="font-bold text-gray-800 mb-2 pr-6 text-sm">${nota.titulo}</h4>
+        <p class="text-gray-700 text-xs whitespace-pre-wrap line-clamp-3">${nota.contenido}</p>
+        
+        <div class="mt-2 pt-2 border-t border-gray-400/30 text-xs text-gray-600">
+          <i class="far fa-clock mr-1"></i>
+          ${new Date(nota.updated_at).toLocaleDateString('es-ES')}
+        </div>
+      </div>
+    `).join('')
+    
+  } catch (error) {
+    console.error('Error cargando notas en panel:', error)
+    const contenedor = document.getElementById('notas-panel-contenido')
+    if (contenedor) {
+      contenedor.innerHTML = `
+        <div class="text-center py-12 text-red-500">
+          <i class="fas fa-exclamation-triangle text-4xl mb-2"></i>
+          <p>Error al cargar notas</p>
+        </div>
+      `
+    }
+  }
+}
+
+async function eliminarNotaYRecargar(id) {
+  if (!confirm('¿Eliminar esta nota?')) return
+  
+  try {
+    await axios.delete(`${API}/notas/${id}`)
+    showNotification('Nota eliminada', 'success')
+    cargarNotasEnPanel()
+  } catch (error) {
+    console.error('Error eliminando nota:', error)
+    showNotification('Error al eliminar nota', 'error')
+  }
+}
+
+// Exponer funciones flotantes globalmente
+window.abrirNotasFlotante = abrirNotasFlotante
+window.cargarNotasEnPanel = cargarNotasEnPanel
+window.eliminarNotaYRecargar = eliminarNotaYRecargar
+
+// ============================================
 // MEJORAR CHAT IA - VENTANA GRANDE
 // ============================================
 
