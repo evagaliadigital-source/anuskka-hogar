@@ -1005,14 +1005,14 @@ async function viewTrabajo(id) {
           ` : ''}
           
           <!-- TAREAS ASOCIADAS AL TRABAJO -->
-          <div class="mb-6 bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-lg border border-red-200">
+          <div class="mb-6 bg-gradient-to-r from-teal-50 to-blue-50 p-6 rounded-lg border border-teal-200">
             <div class="flex items-center justify-between mb-4">
               <h4 class="font-bold text-gray-800 flex items-center">
-                <i class="fas fa-tasks mr-2 text-red-600"></i>Tareas Pendientes
-                ${tareasDelTrabajo.length > 0 ? `<span class="ml-2 px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">${tareasDelTrabajo.filter(t => t.estado !== 'completada').length}</span>` : ''}
+                <i class="fas fa-tasks mr-2 text-teal-600"></i>Tareas Pendientes
+                ${tareasDelTrabajo.length > 0 ? `<span class="ml-2 px-2 py-1 bg-teal-100 text-teal-700 text-xs font-semibold rounded-full">${tareasDelTrabajo.filter(t => t.estado !== 'completada').length}</span>` : ''}
               </h4>
               <button onclick="crearTareaParaTrabajo(${id}, '${trabajo.nombre_trabajo}')" 
-                      class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-all">
+                      class="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-sm rounded-lg transition-all">
                 <i class="fas fa-plus mr-1"></i>Nueva Tarea
               </button>
             </div>
@@ -6511,30 +6511,30 @@ async function showNuevaTarea() {
     <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <h3 class="text-2xl font-bold mb-6">
-          <i class="fas fa-plus-circle text-red-600 mr-2"></i>
+          <i class="fas fa-plus-circle text-teal-600 mr-2"></i>
           Nueva Tarea
         </h3>
         <form id="tarea-form" class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div class="col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1">
-                Título <span class="text-red-500">*</span>
+                Título <span class="text-teal-500">*</span>
               </label>
               <input type="text" name="titulo" required 
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
                      placeholder="Ej: Llamar a cliente María García">
             </div>
             
             <div class="col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
               <textarea name="descripcion" rows="3"
-                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
                         placeholder="Detalles adicionales de la tarea..."></textarea>
             </div>
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
-              <select name="tipo" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+              <select name="tipo" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
                 <option value="general">General</option>
                 <option value="seguimiento_cliente">Seguimiento Cliente</option>
                 <option value="revisar_presupuesto">Revisar Presupuesto</option>
@@ -6544,9 +6544,9 @@ async function showNuevaTarea() {
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
-                Prioridad <span class="text-red-500">*</span>
+                Prioridad <span class="text-teal-500">*</span>
               </label>
-              <select name="prioridad" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+              <select name="prioridad" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
                 <option value="3">🟢 Baja</option>
                 <option value="2" selected>🟡 Media</option>
                 <option value="1">🔥 Alta</option>
@@ -6555,7 +6555,7 @@ async function showNuevaTarea() {
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-              <select name="estado" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+              <select name="estado" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
                 <option value="pendiente" selected>⏳ Pendiente</option>
                 <option value="en_proceso">🔄 En Proceso</option>
               </select>
@@ -6563,9 +6563,10 @@ async function showNuevaTarea() {
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Asignado a</label>
-              <select name="asignado_a" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+              <select name="asignado_a" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
                 <option value="">Sin asignar</option>
                 <option value="Ana Ramos">Ana Ramos</option>
+                <option value="Lourdes">Lourdes</option>
                 <option value="Tienda">Tienda</option>
               </select>
             </div>
@@ -6574,7 +6575,7 @@ async function showNuevaTarea() {
               <label class="block text-sm font-medium text-gray-700 mb-1">
                 <i class="fas fa-briefcase mr-1"></i>Trabajo asociado
               </label>
-              <select id="tarea-trabajo-selector" name="trabajo_id" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+              <select id="tarea-trabajo-selector" name="trabajo_id" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
                 ${trabajosOptions}
               </select>
             </div>
@@ -6582,14 +6583,14 @@ async function showNuevaTarea() {
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Límite</label>
               <input type="datetime-local" name="fecha_limite"
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
             </div>
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
                 Recordatorio (minutos antes)
               </label>
-              <select name="recordatorio_minutos" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+              <select name="recordatorio_minutos" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
                 <option value="">Sin recordatorio</option>
                 <option value="15">15 minutos antes</option>
                 <option value="30">30 minutos antes</option>
@@ -6602,13 +6603,13 @@ async function showNuevaTarea() {
             <div class="col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
               <textarea name="notas" rows="2"
-                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
                         placeholder="Notas adicionales..."></textarea>
             </div>
           </div>
           
           <div class="flex space-x-3 pt-4 border-t">
-            <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition-all">
+            <button type="submit" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg transition-all">
               <i class="fas fa-save mr-2"></i>Crear Tarea
             </button>
             <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-all">
@@ -6988,7 +6989,7 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
     <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <h3 class="text-2xl font-bold mb-6">
-          <i class="fas fa-plus-circle text-red-600 mr-2"></i>
+          <i class="fas fa-plus-circle text-teal-600 mr-2"></i>
           Nueva Tarea para: ${nombreTrabajo}
         </h3>
         <form id="tarea-trabajo-form" class="space-y-4">
@@ -6997,23 +6998,23 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
           <div class="grid grid-cols-2 gap-4">
             <div class="col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1">
-                Título <span class="text-red-500">*</span>
+                Título <span class="text-teal-500">*</span>
               </label>
               <input type="text" name="titulo" required 
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
                      placeholder="Ej: Llamar al cliente para confirmar medidas">
             </div>
             
             <div class="col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
               <textarea name="descripcion" rows="3"
-                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
                         placeholder="Detalles adicionales de la tarea..."></textarea>
             </div>
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
-              <select name="tipo" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+              <select name="tipo" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
                 <option value="general">General</option>
                 <option value="seguimiento_cliente">Seguimiento Cliente</option>
                 <option value="revisar_presupuesto">Revisar Presupuesto</option>
@@ -7023,9 +7024,9 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
-                Prioridad <span class="text-red-500">*</span>
+                Prioridad <span class="text-teal-500">*</span>
               </label>
-              <select name="prioridad" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+              <select name="prioridad" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
                 <option value="3">🟢 Baja</option>
                 <option value="2" selected>🟡 Media</option>
                 <option value="1">🔥 Alta</option>
@@ -7034,7 +7035,7 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-              <select name="estado" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+              <select name="estado" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
                 <option value="pendiente" selected>⏳ Pendiente</option>
                 <option value="en_proceso">🔄 En Proceso</option>
               </select>
@@ -7042,9 +7043,10 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Asignado a</label>
-              <select name="asignado_a" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+              <select name="asignado_a" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
                 <option value="">Sin asignar</option>
                 <option value="Ana Ramos">Ana Ramos</option>
+                <option value="Lourdes">Lourdes</option>
                 <option value="Tienda">Tienda</option>
               </select>
             </div>
@@ -7052,14 +7054,14 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Límite</label>
               <input type="datetime-local" name="fecha_limite"
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
             </div>
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
                 Recordatorio (minutos antes)
               </label>
-              <select name="recordatorio_minutos" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+              <select name="recordatorio_minutos" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
                 <option value="">Sin recordatorio</option>
                 <option value="15">15 minutos antes</option>
                 <option value="30">30 minutos antes</option>
@@ -7072,13 +7074,13 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
             <div class="col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
               <textarea name="notas" rows="2"
-                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500"
                         placeholder="Notas adicionales..."></textarea>
             </div>
           </div>
           
           <div class="flex space-x-3 pt-4 border-t">
-            <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition-all">
+            <button type="submit" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg transition-all">
               <i class="fas fa-save mr-2"></i>Crear Tarea
             </button>
             <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-all">
