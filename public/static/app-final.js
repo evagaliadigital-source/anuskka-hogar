@@ -6312,8 +6312,8 @@ async function loadTareas() {
     const prioridad = document.getElementById('filtro-prioridad-tareas')?.value || ''
     const asignado = document.getElementById('filtro-asignado-tareas')?.value || ''
     
-    // Vista lista muestra solo pendientes y en proceso por defecto
-    let url = `${API}/tareas?estado=pendiente`
+    // Vista lista muestra pendientes y en_proceso por defecto
+    let url = `${API}/tareas?estado=todas`
     if (prioridad) url += `&prioridad=${prioridad}`
     if (asignado) url += `&asignado_a=${encodeURIComponent(asignado)}`
     
