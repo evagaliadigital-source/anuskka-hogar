@@ -264,6 +264,11 @@ function showTab(tabName) {
     case 'trabajos':
       loadTrabajos()
       break
+    case 'tareas':
+      loadTareas()
+      actualizarContadorTareas()
+      actualizarContadoresTareasHeader()
+      break
     case 'personal':
       loadPersonal()
       break
@@ -7883,19 +7888,19 @@ function cambiarVistaTareas(vista) {
   
   // Actualizar botones
   document.querySelectorAll('.vista-tareas-btn').forEach(btn => {
-    btn.classList.remove('bg-red-600', 'text-white')
+    btn.classList.remove('bg-gray-700', 'text-white')
     btn.classList.add('bg-gray-200', 'text-gray-700')
   })
   
   if (vista === 'lista') {
     document.getElementById('vista-lista-btn').classList.remove('bg-gray-200', 'text-gray-700')
-    document.getElementById('vista-lista-btn').classList.add('bg-red-600', 'text-white')
+    document.getElementById('vista-lista-btn').classList.add('bg-gray-700', 'text-white')
   } else if (vista === 'kanban') {
     document.getElementById('vista-kanban-btn').classList.remove('bg-gray-200', 'text-gray-700')
-    document.getElementById('vista-kanban-btn').classList.add('bg-red-600', 'text-white')
+    document.getElementById('vista-kanban-btn').classList.add('bg-gray-700', 'text-white')
   } else if (vista === 'calendario') {
     document.getElementById('vista-calendario-btn').classList.remove('bg-gray-200', 'text-gray-700')
-    document.getElementById('vista-calendario-btn').classList.add('bg-red-600', 'text-white')
+    document.getElementById('vista-calendario-btn').classList.add('bg-gray-700', 'text-white')
   }
   
   // Mostrar/ocultar vistas
