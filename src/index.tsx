@@ -2581,7 +2581,7 @@ app.get('/', (c) => {
 
                 <!-- VISTA LISTA -->
                 <div id="vista-tareas-lista" class="vista-tareas-content">
-                    <div class="space-y-4" id="tareas-lista">
+                    <div class="space-y-2" id="tareas-lista">
                         <!-- Se llena dinámicamente -->
                     </div>
                     <div id="tareas-empty" class="hidden text-center py-12">

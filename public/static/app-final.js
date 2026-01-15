@@ -6376,19 +6376,19 @@ async function loadTareas() {
       }
       
       return `
-        <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all">
-          <div class="flex items-start justify-between mb-3">
-            <div class="flex items-start gap-3 flex-1">
-              <div class="mt-1">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-all">
+          <div class="flex items-start justify-between mb-2">
+            <div class="flex items-start gap-2 flex-1">
+              <div class="mt-0.5">
                 ${tipoIcon[t.tipo] || '<i class="fas fa-tasks text-gray-600"></i>'}
               </div>
               <div class="flex-1">
-                <h3 class="text-lg font-bold text-gray-800">${t.titulo}</h3>
-                ${t.descripcion ? `<p class="text-sm text-gray-600 mt-1">${t.descripcion}</p>` : ''}
-                ${t.nombre_proyecto ? `<p class="text-xs text-gray-500 mt-2"><i class="fas fa-project-diagram mr-1"></i>${t.nombre_proyecto}</p>` : ''}
+                <h3 class="text-base font-semibold text-gray-800">${t.titulo}</h3>
+                ${t.descripcion ? `<p class="text-xs text-gray-600 mt-1">${t.descripcion}</p>` : ''}
+                ${t.nombre_proyecto ? `<p class="text-xs text-gray-500 mt-1"><i class="fas fa-project-diagram mr-1"></i>${t.nombre_proyecto}</p>` : ''}
               </div>
             </div>
-            <div class="flex flex-col items-end gap-2">
+            <div class="flex flex-col items-end gap-1">
               ${estadoBadge[t.estado]}
               ${prioridadBadge[t.prioridad]}
             </div>
@@ -6396,18 +6396,18 @@ async function loadTareas() {
           
           ${detalleHTML}
           
-          <div class="mt-4 flex items-center justify-between text-xs text-gray-500">
+          <div class="mt-3 flex items-center justify-between text-xs text-gray-500">
             <span><i class="far fa-calendar mr-1"></i>Creada: ${new Date(t.created_at).toLocaleString('es-ES')}</span>
             ${t.completada_en ? `<span><i class="fas fa-check-circle mr-1"></i>Completada: ${new Date(t.completada_en).toLocaleString('es-ES')}</span>` : ''}
           </div>
           
           ${t.estado === 'pendiente' && t.tipo !== 'añadir_tela_stock' ? `
-            <div class="mt-4 flex gap-2">
-              <button onclick="marcarTareaCompletada(${t.id})" class="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-all">
-                <i class="fas fa-check mr-2"></i>Completar
+            <div class="mt-3 flex gap-2">
+              <button onclick="marcarTareaCompletada(${t.id})" class="flex-1 bg-green-600 text-white px-3 py-1.5 text-sm rounded-lg hover:bg-green-700 transition-all">
+                <i class="fas fa-check mr-1"></i>Completar
               </button>
-              <button onclick="cancelarTarea(${t.id})" class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition-all">
-                <i class="fas fa-times mr-2"></i>Cancelar
+              <button onclick="cancelarTarea(${t.id})" class="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50 transition-all">
+                <i class="fas fa-times mr-1"></i>Cancelar
               </button>
             </div>
           ` : ''}
