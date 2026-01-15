@@ -6925,3 +6925,245 @@ window.cargarAvisos = cargarAvisos
 window.marcarLeido = marcarLeido
 window.marcarTodosLeidos = marcarTodosLeidos
 
+// ============================================
+// SISTEMA DE NOTAS - LIBRETA DE APUNTES
+// ============================================
+
+async function loadNotas() {
+  try {
+    const { data } = await axios.get(`${API}/notas`)
+    
+    const grid = document.getElementById('notas-grid')
+    
+    if (data.length === 0) {
+      grid.innerHTML = `
+        <div class="col-span-full text-center py-12 text-gray-500">
+          <i class="fas fa-sticky-note text-6xl mb-4"></i>
+          <p class="text-xl">No tienes notas todavía</p>
+          <p class="text-sm mt-2">Haz clic en "Nueva Nota" para crear una</p>
+        </div>
+      `
+      return
+    }
+    
+    grid.innerHTML = data.map(nota => `
+      <div class="nota-card rounded-lg shadow-lg p-6 relative transform hover:scale-105 transition-all cursor-pointer" 
+           style="background-color: ${nota.color}"
+           onclick="editarNota(${nota.id})">
+        <button onclick="event.stopPropagation(); eliminarNota(${nota.id})" 
+                class="absolute top-3 right-3 text-gray-600 hover:text-red-500 transition-all">
+          <i class="fas fa-trash text-sm"></i>
+        </button>
+        
+        <h3 class="font-bold text-gray-800 mb-3 pr-8">${nota.titulo}</h3>
+        <p class="text-gray-700 text-sm whitespace-pre-wrap line-clamp-6">${nota.contenido}</p>
+        
+        <div class="mt-4 pt-4 border-t border-gray-400/30 text-xs text-gray-600">
+          <i class="far fa-clock mr-1"></i>
+          ${new Date(nota.updated_at).toLocaleString('es-ES')}
+        </div>
+      </div>
+    `).join('')
+    
+  } catch (error) {
+    console.error('Error cargando notas:', error)
+    showNotification('Error al cargar notas', 'error')
+  }
+}
+
+function nuevaNota() {
+  const colores = [
+    { nombre: 'Amarillo', valor: '#fef3c7' },
+    { nombre: 'Rosa', valor: '#fce7f3' },
+    { nombre: 'Azul', valor: '#dbeafe' },
+    { nombre: 'Verde', valor: '#d1fae5' },
+    { nombre: 'Naranja', valor: '#fed7aa' }
+  ]
+  
+  const coloresHtml = colores.map(c => `
+    <label class="flex items-center space-x-2 cursor-pointer">
+      <input type="radio" name="nota-color" value="${c.valor}" ${c.valor === '#fef3c7' ? 'checked' : ''} class="w-4 h-4">
+      <div class="w-8 h-8 rounded" style="background-color: ${c.valor}"></div>
+      <span>${c.nombre}</span>
+    </label>
+  `).join('')
+  
+  const html = `
+    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <h3 class="text-2xl font-bold mb-6">
+          <i class="fas fa-sticky-note text-yellow-500 mr-2"></i>
+          Nueva Nota
+        </h3>
+        <form id="nota-form" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
+            <input type="text" name="titulo" required 
+                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Contenido</label>
+            <textarea name="contenido" rows="8" required
+                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500"></textarea>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Color</label>
+            <div class="space-y-2">
+              ${coloresHtml}
+            </div>
+          </div>
+          
+          <div class="flex space-x-3">
+            <button type="submit" class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg">
+              <i class="fas fa-save mr-2"></i>Guardar Nota
+            </button>
+            <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `
+  
+  document.body.insertAdjacentHTML('beforeend', html)
+  
+  document.getElementById('nota-form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const formData = new FormData(e.target)
+    
+    try {
+      await axios.post(`${API}/notas`, {
+        titulo: formData.get('titulo'),
+        contenido: formData.get('contenido'),
+        color: formData.get('nota-color')
+      })
+      
+      closeModal()
+      showNotification('Nota guardada', 'success')
+      loadNotas()
+    } catch (error) {
+      console.error('Error guardando nota:', error)
+      showNotification('Error al guardar nota', 'error')
+    }
+  })
+}
+
+async function editarNota(id) {
+  try {
+    const { data: notas } = await axios.get(`${API}/notas`)
+    const nota = notas.find(n => n.id === id)
+    
+    if (!nota) return
+    
+    const colores = [
+      { nombre: 'Amarillo', valor: '#fef3c7' },
+      { nombre: 'Rosa', valor: '#fce7f3' },
+      { nombre: 'Azul', valor: '#dbeafe' },
+      { nombre: 'Verde', valor: '#d1fae5' },
+      { nombre: 'Naranja', valor: '#fed7aa' }
+    ]
+    
+    const coloresHtml = colores.map(c => `
+      <label class="flex items-center space-x-2 cursor-pointer">
+        <input type="radio" name="nota-color" value="${c.valor}" ${c.valor === nota.color ? 'checked' : ''} class="w-4 h-4">
+        <div class="w-8 h-8 rounded" style="background-color: ${c.valor}"></div>
+        <span>${c.nombre}</span>
+      </label>
+    `).join('')
+    
+    const html = `
+      <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <h3 class="text-2xl font-bold mb-6">
+            <i class="fas fa-edit text-yellow-500 mr-2"></i>
+            Editar Nota
+          </h3>
+          <form id="nota-form" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
+              <input type="text" name="titulo" value="${nota.titulo}" required 
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Contenido</label>
+              <textarea name="contenido" rows="8" required
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500">${nota.contenido}</textarea>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Color</label>
+              <div class="space-y-2">
+                ${coloresHtml}
+              </div>
+            </div>
+            
+            <div class="flex space-x-3">
+              <button type="submit" class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg">
+                <i class="fas fa-save mr-2"></i>Actualizar
+              </button>
+              <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `
+    
+    document.body.insertAdjacentHTML('beforeend', html)
+    
+    document.getElementById('nota-form').addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const formData = new FormData(e.target)
+      
+      try {
+        await axios.put(`${API}/notas/${id}`, {
+          titulo: formData.get('titulo'),
+          contenido: formData.get('contenido'),
+          color: formData.get('nota-color')
+        })
+        
+        closeModal()
+        showNotification('Nota actualizada', 'success')
+        loadNotas()
+      } catch (error) {
+        console.error('Error actualizando nota:', error)
+        showNotification('Error al actualizar nota', 'error')
+      }
+    })
+    
+  } catch (error) {
+    console.error('Error cargando nota:', error)
+  }
+}
+
+async function eliminarNota(id) {
+  if (!confirm('¿Eliminar esta nota?')) return
+  
+  try {
+    await axios.delete(`${API}/notas/${id}`)
+    showNotification('Nota eliminada', 'success')
+    loadNotas()
+  } catch (error) {
+    console.error('Error eliminando nota:', error)
+    showNotification('Error al eliminar nota', 'error')
+  }
+}
+
+// Exponer funciones de notas globalmente
+window.loadNotas = loadNotas
+window.nuevaNota = nuevaNota
+window.editarNota = editarNota
+window.eliminarNota = eliminarNota
+
+// ============================================
+// MEJORAR CHAT IA - VENTANA GRANDE
+// ============================================
+
+// Esta función se llama desde el HTML del botón GAL IA
+// Vamos a sobreescribir para hacer la ventana más grande
+

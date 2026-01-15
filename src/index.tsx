@@ -1176,6 +1176,17 @@ O puedes probar con preguntas como:
 ¿Cómo puedo ayudarte mejor? 😊`
     }
     
+    // Guardar conversación en la base de datos
+    try {
+      await c.env.DB.prepare(`
+        INSERT INTO conversaciones_ia (mensaje, respuesta)
+        VALUES (?, ?)
+      `).bind(message, response).run()
+    } catch (dbError) {
+      console.error('Error guardando conversación:', dbError)
+      // No fallar si no se puede guardar
+    }
+    
     return c.json({ 
       success: true, 
       response: response,
@@ -1807,6 +1818,153 @@ app.delete('/api/avisos/:id', async (c) => {
 })
 
 // ============================================
+// NOTAS - LIBRETA DE APUNTES
+// ============================================
+
+// Obtener todas las notas del usuario
+app.get('/api/notas', async (c) => {
+  try {
+    const { results } = await c.env.DB.prepare(`
+      SELECT * FROM notas ORDER BY updated_at DESC
+    `).all()
+    
+    return c.json(results)
+  } catch (error) {
+    console.error('Error obteniendo notas:', error)
+    return c.json({ error: 'Error al obtener notas' }, 500)
+  }
+})
+
+// Crear nueva nota
+app.post('/api/notas', async (c) => {
+  try {
+    const { titulo, contenido, color } = await c.req.json()
+    
+    const result = await c.env.DB.prepare(`
+      INSERT INTO notas (titulo, contenido, color)
+      VALUES (?, ?, ?)
+    `).bind(titulo, contenido, color || '#fef3c7').run()
+    
+    return c.json({ 
+      success: true, 
+      id: result.meta.last_row_id 
+    })
+  } catch (error) {
+    console.error('Error creando nota:', error)
+    return c.json({ error: 'Error al crear nota' }, 500)
+  }
+})
+
+// Actualizar nota
+app.put('/api/notas/:id', async (c) => {
+  try {
+    const id = c.req.param('id')
+    const { titulo, contenido, color } = await c.req.json()
+    
+    await c.env.DB.prepare(`
+      UPDATE notas SET titulo = ?, contenido = ?, color = ?
+      WHERE id = ?
+    `).bind(titulo, contenido, color, id).run()
+    
+    return c.json({ success: true })
+  } catch (error) {
+    console.error('Error actualizando nota:', error)
+    return c.json({ error: 'Error al actualizar nota' }, 500)
+  }
+})
+
+// Eliminar nota
+app.delete('/api/notas/:id', async (c) => {
+  try {
+    const id = c.req.param('id')
+    
+    await c.env.DB.prepare(`
+      DELETE FROM notas WHERE id = ?
+    `).bind(id).run()
+    
+    return c.json({ success: true })
+  } catch (error) {
+    console.error('Error eliminando nota:', error)
+    return c.json({ error: 'Error al eliminar nota' }, 500)
+  }
+})
+
+// ============================================
+// CONVERSACIONES IA - MEMORIA DEL CHAT
+// ============================================
+
+// Obtener historial de conversaciones
+app.get('/api/conversaciones', async (c) => {
+  try {
+    const limit = parseInt(c.req.query('limit') || '50')
+    
+    const { results } = await c.env.DB.prepare(`
+      SELECT * FROM conversaciones_ia 
+      ORDER BY created_at DESC 
+      LIMIT ?
+    `).bind(limit).all()
+    
+    return c.json(results)
+  } catch (error) {
+    console.error('Error obteniendo conversaciones:', error)
+    return c.json({ error: 'Error al obtener conversaciones' }, 500)
+  }
+})
+
+// Guardar conversación
+app.post('/api/conversaciones', async (c) => {
+  try {
+    const { mensaje, respuesta } = await c.req.json()
+    
+    const result = await c.env.DB.prepare(`
+      INSERT INTO conversaciones_ia (mensaje, respuesta)
+      VALUES (?, ?)
+    `).bind(mensaje, respuesta).run()
+    
+    return c.json({ 
+      success: true, 
+      id: result.meta.last_row_id 
+    })
+  } catch (error) {
+    console.error('Error guardando conversación:', error)
+    return c.json({ error: 'Error al guardar conversación' }, 500)
+  }
+})
+
+// Guardar conversación como nota
+app.post('/api/conversaciones/:id/guardar-nota', async (c) => {
+  try {
+    const id = c.req.param('id')
+    
+    // Obtener la conversación
+    const conversacion = await c.env.DB.prepare(`
+      SELECT * FROM conversaciones_ia WHERE id = ?
+    `).bind(id).first() as any
+    
+    if (!conversacion) {
+      return c.json({ error: 'Conversación no encontrada' }, 404)
+    }
+    
+    // Crear nota con la conversación
+    const titulo = conversacion.mensaje.substring(0, 50) + '...'
+    const contenido = `TÚ: ${conversacion.mensaje}\n\nGAL IA: ${conversacion.respuesta}`
+    
+    const result = await c.env.DB.prepare(`
+      INSERT INTO notas (titulo, contenido, color)
+      VALUES (?, ?, ?)
+    `).bind(titulo, contenido, '#dbeafe').run()
+    
+    return c.json({ 
+      success: true, 
+      nota_id: result.meta.last_row_id 
+    })
+  } catch (error) {
+    console.error('Error guardando conversación como nota:', error)
+    return c.json({ error: 'Error al guardar como nota' }, 500)
+  }
+})
+
+// ============================================
 // MOUNT EXTERNAL ROUTES
 // ============================================
 app.route('/api/presupuestos', presupuestos)
@@ -1956,6 +2114,9 @@ app.get('/', (c) => {
             </button>
             <button onclick="showTab('historial')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100" data-tab="historial">
                 <i class="fas fa-history mr-2"></i>Historial
+            </button>
+            <button onclick="showTab('notas')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-sticky-note mr-2"></i>Notas
             </button>
             <!-- Consultor IA ahora disponible vía botón flotante GAL IA 🐙 -->
             <button onclick="showTab('disenador')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
@@ -2385,6 +2546,23 @@ app.get('/', (c) => {
                     <p class="text-gray-400">Todo está al día</p>
                 </div>
 
+            </div>
+        </div>
+
+        <!-- NOTAS TAB -->
+        <div id="notas-tab" class="tab-content">
+            <div class="mb-6 flex items-center justify-between">
+                <h2 class="text-3xl font-bold text-gray-800">
+                    <i class="fas fa-sticky-note mr-3 text-yellow-500"></i>
+                    Notas
+                </h2>
+                <button onclick="nuevaNota()" class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all">
+                    <i class="fas fa-plus mr-2"></i>Nueva Nota
+                </button>
+            </div>
+
+            <div id="notas-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Las notas se cargan dinámicamente -->
             </div>
         </div>
 
