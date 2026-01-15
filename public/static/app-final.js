@@ -7221,6 +7221,10 @@ function nuevaNota() {
       closeModal()
       showNotification('Nota guardada', 'success')
       loadNotas()
+      // Actualizar panel flotante si está abierto
+      if (document.getElementById('notas-panel-flotante')) {
+        cargarNotasEnPanel()
+      }
     } catch (error) {
       console.error('Error guardando nota:', error)
       showNotification('Error al guardar nota', 'error')
@@ -7307,6 +7311,10 @@ async function editarNota(id) {
         closeModal()
         showNotification('Nota actualizada', 'success')
         loadNotas()
+        // Actualizar panel flotante si está abierto
+        if (document.getElementById('notas-panel-flotante')) {
+          cargarNotasEnPanel()
+        }
       } catch (error) {
         console.error('Error actualizando nota:', error)
         showNotification('Error al actualizar nota', 'error')
@@ -7350,15 +7358,16 @@ function abrirNotasFlotante() {
   
   const panel = document.createElement('div')
   panel.id = 'notas-panel-flotante'
-  panel.className = 'fixed bottom-32 right-8 w-96 h-[600px] bg-white rounded-xl shadow-2xl z-40 flex flex-col overflow-hidden'
+  // Cambiado a horizontal: bottom-0 left-0 right-0 height 50vh
+  panel.className = 'fixed bottom-0 left-0 right-0 h-[50vh] bg-white shadow-2xl z-40 flex flex-col overflow-hidden border-t-4 border-yellow-400'
   panel.innerHTML = `
-    <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white px-6 py-4 flex items-center justify-between">
+    <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white px-6 py-3 flex items-center justify-between">
       <h3 class="text-lg font-bold">
         <i class="fas fa-sticky-note mr-2"></i>Notas Rápidas
       </h3>
       <div class="flex items-center space-x-2">
-        <button onclick="nuevaNota()" class="hover:bg-white/20 p-2 rounded transition-all" title="Nueva nota">
-          <i class="fas fa-plus"></i>
+        <button onclick="nuevaNota()" class="hover:bg-white/20 px-3 py-1 rounded transition-all" title="Nueva nota">
+          <i class="fas fa-plus mr-1"></i>Nueva
         </button>
         <button onclick="abrirNotasFlotante()" class="hover:bg-white/20 p-2 rounded transition-all" title="Cerrar">
           <i class="fas fa-times"></i>
@@ -7366,7 +7375,7 @@ function abrirNotasFlotante() {
       </div>
     </div>
     
-    <div id="notas-panel-contenido" class="flex-1 overflow-y-auto p-4 bg-gradient-to-br from-yellow-50 to-orange-50">
+    <div id="notas-panel-contenido" class="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-yellow-50 to-orange-50">
       <div class="text-center py-8 text-gray-500">
         <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
         <p>Cargando notas...</p>
@@ -7392,7 +7401,7 @@ async function cargarNotasEnPanel() {
       contenedor.innerHTML = `
         <div class="text-center py-12 text-gray-500">
           <i class="fas fa-sticky-note text-6xl mb-4 opacity-30"></i>
-          <p class="text-lg">No hay notas</p>
+          <p class="text-lg">No hay notas guardadas</p>
           <button onclick="nuevaNota()" class="mt-4 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition-all">
             <i class="fas fa-plus mr-2"></i>Crear primera nota
           </button>
@@ -7401,24 +7410,29 @@ async function cargarNotasEnPanel() {
       return
     }
     
-    contenedor.innerHTML = data.map(nota => `
-      <div class="mb-3 rounded-lg shadow-md p-4 cursor-pointer hover:shadow-lg transition-all relative" 
-           style="background-color: ${nota.color}"
-           onclick="editarNota(${nota.id})">
-        <button onclick="event.stopPropagation(); eliminarNotaYRecargar(${nota.id})" 
-                class="absolute top-2 right-2 text-gray-600 hover:text-red-500 transition-all">
-          <i class="fas fa-trash text-xs"></i>
-        </button>
-        
-        <h4 class="font-bold text-gray-800 mb-2 pr-6 text-sm">${nota.titulo}</h4>
-        <p class="text-gray-700 text-xs whitespace-pre-wrap line-clamp-3">${nota.contenido}</p>
-        
-        <div class="mt-2 pt-2 border-t border-gray-400/30 text-xs text-gray-600">
-          <i class="far fa-clock mr-1"></i>
-          ${new Date(nota.updated_at).toLocaleDateString('es-ES')}
-        </div>
+    // Grid horizontal para mostrar notas como post-its
+    contenedor.innerHTML = `
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        ${data.map(nota => `
+          <div class="rounded-lg shadow-md p-4 cursor-pointer hover:shadow-lg transition-all relative h-48 flex flex-col" 
+               style="background-color: ${nota.color}"
+               onclick="editarNota(${nota.id})">
+            <button onclick="event.stopPropagation(); eliminarNotaYRecargar(${nota.id})" 
+                    class="absolute top-2 right-2 text-gray-600 hover:text-red-500 transition-all">
+              <i class="fas fa-trash text-xs"></i>
+            </button>
+            
+            <h4 class="font-bold text-gray-800 mb-2 pr-6 text-sm">${nota.titulo}</h4>
+            <p class="text-gray-700 text-xs whitespace-pre-wrap flex-1 overflow-hidden">${nota.contenido.substring(0, 150)}${nota.contenido.length > 150 ? '...' : ''}</p>
+            
+            <div class="mt-auto pt-2 border-t border-gray-400/30 text-xs text-gray-600">
+              <i class="far fa-clock mr-1"></i>
+              ${new Date(nota.updated_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
+            </div>
+          </div>
+        `).join('')}
       </div>
-    `).join('')
+    `
     
   } catch (error) {
     console.error('Error cargando notas en panel:', error)
@@ -7428,6 +7442,7 @@ async function cargarNotasEnPanel() {
         <div class="text-center py-12 text-red-500">
           <i class="fas fa-exclamation-triangle text-4xl mb-2"></i>
           <p>Error al cargar notas</p>
+          <p class="text-sm mt-2">${error.message}</p>
         </div>
       `
     }
