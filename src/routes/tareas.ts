@@ -23,7 +23,7 @@ tareas.get('/', async (c) => {
              p.nombre_proyecto,
              cl.nombre as cliente_nombre,
              cl.apellidos as cliente_apellidos,
-             tr.nombre_trabajo,
+             tr.tipo_servicio as trabajo_tipo,
              tr.estado as trabajo_estado
       FROM tareas_pendientes t
       LEFT JOIN proyectos_diseno p ON t.proyecto_id = p.id
@@ -104,7 +104,7 @@ tareas.get('/:id', async (c) => {
              p.nombre_proyecto,
              cl.nombre as cliente_nombre,
              cl.apellidos as cliente_apellidos,
-             tr.nombre_trabajo,
+             tr.tipo_servicio as trabajo_tipo,
              tr.estado as trabajo_estado
       FROM tareas_pendientes t
       LEFT JOIN proyectos_diseno p ON t.proyecto_id = p.id
