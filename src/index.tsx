@@ -2257,27 +2257,187 @@ app.get('/', (c) => {
 
         <!-- TRABAJOS TAB -->
         <div id="trabajos-tab" class="tab-content">
+            <!-- Header con contador de KPIs -->
+            <div class="mb-6">
+                <div class="bg-gradient-to-r from-gray-700 to-gray-900 text-white rounded-xl shadow-lg p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="bg-white/20 p-3 rounded-lg">
+                                <i class="fas fa-briefcase text-3xl"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-2xl font-bold">Gestión de Trabajos</h1>
+                                <p class="text-gray-300 text-sm mt-1">Organiza, programa y completa tus trabajos</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-4 gap-6 text-center">
+                            <div>
+                                <p class="text-xs text-gray-300">Pendientes</p>
+                                <p class="text-2xl font-bold" id="trabajos-count-pendientes">0</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-300">En Proceso</p>
+                                <p class="text-2xl font-bold" id="trabajos-count-proceso">0</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-300">Completados</p>
+                                <p class="text-2xl font-bold" id="trabajos-count-completados">0</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-300">💰 Ingresos</p>
+                                <p class="text-2xl font-bold" id="trabajos-ingresos-total">0€</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barra de acciones y filtros -->
             <div class="bg-white rounded-xl shadow-md p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Gestión de Trabajos</h2>
-                    <button onclick="showTrabajoForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
-                        <i class="fas fa-plus mr-2"></i>Nuevo Trabajo
+                <!-- Fila 1: Búsqueda y Nuevo Trabajo -->
+                <div class="flex flex-wrap gap-4 items-center justify-between mb-4">
+                    <!-- Barra de búsqueda -->
+                    <div class="flex-1 max-w-md">
+                        <div class="relative">
+                            <input type="text" id="buscar-trabajos" placeholder="🔍 Buscar trabajos por cliente, descripción..." 
+                                   class="w-full px-4 py-2 pl-10 border rounded-lg focus:ring-2 focus:ring-gray-500"
+                                   oninput="buscarTrabajos()">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Botón Nuevo Trabajo (destacado) -->
+                    <button onclick="showTrabajoForm()" class="bg-gray-700 text-white px-6 py-2.5 rounded-lg hover:bg-gray-800 transition-all shadow-lg font-semibold" title="Crear un nuevo trabajo (Ctrl+Shift+N)">
+                        <i class="fas fa-plus-circle mr-2"></i>Nuevo Trabajo
                     </button>
                 </div>
                 
-                <!-- Filtros -->
-                <div class="mb-6 flex gap-4">
-                    <select id="filter-estado" onchange="loadTrabajos()" class="px-4 py-2 border rounded-lg">
-                        <option value="">Todos los estados</option>
-                        <option value="pendiente">Pendiente</option>
-                        <option value="en_proceso">En Proceso</option>
-                        <option value="completado">Completado</option>
-                        <option value="cancelado">Cancelado</option>
-                    </select>
-                    <input type="date" id="filter-fecha" onchange="loadTrabajos()" class="px-4 py-2 border rounded-lg">
+                <!-- Fila 2: Filtros avanzados y acciones -->
+                <div class="flex flex-wrap gap-3 items-center justify-between border-t pt-4">
+                    <!-- Filtros -->
+                    <div class="flex gap-3 items-center flex-wrap">
+                        <select id="filtro-estado-trabajos" onchange="aplicarFiltrosTrabajos()" class="px-3 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-gray-500" title="Filtrar por estado del trabajo">
+                            <option value="">📋 Todos los estados</option>
+                            <option value="pendiente">⏳ Pendientes</option>
+                            <option value="en_proceso">🔄 En proceso</option>
+                            <option value="completado">✅ Completados</option>
+                            <option value="cancelado">❌ Cancelados</option>
+                        </select>
+                        
+                        <select id="filtro-empleada-trabajos" onchange="aplicarFiltrosTrabajos()" class="px-3 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-gray-500" title="Filtrar por empleada asignada">
+                            <option value="">👥 Todas las empleadas</option>
+                            <option value="Ana Ramos">Ana Ramos</option>
+                            <option value="Lourdes">Lourdes</option>
+                            <option value="Tienda">Tienda</option>
+                            <option value="">Sin asignar</option>
+                        </select>
+                        
+                        <select id="filtro-tipo-servicio" onchange="aplicarFiltrosTrabajos()" class="px-3 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-gray-500" title="Filtrar por tipo de servicio">
+                            <option value="">🛠️ Todos los servicios</option>
+                            <option value="cortinas">Cortinas</option>
+                            <option value="estores">Estores</option>
+                            <option value="tapiceria">Tapicería</option>
+                            <option value="reparacion">Reparación</option>
+                            <option value="instalacion">Instalación</option>
+                        </select>
+                        
+                        <select id="filtro-fecha-trabajos" onchange="aplicarFiltrosTrabajos()" class="px-3 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-gray-500" title="Filtrar por fecha programada">
+                            <option value="">📅 Todas las fechas</option>
+                            <option value="hoy">Hoy</option>
+                            <option value="manana">Mañana</option>
+                            <option value="semana">Esta semana</option>
+                            <option value="mes">Este mes</option>
+                            <option value="vencidos">⚠️ Atrasados</option>
+                        </select>
+                        
+                        <select id="filtro-tareas-pendientes" onchange="aplicarFiltrosTrabajos()" class="px-3 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-gray-500" title="Filtrar trabajos con tareas pendientes">
+                            <option value="">✓ Todas las tareas</option>
+                            <option value="con_pendientes">⚠️ Con tareas pendientes</option>
+                            <option value="sin_pendientes">✅ Sin tareas pendientes</option>
+                        </select>
+                        
+                        <button onclick="limpiarFiltrosTrabajos()" class="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50 transition-all" title="Quitar todos los filtros">
+                            <i class="fas fa-times-circle mr-1"></i>Limpiar filtros
+                        </button>
+                    </div>
+                    
+                    <!-- Acciones y ordenamiento -->
+                    <div class="flex gap-3 items-center">
+                        <select id="ordenar-trabajos" onchange="ordenarTrabajos()" class="px-3 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-gray-500" title="Ordenar trabajos">
+                            <option value="fecha_programada">Ordenar: Fecha programada</option>
+                            <option value="fecha_creacion">Ordenar: Fecha creación</option>
+                            <option value="precio">Ordenar: Precio (mayor)</option>
+                            <option value="cliente">Ordenar: Cliente A-Z</option>
+                        </select>
+                        
+                        <button onclick="toggleAccionesMasivasTrabajos()" class="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50 transition-all" title="Seleccionar múltiples trabajos">
+                            <i class="fas fa-check-square mr-1"></i>Selección múltiple
+                        </button>
+                        
+                        <button onclick="exportarTrabajos()" class="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50 transition-all" title="Exportar trabajos a Excel">
+                            <i class="fas fa-download mr-1"></i>Exportar
+                        </button>
+                    </div>
                 </div>
                 
-                <div id="trabajos-lista" class="overflow-x-auto"></div>
+                <!-- Barra de acciones masivas (oculta por defecto) -->
+                <div id="acciones-masivas-trabajos-bar" class="hidden mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-blue-700">
+                            <span id="trabajos-seleccionados-count">0</span> trabajos seleccionados
+                        </span>
+                        <div class="flex gap-2">
+                            <button onclick="completarTrabajosSeleccionados()" class="px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                <i class="fas fa-check mr-1"></i>Completar
+                            </button>
+                            <button onclick="cancelarTrabajosSeleccionados()" class="px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700">
+                                <i class="fas fa-times mr-1"></i>Cancelar
+                            </button>
+                            <button onclick="cancelarSeleccionTrabajos()" class="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50">
+                                Salir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Lista de trabajos -->
+            <div class="mt-6">
+                <div id="trabajos-lista" class="space-y-2">
+                    <!-- Se llena dinámicamente -->
+                </div>
+                
+                <!-- Estado vacío: Sin trabajos -->
+                <div id="trabajos-empty" class="hidden text-center py-16 bg-white rounded-xl shadow-md">
+                    <div class="max-w-md mx-auto">
+                        <div class="mb-6">
+                            <i class="fas fa-briefcase text-7xl text-gray-300 mb-4"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-3">Aún no hay trabajos</h3>
+                        <p class="text-gray-600 mb-2">Empieza creando tu primer trabajo</p>
+                        <p class="text-sm text-gray-500 mb-6">Gestiona tus servicios de forma organizada</p>
+                        <button onclick="showTrabajoForm()" class="bg-gray-700 text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-all shadow-md inline-flex items-center gap-2">
+                            <i class="fas fa-plus-circle"></i>
+                            Crear mi primer trabajo
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Estado vacío: Sin resultados de búsqueda -->
+                <div id="trabajos-sin-resultados" class="hidden text-center py-16 bg-white rounded-xl shadow-md">
+                    <div class="max-w-md mx-auto">
+                        <div class="mb-6">
+                            <i class="fas fa-search text-7xl text-gray-300 mb-4"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-3">No encontramos trabajos</h3>
+                        <p class="text-gray-600 mb-2">No hay trabajos que coincidan con tu búsqueda</p>
+                        <p class="text-sm text-gray-500 mb-6">Intenta con otras palabras clave o ajusta los filtros</p>
+                        <button onclick="limpiarFiltrosTrabajos()" class="bg-gray-700 text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-all shadow-md inline-flex items-center gap-2">
+                            <i class="fas fa-times-circle"></i>
+                            Quitar filtros
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
