@@ -280,13 +280,13 @@ app.get('/api/trabajos/:id', async (c) => {
 app.post('/api/trabajos', async (c) => {
   const data = await c.req.json()
   const result = await c.env.DB.prepare(`
-    INSERT INTO trabajos (cliente_id, empleada_id, tipo_servicio, descripcion, direccion,
+    INSERT INTO trabajos (cliente_id, nombre_empleada, tipo_servicio, descripcion, direccion,
                          fecha_programada, duracion_estimada, estado, prioridad, precio_cliente, notas)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
-    data.cliente_id, data.empleada_id || null, data.tipo_servicio, data.descripcion || null,
+    data.cliente_id, data.nombre_empleada || null, data.tipo_servicio, data.descripcion || null,
     data.direccion, data.fecha_programada, data.duracion_estimada || 120,
-    data.estado || 'pendiente', data.prioridad || 'normal', data.precio_cliente, data.notas || null
+    data.estado || 'pendiente', data.prioridad || 'normal', data.precio_cliente || null, data.notas || null
   ).run()
   
   return c.json({ id: result.meta.last_row_id, ...data })
@@ -299,13 +299,13 @@ app.put('/api/trabajos/:id', async (c) => {
   
   await c.env.DB.prepare(`
     UPDATE trabajos 
-    SET empleada_id = ?, tipo_servicio = ?, descripcion = ?, fecha_programada = ?,
+    SET nombre_empleada = ?, tipo_servicio = ?, descripcion = ?, fecha_programada = ?,
         duracion_estimada = ?, estado = ?, prioridad = ?, precio_cliente = ?, 
         fecha_inicio = ?, fecha_finalizacion = ?, duracion_real = ?, satisfaccion_cliente = ?, notas = ?
     WHERE id = ?
   `).bind(
-    data.empleada_id, data.tipo_servicio, data.descripcion, data.fecha_programada,
-    data.duracion_estimada, data.estado, data.prioridad, data.precio_cliente,
+    data.nombre_empleada || null, data.tipo_servicio, data.descripcion, data.fecha_programada,
+    data.duracion_estimada, data.estado, data.prioridad, data.precio_cliente || null,
     data.fecha_inicio || null, data.fecha_finalizacion || null, data.duracion_real || null,
     data.satisfaccion_cliente || null, data.notas, id
   ).run()

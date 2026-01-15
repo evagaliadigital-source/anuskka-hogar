@@ -1125,11 +1125,9 @@ async function showTrabajoForm(id = null) {
               <label class="block text-sm font-medium text-gray-700 mb-1">Personal Asignado</label>
               <select name="empleada_id" class="w-full px-4 py-2 border rounded-lg">
                 <option value="">Sin asignar</option>
-                ${personalRes.data.map(e => `
-                  <option value="${e.id}" ${trabajo.empleada_id == e.id ? 'selected' : ''}>
-                    ${e.nombre} ${e.apellidos}
-                  </option>
-                `).join('')}
+                <option value="Ana Ramos" ${trabajo.empleada_nombre === 'Ana Ramos' ? 'selected' : ''}>Ana Ramos</option>
+                <option value="Lourdes" ${trabajo.empleada_nombre === 'Lourdes' ? 'selected' : ''}>Lourdes</option>
+                <option value="Tienda" ${trabajo.empleada_nombre === 'Tienda' ? 'selected' : ''}>Tienda</option>
               </select>
             </div>
           </div>
@@ -1147,9 +1145,9 @@ async function showTrabajoForm(id = null) {
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Precio Cliente (€) *</label>
-              <input type="number" name="precio_cliente" value="${trabajo.precio_cliente}" required step="0.01" 
-                     class="w-full px-4 py-2 border rounded-lg">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Precio Cliente (€)</label>
+              <input type="number" name="precio_cliente" value="${trabajo.precio_cliente}" step="0.01" 
+                     class="w-full px-4 py-2 border rounded-lg" placeholder="Opcional">
             </div>
           </div>
           
@@ -1226,8 +1224,13 @@ async function showTrabajoForm(id = null) {
       delete data.duracion_horas
     }
     
-    // Convertir valores vacíos a null
-    if (!data.empleada_id) data.empleada_id = null
+    // Renombrar empleada_id a nombre_empleada (ahora es texto, no ID)
+    if (data.empleada_id) {
+      data.nombre_empleada = data.empleada_id
+      delete data.empleada_id
+    } else {
+      data.nombre_empleada = null
+    }
     
     try {
       if (isEdit) {
