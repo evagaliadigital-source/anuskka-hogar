@@ -6439,10 +6439,159 @@ async function cancelarTarea(tareaId) {
   }
 }
 
-// Mostrar formulario nueva tarea (placeholder)
+// Mostrar formulario nueva tarea
 function showNuevaTarea() {
-  alert('Función en desarrollo: Crear nueva tarea manual')
-  // TODO: Implementar modal con formulario completo
+  const html = `
+    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl shadow-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+        <h3 class="text-2xl font-bold mb-6">
+          <i class="fas fa-plus-circle text-red-600 mr-2"></i>
+          Nueva Tarea
+        </h3>
+        <form id="tarea-form" class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Título <span class="text-red-500">*</span>
+              </label>
+              <input type="text" name="titulo" required 
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
+                     placeholder="Ej: Llamar a cliente María García">
+            </div>
+            
+            <div class="col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+              <textarea name="descripcion" rows="3"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
+                        placeholder="Detalles adicionales de la tarea..."></textarea>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+              <select name="tipo" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+                <option value="general">General</option>
+                <option value="seguimiento_cliente">Seguimiento Cliente</option>
+                <option value="revisar_presupuesto">Revisar Presupuesto</option>
+                <option value="añadir_tela_stock">Añadir Tela a Stock</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Prioridad <span class="text-red-500">*</span>
+              </label>
+              <select name="prioridad" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+                <option value="3">🟢 Baja</option>
+                <option value="2" selected>🟡 Media</option>
+                <option value="1">🔥 Alta</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+              <select name="estado" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+                <option value="pendiente" selected>⏳ Pendiente</option>
+                <option value="en_proceso">🔄 En Proceso</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Asignado a</label>
+              <select name="asignado_a" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+                <option value="">Sin asignar</option>
+                <option value="Ana Ramos">Ana Ramos</option>
+                <option value="Tienda">Tienda</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Límite</label>
+              <input type="datetime-local" name="fecha_limite"
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Recordatorio (minutos antes)
+              </label>
+              <select name="recordatorio_minutos" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+                <option value="">Sin recordatorio</option>
+                <option value="15">15 minutos antes</option>
+                <option value="30">30 minutos antes</option>
+                <option value="60" selected>1 hora antes</option>
+                <option value="120">2 horas antes</option>
+                <option value="1440">1 día antes</option>
+              </select>
+            </div>
+            
+            <div class="col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
+              <textarea name="notas" rows="2"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
+                        placeholder="Notas adicionales..."></textarea>
+            </div>
+          </div>
+          
+          <div class="flex space-x-3 pt-4 border-t">
+            <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition-all">
+              <i class="fas fa-save mr-2"></i>Crear Tarea
+            </button>
+            <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-all">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `
+  
+  document.body.insertAdjacentHTML('beforeend', html)
+  
+  document.getElementById('tarea-form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const formData = new FormData(e.target)
+    
+    try {
+      const res = await fetch(`${API}/tareas`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tipo: formData.get('tipo'),
+          titulo: formData.get('titulo'),
+          descripcion: formData.get('descripcion') || null,
+          prioridad: parseInt(formData.get('prioridad')),
+          estado: formData.get('estado'),
+          asignado_a: formData.get('asignado_a') || null,
+          fecha_limite: formData.get('fecha_limite') || null,
+          recordatorio_minutos: formData.get('recordatorio_minutos') ? parseInt(formData.get('recordatorio_minutos')) : null,
+          notas: formData.get('notas') || null
+        })
+      })
+      
+      if (res.ok) {
+        closeModal()
+        showNotification('Tarea creada correctamente', 'success')
+        
+        // Recargar vista actual
+        if (vistaActualTareas === 'lista') {
+          loadTareas()
+        } else if (vistaActualTareas === 'kanban') {
+          loadTareasKanban()
+        } else if (vistaActualTareas === 'calendario') {
+          cargarCalendarioTareas()
+        }
+        
+        // Actualizar contadores
+        actualizarContadorTareas()
+        actualizarContadoresTareasHeader()
+      } else {
+        throw new Error('Error al crear tarea')
+      }
+    } catch (error) {
+      console.error('Error creando tarea:', error)
+      showNotification('Error al crear tarea', 'error')
+    }
+  })
 }
 
 // ============================================
@@ -6752,6 +6901,10 @@ window.abrirProyecto = abrirProyecto
 window.compartirProyecto = compartirProyecto
 window.resetProyecto = resetProyecto
 window.loadTareas = loadTareas
+window.showNuevaTarea = showNuevaTarea
+window.marcarTareaCompletada = marcarTareaCompletada
+window.cancelarTarea = cancelarTarea
+window.completarTareaTela = completarTareaTela
 window.loadProyectosDiseño = loadProyectosDiseño
 window.mostrarVariante = mostrarVariante
 window.generarPresupuesto = generarPresupuesto
