@@ -827,6 +827,7 @@ async function viewTrabajo(id) {
     const { data: trabajo } = await axios.get(`${API}/trabajos/${id}`)
     const { data: fases } = await axios.get(`${API}/trabajos/${id}/fases`)
     const { data: personalList } = await axios.get(`${API}/personal`)
+    const { data: tareasDelTrabajo } = await axios.get(`${API}/trabajos/${id}/tareas`)
     
     // Calcular progreso
     const fasesCompletadas = fases.filter(f => f.estado === 'completado').length
@@ -1002,6 +1003,57 @@ async function viewTrabajo(id) {
               </div>
             </div>
           ` : ''}
+          
+          <!-- TAREAS ASOCIADAS AL TRABAJO -->
+          <div class="mb-6 bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-lg border border-red-200">
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="font-bold text-gray-800 flex items-center">
+                <i class="fas fa-tasks mr-2 text-red-600"></i>Tareas Pendientes
+                ${tareasDelTrabajo.length > 0 ? `<span class="ml-2 px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">${tareasDelTrabajo.filter(t => t.estado !== 'completada').length}</span>` : ''}
+              </h4>
+              <button onclick="crearTareaParaTrabajo(${id}, '${trabajo.nombre_trabajo}')" 
+                      class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-all">
+                <i class="fas fa-plus mr-1"></i>Nueva Tarea
+              </button>
+            </div>
+            
+            ${tareasDelTrabajo.length > 0 ? `
+              <div class="space-y-2">
+                ${tareasDelTrabajo.map(tarea => `
+                  <div class="bg-white border-2 rounded-lg p-3 transition-all hover:shadow-md
+                    ${tarea.estado === 'completada' ? 'border-green-300 bg-green-50' : tarea.estado === 'en_proceso' ? 'border-blue-300' : 'border-gray-200'}">
+                    <div class="flex items-start gap-3">
+                      <div class="flex-shrink-0 pt-1">
+                        ${tarea.prioridad === 1 ? '<span class="text-xl">🔥</span>' : tarea.prioridad === 2 ? '<span class="text-xl">🟡</span>' : '<span class="text-xl">🟢</span>'}
+                      </div>
+                      <div class="flex-1">
+                        <div class="flex items-center justify-between mb-1">
+                          <h5 class="font-semibold text-gray-900">${tarea.titulo}</h5>
+                          ${tarea.estado === 'completada' ? 
+                            '<span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded">✓ Completada</span>' :
+                            tarea.estado === 'en_proceso' ?
+                            '<span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded">⏳ En Proceso</span>' :
+                            '<span class="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded">⏸️ Pendiente</span>'
+                          }
+                        </div>
+                        ${tarea.descripcion ? `<p class="text-sm text-gray-600 mb-2">${tarea.descripcion}</p>` : ''}
+                        <div class="flex flex-wrap gap-2 text-xs text-gray-500">
+                          ${tarea.asignado_a ? `<span><i class="fas fa-user mr-1"></i>${tarea.asignado_a}</span>` : ''}
+                          ${tarea.fecha_limite ? `<span><i class="far fa-calendar mr-1"></i>${new Date(tarea.fecha_limite).toLocaleDateString('es-ES')} ${new Date(tarea.fecha_limite).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}</span>` : ''}
+                          <span><i class="far fa-clock mr-1"></i>${new Date(tarea.created_at).toLocaleDateString('es-ES')}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            ` : `
+              <div class="text-center py-8 text-gray-400">
+                <i class="fas fa-inbox text-4xl mb-2"></i>
+                <p class="text-sm">No hay tareas asignadas a este trabajo todavía</p>
+              </div>
+            `}
+          </div>
           
           <div class="flex gap-3 mt-6">
             <button onclick="closeModal(); editTrabajo(${id})" 
@@ -6440,7 +6492,21 @@ async function cancelarTarea(tareaId) {
 }
 
 // Mostrar formulario nueva tarea
-function showNuevaTarea() {
+async function showNuevaTarea() {
+  // Cargar trabajos activos para el dropdown
+  let trabajosOptions = '<option value="">Sin asociar a trabajo</option>';
+  try {
+    const response = await axios.get(`${API}/trabajos`);
+    if (response.data && Array.isArray(response.data)) {
+      const trabajosActivos = response.data.filter(t => t.estado !== 'completado' && t.estado !== 'cancelado');
+      trabajosOptions += trabajosActivos.map(t => 
+        `<option value="${t.id}">${t.nombre_cliente || 'Sin nombre'} - ${t.nombre_trabajo || 'Sin descripción'}</option>`
+      ).join('');
+    }
+  } catch (error) {
+    console.error('Error cargando trabajos:', error);
+  }
+  
   const html = `
     <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
@@ -6505,6 +6571,15 @@ function showNuevaTarea() {
             </div>
             
             <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-briefcase mr-1"></i>Trabajo asociado
+              </label>
+              <select id="tarea-trabajo-selector" name="trabajo_id" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+                ${trabajosOptions}
+              </select>
+            </div>
+            
+            <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Límite</label>
               <input type="datetime-local" name="fecha_limite"
                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
@@ -6562,6 +6637,7 @@ function showNuevaTarea() {
           prioridad: parseInt(formData.get('prioridad')),
           estado: formData.get('estado'),
           asignado_a: formData.get('asignado_a') || null,
+          trabajo_id: formData.get('trabajo_id') ? parseInt(formData.get('trabajo_id')) : null,
           fecha_limite: formData.get('fecha_limite') || null,
           recordatorio_minutos: formData.get('recordatorio_minutos') ? parseInt(formData.get('recordatorio_minutos')) : null,
           notas: formData.get('notas') || null
@@ -6901,7 +6977,162 @@ window.abrirProyecto = abrirProyecto
 window.compartirProyecto = compartirProyecto
 window.resetProyecto = resetProyecto
 window.loadTareas = loadTareas
+// ============================================
+// CREAR TAREA PARA TRABAJO ESPECÍFICO
+// ============================================
+async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
+  // Cargar trabajos activos para el dropdown
+  let trabajosOptions = `<option value="${trabajoId}" selected>${nombreTrabajo}</option>`;
+  
+  const html = `
+    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl shadow-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+        <h3 class="text-2xl font-bold mb-6">
+          <i class="fas fa-plus-circle text-red-600 mr-2"></i>
+          Nueva Tarea para: ${nombreTrabajo}
+        </h3>
+        <form id="tarea-trabajo-form" class="space-y-4">
+          <input type="hidden" name="trabajo_id" value="${trabajoId}">
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div class="col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Título <span class="text-red-500">*</span>
+              </label>
+              <input type="text" name="titulo" required 
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
+                     placeholder="Ej: Llamar al cliente para confirmar medidas">
+            </div>
+            
+            <div class="col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+              <textarea name="descripcion" rows="3"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
+                        placeholder="Detalles adicionales de la tarea..."></textarea>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+              <select name="tipo" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+                <option value="general">General</option>
+                <option value="seguimiento_cliente">Seguimiento Cliente</option>
+                <option value="revisar_presupuesto">Revisar Presupuesto</option>
+                <option value="añadir_tela_stock">Añadir Tela a Stock</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Prioridad <span class="text-red-500">*</span>
+              </label>
+              <select name="prioridad" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+                <option value="3">🟢 Baja</option>
+                <option value="2" selected>🟡 Media</option>
+                <option value="1">🔥 Alta</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+              <select name="estado" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+                <option value="pendiente" selected>⏳ Pendiente</option>
+                <option value="en_proceso">🔄 En Proceso</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Asignado a</label>
+              <select name="asignado_a" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+                <option value="">Sin asignar</option>
+                <option value="Ana Ramos">Ana Ramos</option>
+                <option value="Tienda">Tienda</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Límite</label>
+              <input type="datetime-local" name="fecha_limite"
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Recordatorio (minutos antes)
+              </label>
+              <select name="recordatorio_minutos" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+                <option value="">Sin recordatorio</option>
+                <option value="15">15 minutos antes</option>
+                <option value="30">30 minutos antes</option>
+                <option value="60" selected>1 hora antes</option>
+                <option value="120">2 horas antes</option>
+                <option value="1440">1 día antes</option>
+              </select>
+            </div>
+            
+            <div class="col-span-2">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
+              <textarea name="notas" rows="2"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
+                        placeholder="Notas adicionales..."></textarea>
+            </div>
+          </div>
+          
+          <div class="flex space-x-3 pt-4 border-t">
+            <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg transition-all">
+              <i class="fas fa-save mr-2"></i>Crear Tarea
+            </button>
+            <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-all">
+              <i class="fas fa-times mr-2"></i>Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML('beforeend', html);
+  
+  // Manejar submit
+  document.getElementById('tarea-trabajo-form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const formData = new FormData(e.target)
+    
+    try {
+      const res = await fetch(`${API}/tareas`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tipo: formData.get('tipo'),
+          titulo: formData.get('titulo'),
+          descripcion: formData.get('descripcion') || null,
+          prioridad: parseInt(formData.get('prioridad')),
+          estado: formData.get('estado'),
+          asignado_a: formData.get('asignado_a') || null,
+          trabajo_id: parseInt(formData.get('trabajo_id')),
+          fecha_limite: formData.get('fecha_limite') || null,
+          recordatorio_minutos: formData.get('recordatorio_minutos') ? parseInt(formData.get('recordatorio_minutos')) : null,
+          notas: formData.get('notas') || null
+        })
+      })
+      
+      if (res.ok) {
+        closeModal()
+        showNotification('Tarea creada y asociada al trabajo correctamente', 'success')
+        
+        // Reabrir el modal del trabajo para ver la tarea nueva
+        setTimeout(() => viewTrabajo(trabajoId), 500)
+      } else {
+        throw new Error('Error al crear tarea')
+      }
+    } catch (error) {
+      console.error('Error al crear tarea:', error)
+      showNotification('Error al crear la tarea', 'error')
+    }
+  })
+}
+
 window.showNuevaTarea = showNuevaTarea
+window.crearTareaParaTrabajo = crearTareaParaTrabajo
 window.marcarTareaCompletada = marcarTareaCompletada
 window.cancelarTarea = cancelarTarea
 window.completarTareaTela = completarTareaTela

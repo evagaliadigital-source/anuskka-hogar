@@ -22,10 +22,13 @@ tareas.get('/', async (c) => {
       SELECT t.*,
              p.nombre_proyecto,
              cl.nombre as cliente_nombre,
-             cl.apellidos as cliente_apellidos
+             cl.apellidos as cliente_apellidos,
+             tr.nombre_trabajo,
+             tr.estado as trabajo_estado
       FROM tareas_pendientes t
       LEFT JOIN proyectos_diseno p ON t.proyecto_id = p.id
       LEFT JOIN clientes cl ON t.cliente_id = cl.id
+      LEFT JOIN trabajos tr ON t.trabajo_id = tr.id
       WHERE 1=1
     `
     
@@ -100,10 +103,13 @@ tareas.get('/:id', async (c) => {
       SELECT t.*,
              p.nombre_proyecto,
              cl.nombre as cliente_nombre,
-             cl.apellidos as cliente_apellidos
+             cl.apellidos as cliente_apellidos,
+             tr.nombre_trabajo,
+             tr.estado as trabajo_estado
       FROM tareas_pendientes t
       LEFT JOIN proyectos_diseno p ON t.proyecto_id = p.id
       LEFT JOIN clientes cl ON t.cliente_id = cl.id
+      LEFT JOIN trabajos tr ON t.trabajo_id = tr.id
       WHERE t.id = ?
     `).bind(id).first()
     
@@ -135,9 +141,9 @@ tareas.post('/', async (c) => {
     const result = await c.env.DB.prepare(`
       INSERT INTO tareas_pendientes (
         tipo, titulo, descripcion, estado, prioridad,
-        fecha_limite, proyecto_id, cliente_id, asignado_a,
+        fecha_limite, proyecto_id, cliente_id, trabajo_id, asignado_a,
         tiempo_estimado, recordatorio_minutos, notas, datos_tarea
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       data.tipo,
       data.titulo,
@@ -147,6 +153,7 @@ tareas.post('/', async (c) => {
       data.fecha_limite || null,
       data.proyecto_id || null,
       data.cliente_id || null,
+      data.trabajo_id || null,
       data.asignado_a || null,
       data.tiempo_estimado || null,
       data.recordatorio_minutos || null,
@@ -231,6 +238,11 @@ tareas.put('/:id', async (c) => {
     if (data.asignado_a !== undefined) {
       updates.push('asignado_a = ?')
       params.push(data.asignado_a)
+    }
+    
+    if (data.trabajo_id !== undefined) {
+      updates.push('trabajo_id = ?')
+      params.push(data.trabajo_id)
     }
     
     if (data.tiempo_estimado !== undefined) {

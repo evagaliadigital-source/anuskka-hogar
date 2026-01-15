@@ -325,6 +325,44 @@ app.put('/api/trabajos/:id/estado', async (c) => {
   return c.json({ success: true })
 })
 
+// Obtener tareas de un trabajo específico
+app.get('/api/trabajos/:id/tareas', async (c) => {
+  const trabajoId = c.req.param('id')
+  
+  try {
+    const tareas = await c.env.DB.prepare(`
+      SELECT t.*,
+             p.nombre_proyecto,
+             cl.nombre as cliente_nombre,
+             cl.apellidos as cliente_apellidos
+      FROM tareas_pendientes t
+      LEFT JOIN proyectos_diseno p ON t.proyecto_id = p.id
+      LEFT JOIN clientes cl ON t.cliente_id = cl.id
+      WHERE t.trabajo_id = ?
+      ORDER BY 
+        CASE t.estado
+          WHEN 'pendiente' THEN 1
+          WHEN 'en_proceso' THEN 2
+          WHEN 'completada' THEN 3
+          ELSE 4
+        END,
+        t.prioridad ASC,
+        t.created_at DESC
+    `).bind(trabajoId).all()
+    
+    // Parsear datos_tarea JSON si existe
+    const tareasFormateadas = tareas.results.map((t: any) => ({
+      ...t,
+      datos_tarea: t.datos_tarea ? JSON.parse(t.datos_tarea) : null
+    }))
+    
+    return c.json(tareasFormateadas)
+  } catch (error) {
+    console.error('Error obteniendo tareas del trabajo:', error)
+    return c.json({ error: 'Error al obtener tareas' }, 500)
+  }
+})
+
 // Generar factura desde trabajo/presupuesto
 app.post('/api/trabajos/:id/generar-factura', async (c) => {
   const trabajoId = c.req.param('id')
