@@ -2542,39 +2542,114 @@ app.get('/', (c) => {
 
                 <!-- Barra de acciones y vistas -->
                 <div class="bg-white rounded-xl shadow-md p-6">
-                    <div class="flex flex-wrap gap-4 items-center justify-between">
+                    <!-- Fila 1: Vistas y búsqueda -->
+                    <div class="flex flex-wrap gap-4 items-center justify-between mb-4">
                         <!-- Selector de vista -->
                         <div class="flex gap-2">
-                            <button onclick="cambiarVistaTareas('lista')" id="vista-lista-btn" class="vista-tareas-btn bg-gray-700 text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-all">
+                            <button onclick="cambiarVistaTareas('lista')" id="vista-lista-btn" class="vista-tareas-btn bg-gray-700 text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-all" title="Ver tareas en lista vertical">
                                 <i class="fas fa-list mr-2"></i>Lista
                             </button>
-                            <button onclick="cambiarVistaTareas('kanban')" id="vista-kanban-btn" class="vista-tareas-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-all">
+                            <button onclick="cambiarVistaTareas('kanban')" id="vista-kanban-btn" class="vista-tareas-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-all" title="Ver tareas por columnas de estado">
                                 <i class="fas fa-columns mr-2"></i>Kanban
                             </button>
-                            <button onclick="cambiarVistaTareas('calendario')" id="vista-calendario-btn" class="vista-tareas-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-all">
+                            <button onclick="cambiarVistaTareas('calendario')" id="vista-calendario-btn" class="vista-tareas-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-all" title="Ver tareas en calendario mensual">
                                 <i class="fas fa-calendar-alt mr-2"></i>Calendario
                             </button>
                         </div>
                         
-                        <!-- Filtros rápidos -->
-                        <div class="flex gap-3 items-center">
-                            <select id="filtro-prioridad-tareas" onchange="loadTareas()" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
-                                <option value="">Todas las prioridades</option>
-                                <option value="1">🔥 Alta</option>
-                                <option value="2">🟡 Media</option>
-                                <option value="3">🟢 Baja</option>
+                        <!-- Barra de búsqueda -->
+                        <div class="flex-1 max-w-md">
+                            <div class="relative">
+                                <input type="text" id="buscar-tareas" placeholder="🔍 Buscar tareas por título, descripción..." 
+                                       class="w-full px-4 py-2 pl-10 border rounded-lg focus:ring-2 focus:ring-gray-500"
+                                       oninput="buscarTareas()">
+                                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Botón Nueva Tarea (destacado) -->
+                        <button onclick="showNuevaTarea()" class="bg-gray-700 text-white px-6 py-2.5 rounded-lg hover:bg-gray-800 transition-all shadow-lg font-semibold" title="Crear una nueva tarea (Ctrl+N)">
+                            <i class="fas fa-plus-circle mr-2"></i>Nueva Tarea
+                        </button>
+                    </div>
+                    
+                    <!-- Fila 2: Filtros avanzados y acciones -->
+                    <div class="flex flex-wrap gap-3 items-center justify-between border-t pt-4">
+                        <!-- Filtros -->
+                        <div class="flex gap-3 items-center flex-wrap">
+                            <select id="filtro-prioridad-tareas" onchange="aplicarFiltros()" class="px-3 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-gray-500" title="Filtrar por nivel de prioridad">
+                                <option value="">📊 Todas las prioridades</option>
+                                <option value="1">🔥 Alta prioridad</option>
+                                <option value="2">🟡 Prioridad media</option>
+                                <option value="3">🟢 Baja prioridad</option>
                             </select>
                             
-                            <select id="filtro-asignado-tareas" onchange="loadTareas()" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
-                                <option value="">Todos los asignados</option>
+                            <select id="filtro-asignado-tareas" onchange="aplicarFiltros()" class="px-3 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-gray-500" title="Filtrar por persona asignada">
+                                <option value="">👥 Todos los asignados</option>
                                 <option value="Ana Ramos">Ana Ramos</option>
                                 <option value="Lourdes">Lourdes</option>
                                 <option value="Tienda">Tienda</option>
+                                <option value="">Sin asignar</option>
                             </select>
                             
-                            <button onclick="showNuevaTarea()" class="bg-gray-700 text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-all shadow-md">
-                                <i class="fas fa-plus mr-2"></i>Nueva Tarea
+                            <select id="filtro-estado-tareas" onchange="aplicarFiltros()" class="px-3 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-gray-500" title="Filtrar por estado de la tarea">
+                                <option value="todas">📋 Todos los estados</option>
+                                <option value="pendiente">⏳ Pendientes</option>
+                                <option value="en_proceso">🔄 En proceso</option>
+                                <option value="completada">✅ Completadas</option>
+                                <option value="cancelada">❌ Canceladas</option>
+                            </select>
+                            
+                            <select id="filtro-fecha-tareas" onchange="aplicarFiltros()" class="px-3 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-gray-500" title="Filtrar por fecha límite">
+                                <option value="">📅 Todas las fechas</option>
+                                <option value="hoy">Hoy</option>
+                                <option value="manana">Mañana</option>
+                                <option value="semana">Esta semana</option>
+                                <option value="mes">Este mes</option>
+                                <option value="vencidas">⚠️ Vencidas</option>
+                            </select>
+                            
+                            <button onclick="limpiarFiltros()" class="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50 transition-all" title="Quitar todos los filtros">
+                                <i class="fas fa-times-circle mr-1"></i>Limpiar filtros
                             </button>
+                        </div>
+                        
+                        <!-- Acciones y ordenamiento -->
+                        <div class="flex gap-3 items-center">
+                            <select id="ordenar-tareas" onchange="ordenarTareas()" class="px-3 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-gray-500" title="Ordenar tareas">
+                                <option value="prioridad">Ordenar: Prioridad</option>
+                                <option value="fecha_limite">Ordenar: Fecha límite</option>
+                                <option value="fecha_creacion">Ordenar: Fecha creación</option>
+                                <option value="titulo">Ordenar: A-Z</option>
+                            </select>
+                            
+                            <button onclick="toggleAccionesMasivas()" class="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50 transition-all" title="Seleccionar múltiples tareas">
+                                <i class="fas fa-check-square mr-1"></i>Selección múltiple
+                            </button>
+                            
+                            <button onclick="exportarTareas()" class="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50 transition-all" title="Exportar tareas a Excel">
+                                <i class="fas fa-download mr-1"></i>Exportar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Barra de acciones masivas (oculta por defecto) -->
+                    <div id="acciones-masivas-bar" class="hidden mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium text-blue-700">
+                                <span id="tareas-seleccionadas-count">0</span> tareas seleccionadas
+                            </span>
+                            <div class="flex gap-2">
+                                <button onclick="completarTareasSeleccionadas()" class="px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                    <i class="fas fa-check mr-1"></i>Completar
+                                </button>
+                                <button onclick="eliminarTareasSeleccionadas()" class="px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700">
+                                    <i class="fas fa-trash mr-1"></i>Eliminar
+                                </button>
+                                <button onclick="cancelarSeleccion()" class="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50">
+                                    Cancelar
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2584,10 +2659,45 @@ app.get('/', (c) => {
                     <div class="space-y-2" id="tareas-lista">
                         <!-- Se llena dinámicamente -->
                     </div>
-                    <div id="tareas-empty" class="hidden text-center py-12">
-                        <i class="fas fa-check-circle text-6xl text-green-300 mb-4"></i>
-                        <p class="text-gray-500 text-lg">🎉 ¡No hay tareas pendientes!</p>
-                        <p class="text-gray-400">Todo está al día</p>
+                    
+                    <!-- Estado vacío: Sin tareas -->
+                    <div id="tareas-empty" class="hidden text-center py-16 bg-white rounded-xl shadow-md">
+                        <div class="max-w-md mx-auto">
+                            <div class="mb-6">
+                                <i class="fas fa-clipboard-check text-7xl text-green-300 mb-4"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-3">¡Excelente trabajo!</h3>
+                            <p class="text-gray-600 mb-2">No tienes tareas pendientes en este momento</p>
+                            <p class="text-sm text-gray-500 mb-6">Cuando crees una nueva tarea, aparecerá aquí</p>
+                            <button onclick="showNuevaTarea()" class="bg-gray-700 text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-all shadow-md inline-flex items-center gap-2">
+                                <i class="fas fa-plus-circle"></i>
+                                Crear mi primera tarea
+                            </button>
+                            <div class="mt-8 pt-8 border-t">
+                                <p class="text-xs text-gray-400 mb-3">💡 <strong>Tip:</strong> Organiza tus tareas por prioridad</p>
+                                <div class="flex justify-center gap-4 text-xs text-gray-500">
+                                    <span>🔥 Alta = Urgente</span>
+                                    <span>🟡 Media = Importante</span>
+                                    <span>🟢 Baja = Cuando puedas</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Estado vacío: Sin resultados de búsqueda -->
+                    <div id="tareas-sin-resultados" class="hidden text-center py-16 bg-white rounded-xl shadow-md">
+                        <div class="max-w-md mx-auto">
+                            <div class="mb-6">
+                                <i class="fas fa-search text-7xl text-gray-300 mb-4"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-3">No encontramos tareas</h3>
+                            <p class="text-gray-600 mb-2">No hay tareas que coincidan con tu búsqueda</p>
+                            <p class="text-sm text-gray-500 mb-6">Intenta con otras palabras clave o ajusta los filtros</p>
+                            <button onclick="limpiarFiltros()" class="bg-gray-700 text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-all shadow-md inline-flex items-center gap-2">
+                                <i class="fas fa-times-circle"></i>
+                                Quitar filtros
+                            </button>
+                        </div>
                     </div>
                 </div>
 
