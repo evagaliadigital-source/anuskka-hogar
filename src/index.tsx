@@ -2473,7 +2473,7 @@ app.get('/', (c) => {
         <div id="tareas-tab" class="tab-content">
             <div class="space-y-6">
                 
-                <!-- Header -->
+                <!-- Header con estadísticas -->
                 <div class="bg-gradient-to-r from-red-600 to-pink-600 rounded-xl shadow-lg p-8 text-white">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-4">
@@ -2481,66 +2481,166 @@ app.get('/', (c) => {
                                 <i class="fas fa-clipboard-list text-red-600 text-3xl"></i>
                             </div>
                             <div>
-                                <h1 class="text-3xl font-bold">Tareas Pendientes</h1>
-                                <p class="text-red-100 mt-2">Gestiona recordatorios y tareas del negocio</p>
+                                <h1 class="text-3xl font-bold">Gestión de Tareas</h1>
+                                <p class="text-red-100 mt-2">Organiza, programa y completa tus tareas</p>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <p class="text-sm text-red-100">Total pendientes</p>
-                            <p class="text-4xl font-bold" id="tareas-header-count">0</p>
+                        <div class="grid grid-cols-3 gap-6 text-center">
+                            <div>
+                                <p class="text-sm text-red-100">Pendientes</p>
+                                <p class="text-3xl font-bold" id="tareas-count-pendientes">0</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-red-100">En Proceso</p>
+                                <p class="text-3xl font-bold" id="tareas-count-proceso">0</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-red-100">🔥 Urgentes</p>
+                                <p class="text-3xl font-bold" id="tareas-count-urgentes">0</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Filtros -->
+                <!-- Barra de acciones y vistas -->
                 <div class="bg-white rounded-xl shadow-md p-6">
-                    <div class="flex flex-wrap gap-4 items-center">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
-                            <select id="filtro-estado-tareas" onchange="loadTareas()" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
-                                <option value="pendiente">Pendientes</option>
-                                <option value="todas">Todas</option>
-                                <option value="completada">Completadas</option>
-                                <option value="cancelada">Canceladas</option>
-                            </select>
+                    <div class="flex flex-wrap gap-4 items-center justify-between">
+                        <!-- Selector de vista -->
+                        <div class="flex gap-2">
+                            <button onclick="cambiarVistaTareas('lista')" id="vista-lista-btn" class="vista-tareas-btn bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-all">
+                                <i class="fas fa-list mr-2"></i>Lista
+                            </button>
+                            <button onclick="cambiarVistaTareas('kanban')" id="vista-kanban-btn" class="vista-tareas-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-all">
+                                <i class="fas fa-columns mr-2"></i>Kanban
+                            </button>
+                            <button onclick="cambiarVistaTareas('calendario')" id="vista-calendario-btn" class="vista-tareas-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-all">
+                                <i class="fas fa-calendar-alt mr-2"></i>Calendario
+                            </button>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
-                            <select id="filtro-tipo-tareas" onchange="loadTareas()" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
-                                <option value="">Todos</option>
-                                <option value="añadir_tela_stock">Añadir telas al stock</option>
-                                <option value="revisar_presupuesto">Revisar presupuestos</option>
-                                <option value="seguimiento_cliente">Seguimiento clientes</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Prioridad</label>
+                        
+                        <!-- Filtros rápidos -->
+                        <div class="flex gap-3 items-center">
                             <select id="filtro-prioridad-tareas" onchange="loadTareas()" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
-                                <option value="">Todas</option>
+                                <option value="">Todas las prioridades</option>
                                 <option value="1">🔥 Alta</option>
                                 <option value="2">🟡 Media</option>
                                 <option value="3">🟢 Baja</option>
                             </select>
-                        </div>
-                        <div class="ml-auto">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">&nbsp;</label>
-                            <button onclick="showNuevaTarea()" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-all">
+                            
+                            <select id="filtro-asignado-tareas" onchange="loadTareas()" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500">
+                                <option value="">Todos los asignados</option>
+                                <option value="Ana Ramos">Ana Ramos</option>
+                                <option value="Tienda">Tienda</option>
+                            </select>
+                            
+                            <button onclick="showNuevaTarea()" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-all shadow-md">
                                 <i class="fas fa-plus mr-2"></i>Nueva Tarea
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Lista de tareas -->
-                <div id="tareas-lista" class="space-y-4">
-                    <!-- Se llena dinámicamente -->
+                <!-- VISTA LISTA -->
+                <div id="vista-tareas-lista" class="vista-tareas-content">
+                    <div class="space-y-4" id="tareas-lista">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                    <div id="tareas-empty" class="hidden text-center py-12">
+                        <i class="fas fa-check-circle text-6xl text-green-300 mb-4"></i>
+                        <p class="text-gray-500 text-lg">🎉 ¡No hay tareas pendientes!</p>
+                        <p class="text-gray-400">Todo está al día</p>
+                    </div>
                 </div>
 
-                <!-- Empty state -->
-                <div id="tareas-empty" class="hidden text-center py-12">
-                    <i class="fas fa-check-circle text-6xl text-green-300 mb-4"></i>
-                    <p class="text-gray-500 text-lg">🎉 ¡No hay tareas pendientes!</p>
-                    <p class="text-gray-400">Todo está al día</p>
+                <!-- VISTA KANBAN -->
+                <div id="vista-tareas-kanban" class="vista-tareas-content hidden">
+                    <div class="grid grid-cols-3 gap-6">
+                        <!-- Columna Pendiente -->
+                        <div class="bg-gray-50 rounded-xl p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                                    <i class="fas fa-circle text-yellow-500 text-xs"></i>
+                                    Pendientes
+                                </h3>
+                                <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-medium" id="kanban-count-pendiente">0</span>
+                            </div>
+                            <div id="kanban-pendiente" class="space-y-3 min-h-[500px]">
+                                <!-- Tareas pendientes -->
+                            </div>
+                        </div>
+
+                        <!-- Columna En Proceso -->
+                        <div class="bg-gray-50 rounded-xl p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                                    <i class="fas fa-circle text-blue-500 text-xs"></i>
+                                    En Proceso
+                                </h3>
+                                <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium" id="kanban-count-en_proceso">0</span>
+                            </div>
+                            <div id="kanban-en_proceso" class="space-y-3 min-h-[500px]">
+                                <!-- Tareas en proceso -->
+                            </div>
+                        </div>
+
+                        <!-- Columna Completada -->
+                        <div class="bg-gray-50 rounded-xl p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                                    <i class="fas fa-circle text-green-500 text-xs"></i>
+                                    Completadas
+                                </h3>
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium" id="kanban-count-completada">0</span>
+                            </div>
+                            <div id="kanban-completada" class="space-y-3 min-h-[500px]">
+                                <!-- Tareas completadas -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VISTA CALENDARIO -->
+                <div id="vista-tareas-calendario" class="vista-tareas-content hidden">
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <!-- Header del calendario -->
+                        <div class="flex items-center justify-between mb-6">
+                            <button onclick="cambiarMesCalendario(-1)" class="p-2 hover:bg-gray-100 rounded-lg">
+                                <i class="fas fa-chevron-left text-gray-600"></i>
+                            </button>
+                            <h3 class="text-2xl font-bold text-gray-800" id="calendario-mes-titulo">
+                                <!-- Mes y año actual -->
+                            </h3>
+                            <button onclick="cambiarMesCalendario(1)" class="p-2 hover:bg-gray-100 rounded-lg">
+                                <i class="fas fa-chevron-right text-gray-600"></i>
+                            </button>
+                        </div>
+
+                        <!-- Días de la semana -->
+                        <div class="grid grid-cols-7 gap-2 mb-2">
+                            <div class="text-center font-medium text-gray-600 py-2">Lun</div>
+                            <div class="text-center font-medium text-gray-600 py-2">Mar</div>
+                            <div class="text-center font-medium text-gray-600 py-2">Mié</div>
+                            <div class="text-center font-medium text-gray-600 py-2">Jue</div>
+                            <div class="text-center font-medium text-gray-600 py-2">Vie</div>
+                            <div class="text-center font-medium text-gray-600 py-2">Sáb</div>
+                            <div class="text-center font-medium text-gray-600 py-2">Dom</div>
+                        </div>
+
+                        <!-- Grid del calendario -->
+                        <div id="calendario-grid" class="grid grid-cols-7 gap-2">
+                            <!-- Se llena dinámicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Tareas del día seleccionado -->
+                    <div id="calendario-tareas-dia" class="hidden bg-white rounded-xl shadow-md p-6 mt-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4" id="calendario-dia-titulo">
+                            <!-- Fecha seleccionada -->
+                        </h3>
+                        <div id="calendario-tareas-lista" class="space-y-3">
+                            <!-- Tareas del día -->
+                        </div>
+                    </div>
                 </div>
 
             </div>

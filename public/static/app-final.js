@@ -3063,9 +3063,11 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDashboard()
   }, 500)
   
-  // 4. Tareas (contador)
+  // 4. Tareas (contador y header)
   actualizarContadorTareas()
+  actualizarContadoresTareasHeader()
   setInterval(actualizarContadorTareas, 30000)
+  setInterval(actualizarContadoresTareasHeader, 30000)
   
   // 5. Event listeners especiales (botones dinámicos)
   setTimeout(() => {
@@ -6248,13 +6250,16 @@ async function actualizarContadorTareas() {
 // Cargar tareas con filtros
 async function loadTareas() {
   try {
-    const estado = document.getElementById('filtro-estado-tareas').value
-    const tipo = document.getElementById('filtro-tipo-tareas').value
-    const prioridad = document.getElementById('filtro-prioridad-tareas').value
+    // Actualizar contadores del header
+    actualizarContadoresTareasHeader()
     
-    let url = `${API}/tareas?estado=${estado}`
-    if (tipo) url += `&tipo=${tipo}`
+    const prioridad = document.getElementById('filtro-prioridad-tareas')?.value || ''
+    const asignado = document.getElementById('filtro-asignado-tareas')?.value || ''
+    
+    // Vista lista muestra solo pendientes y en proceso por defecto
+    let url = `${API}/tareas?estado=pendiente`
     if (prioridad) url += `&prioridad=${prioridad}`
+    if (asignado) url += `&asignado_a=${encodeURIComponent(asignado)}`
     
     const { data } = await axios.get(url)
     
@@ -7453,4 +7458,431 @@ window.eliminarNotaYRecargar = eliminarNotaYRecargar
 
 // Esta función se llama desde el HTML del botón GAL IA
 // Vamos a sobreescribir para hacer la ventana más grande
+
+// ============================================
+// SISTEMA COMPLETO DE TAREAS - 3 VISTAS
+// ============================================
+
+// Variables globales de tareas
+let vistaActualTareas = 'lista'
+let calendarioMesActual = new Date().getMonth()
+let calendarioAnioActual = new Date().getFullYear()
+let calendarioDiaSeleccionado = null
+
+// Cambiar entre vistas
+function cambiarVistaTareas(vista) {
+  vistaActualTareas = vista
+  
+  // Actualizar botones
+  document.querySelectorAll('.vista-tareas-btn').forEach(btn => {
+    btn.classList.remove('bg-red-600', 'text-white')
+    btn.classList.add('bg-gray-200', 'text-gray-700')
+  })
+  
+  if (vista === 'lista') {
+    document.getElementById('vista-lista-btn').classList.remove('bg-gray-200', 'text-gray-700')
+    document.getElementById('vista-lista-btn').classList.add('bg-red-600', 'text-white')
+  } else if (vista === 'kanban') {
+    document.getElementById('vista-kanban-btn').classList.remove('bg-gray-200', 'text-gray-700')
+    document.getElementById('vista-kanban-btn').classList.add('bg-red-600', 'text-white')
+  } else if (vista === 'calendario') {
+    document.getElementById('vista-calendario-btn').classList.remove('bg-gray-200', 'text-gray-700')
+    document.getElementById('vista-calendario-btn').classList.add('bg-red-600', 'text-white')
+  }
+  
+  // Mostrar/ocultar vistas
+  document.getElementById('vista-tareas-lista').classList.toggle('hidden', vista !== 'lista')
+  document.getElementById('vista-tareas-kanban').classList.toggle('hidden', vista !== 'kanban')
+  document.getElementById('vista-tareas-calendario').classList.toggle('hidden', vista !== 'calendario')
+  
+  // Cargar contenido según vista
+  if (vista === 'lista') {
+    loadTareas()
+  } else if (vista === 'kanban') {
+    loadTareasKanban()
+  } else if (vista === 'calendario') {
+    cargarCalendarioTareas()
+  }
+}
+
+// Cargar tareas en vista Kanban
+async function loadTareasKanban() {
+  try {
+    const prioridad = document.getElementById('filtro-prioridad-tareas')?.value || ''
+    const asignado = document.getElementById('filtro-asignado-tareas')?.value || ''
+    
+    let url = '/api/tareas?estado=todas'
+    if (prioridad) url += `&prioridad=${prioridad}`
+    if (asignado) url += `&asignado_a=${encodeURIComponent(asignado)}`
+    
+    const res = await fetch(url)
+    const tareas = await res.json()
+    
+    // Agrupar por estado
+    const tareasAgrupadas = {
+      pendiente: tareas.filter(t => t.estado === 'pendiente'),
+      en_proceso: tareas.filter(t => t.estado === 'en_proceso'),
+      completada: tareas.filter(t => t.estado === 'completada')
+    }
+    
+    // Actualizar contadores
+    document.getElementById('kanban-count-pendiente').textContent = tareasAgrupadas.pendiente.length
+    document.getElementById('kanban-count-en_proceso').textContent = tareasAgrupadas.en_proceso.length
+    document.getElementById('kanban-count-completada').textContent = tareasAgrupadas.completada.length
+    
+    // Renderizar cada columna
+    for (const [estado, listaTareas] of Object.entries(tareasAgrupadas)) {
+      const contenedor = document.getElementById(`kanban-${estado}`)
+      if (!contenedor) continue
+      
+      if (listaTareas.length === 0) {
+        contenedor.innerHTML = '<p class="text-gray-400 text-center py-8">Sin tareas</p>'
+        continue
+      }
+      
+      contenedor.innerHTML = listaTareas.map(tarea => {
+        const prioridadIcono = tarea.prioridad === 1 ? '🔥' : tarea.prioridad === 2 ? '🟡' : '🟢'
+        const fechaTexto = tarea.fecha_limite 
+          ? new Date(tarea.fecha_limite).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
+          : 'Sin fecha'
+        
+        return `
+          <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all cursor-move"
+               draggable="true"
+               data-tarea-id="${tarea.id}"
+               data-estado="${tarea.estado}"
+               ondragstart="dragStartTarea(event)"
+               ondragend="dragEndTarea(event)">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span>${prioridadIcono}</span>
+                <h4 class="font-medium text-gray-800 text-sm">${tarea.titulo}</h4>
+              </div>
+              <button onclick="editarTarea(${tarea.id})" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-edit text-xs"></i>
+              </button>
+            </div>
+            ${tarea.descripcion ? `<p class="text-xs text-gray-600 mb-2">${tarea.descripcion.substring(0, 60)}...</p>` : ''}
+            <div class="flex items-center justify-between text-xs text-gray-500 mt-3">
+              <span><i class="far fa-calendar mr-1"></i>${fechaTexto}</span>
+              ${tarea.asignado_a ? `<span><i class="far fa-user mr-1"></i>${tarea.asignado_a}</span>` : ''}
+            </div>
+          </div>
+        `
+      }).join('')
+      
+      // Añadir eventos de drop a cada columna
+      contenedor.ondragover = (e) => {
+        e.preventDefault()
+        contenedor.classList.add('bg-gray-100')
+      }
+      
+      contenedor.ondragleave = () => {
+        contenedor.classList.remove('bg-gray-100')
+      }
+      
+      contenedor.ondrop = (e) => {
+        e.preventDefault()
+        contenedor.classList.remove('bg-gray-100')
+        dropTareaEnColumna(e, estado)
+      }
+    }
+    
+  } catch (error) {
+    console.error('Error cargando tareas Kanban:', error)
+    showNotification('Error al cargar tareas', 'error')
+  }
+}
+
+// Drag & Drop para Kanban
+let tareaArrastrando = null
+
+function dragStartTarea(event) {
+  tareaArrastrando = {
+    id: event.target.dataset.tareaId,
+    estadoAnterior: event.target.dataset.estado
+  }
+  event.target.style.opacity = '0.5'
+}
+
+function dragEndTarea(event) {
+  event.target.style.opacity = '1'
+}
+
+async function dropTareaEnColumna(event, nuevoEstado) {
+  if (!tareaArrastrando) return
+  
+  const tareaId = tareaArrastrando.id
+  const estadoAnterior = tareaArrastrando.estadoAnterior
+  
+  if (estadoAnterior === nuevoEstado) return
+  
+  try {
+    const res = await fetch(`/api/tareas/${tareaId}/estado`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        estado: nuevoEstado,
+        completada_por: getUserInfo()?.nombre || 'Usuario'
+      })
+    })
+    
+    if (res.ok) {
+      showNotification('Tarea actualizada', 'success')
+      loadTareasKanban()
+      actualizarContadorTareas()
+    } else {
+      throw new Error('Error al actualizar')
+    }
+  } catch (error) {
+    console.error('Error moviendo tarea:', error)
+    showNotification('Error al mover tarea', 'error')
+  }
+  
+  tareaArrastrando = null
+}
+
+// ============================================
+// VISTA CALENDARIO
+// ============================================
+
+async function cargarCalendarioTareas() {
+  try {
+    // Actualizar título
+    const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+    document.getElementById('calendario-mes-titulo').textContent = 
+      `${meses[calendarioMesActual]} ${calendarioAnioActual}`
+    
+    // Obtener datos del mes
+    const res = await fetch(`/api/tareas/calendario/mes?mes=${calendarioMesActual + 1}&anio=${calendarioAnioActual}`)
+    const datosCalendario = await res.json()
+    
+    // Crear mapa de fechas con tareas
+    const mapaTareas = {}
+    datosCalendario.forEach(dia => {
+      mapaTareas[dia.fecha] = dia
+    })
+    
+    // Generar grid del calendario
+    const primerDia = new Date(calendarioAnioActual, calendarioMesActual, 1)
+    const ultimoDia = new Date(calendarioAnioActual, calendarioMesActual + 1, 0)
+    const primerDiaSemana = primerDia.getDay() === 0 ? 6 : primerDia.getDay() - 1 // Lunes = 0
+    const diasMes = ultimoDia.getDate()
+    
+    const grid = document.getElementById('calendario-grid')
+    grid.innerHTML = ''
+    
+    // Días vacíos al inicio
+    for (let i = 0; i < primerDiaSemana; i++) {
+      const div = document.createElement('div')
+      div.className = 'aspect-square bg-gray-50 rounded-lg'
+      grid.appendChild(div)
+    }
+    
+    // Días del mes
+    for (let dia = 1; dia <= diasMes; dia++) {
+      const fecha = `${calendarioAnioActual}-${String(calendarioMesActual + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`
+      const datosDia = mapaTareas[fecha]
+      const esHoy = new Date().toISOString().split('T')[0] === fecha
+      
+      const div = document.createElement('div')
+      div.className = `aspect-square bg-white border-2 rounded-lg p-2 cursor-pointer hover:shadow-md transition-all ${
+        esHoy ? 'border-red-500 bg-red-50' : 'border-gray-200'
+      }`
+      div.onclick = () => mostrarTareasDia(fecha)
+      
+      let html = `<div class="text-right mb-1"><span class="text-sm font-medium ${esHoy ? 'text-red-600' : 'text-gray-700'}">${dia}</span></div>`
+      
+      if (datosDia && datosDia.total > 0) {
+        html += `
+          <div class="space-y-1 text-xs">
+            ${datosDia.pendientes > 0 ? `<div class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded">${datosDia.pendientes} pend.</div>` : ''}
+            ${datosDia.alta_prioridad > 0 ? `<div class="bg-red-100 text-red-700 px-2 py-1 rounded">🔥 ${datosDia.alta_prioridad}</div>` : ''}
+            ${datosDia.completadas > 0 ? `<div class="bg-green-100 text-green-700 px-2 py-1 rounded">✓ ${datosDia.completadas}</div>` : ''}
+          </div>
+        `
+      }
+      
+      div.innerHTML = html
+      grid.appendChild(div)
+    }
+    
+  } catch (error) {
+    console.error('Error cargando calendario:', error)
+    showNotification('Error al cargar calendario', 'error')
+  }
+}
+
+function cambiarMesCalendario(direccion) {
+  calendarioMesActual += direccion
+  
+  if (calendarioMesActual < 0) {
+    calendarioMesActual = 11
+    calendarioAnioActual--
+  } else if (calendarioMesActual > 11) {
+    calendarioMesActual = 0
+    calendarioAnioActual++
+  }
+  
+  cargarCalendarioTareas()
+}
+
+async function mostrarTareasDia(fecha) {
+  calendarioDiaSeleccionado = fecha
+  
+  try {
+    const res = await fetch(`/api/tareas/calendario/dia?fecha=${fecha}`)
+    const tareas = await res.json()
+    
+    const contenedor = document.getElementById('calendario-tareas-dia')
+    const lista = document.getElementById('calendario-tareas-lista')
+    const titulo = document.getElementById('calendario-dia-titulo')
+    
+    const fechaObj = new Date(fecha + 'T12:00:00')
+    titulo.textContent = fechaObj.toLocaleDateString('es-ES', { 
+      weekday: 'long', 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric' 
+    })
+    
+    if (tareas.length === 0) {
+      lista.innerHTML = '<p class="text-gray-400 text-center py-6">No hay tareas para este día</p>'
+    } else {
+      lista.innerHTML = tareas.map(tarea => {
+        const prioridadIcono = tarea.prioridad === 1 ? '🔥' : tarea.prioridad === 2 ? '🟡' : '🟢'
+        const estadoColor = {
+          'pendiente': 'bg-yellow-100 text-yellow-700',
+          'en_proceso': 'bg-blue-100 text-blue-700',
+          'completada': 'bg-green-100 text-green-700'
+        }[tarea.estado] || 'bg-gray-100 text-gray-700'
+        
+        return `
+          <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-2">
+                  <span>${prioridadIcono}</span>
+                  <h4 class="font-medium text-gray-800">${tarea.titulo}</h4>
+                  <span class="text-xs px-2 py-1 rounded-full ${estadoColor}">${tarea.estado}</span>
+                </div>
+                ${tarea.descripcion ? `<p class="text-sm text-gray-600 mb-2">${tarea.descripcion}</p>` : ''}
+                <div class="flex items-center gap-4 text-xs text-gray-500">
+                  ${tarea.asignado_a ? `<span><i class="far fa-user mr-1"></i>${tarea.asignado_a}</span>` : ''}
+                  ${tarea.cliente_nombre ? `<span><i class="far fa-building mr-1"></i>${tarea.cliente_nombre}</span>` : ''}
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <button onclick="editarTarea(${tarea.id})" class="text-blue-600 hover:text-blue-700">
+                  <i class="fas fa-edit"></i>
+                </button>
+                ${tarea.estado !== 'completada' ? `
+                  <button onclick="cambiarEstadoTareaRapido(${tarea.id}, 'completada')" class="text-green-600 hover:text-green-700">
+                    <i class="fas fa-check"></i>
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        `
+      }).join('')
+    }
+    
+    contenedor.classList.remove('hidden')
+    
+  } catch (error) {
+    console.error('Error cargando tareas del día:', error)
+    showNotification('Error al cargar tareas', 'error')
+  }
+}
+
+async function cambiarEstadoTareaRapido(tareaId, nuevoEstado) {
+  try {
+    const res = await fetch(`/api/tareas/${tareaId}/estado`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        estado: nuevoEstado,
+        completada_por: getUserInfo()?.nombre || 'Usuario'
+      })
+    })
+    
+    if (res.ok) {
+      showNotification('Tarea actualizada', 'success')
+      if (vistaActualTareas === 'calendario') {
+        cargarCalendarioTareas()
+        if (calendarioDiaSeleccionado) {
+          mostrarTareasDia(calendarioDiaSeleccionado)
+        }
+      } else if (vistaActualTareas === 'kanban') {
+        loadTareasKanban()
+      } else {
+        loadTareas()
+      }
+      actualizarContadorTareas()
+    }
+  } catch (error) {
+    console.error('Error cambiando estado:', error)
+    showNotification('Error al cambiar estado', 'error')
+  }
+}
+
+// Función para editar tarea (modal)
+async function editarTarea(tareaId) {
+  try {
+    const res = await fetch(`/api/tareas/${tareaId}`)
+    const tarea = await res.json()
+    
+    // Aquí iría el modal de edición completo
+    // Por ahora, mostrar un prompt simple
+    const nuevoTitulo = prompt('Editar título:', tarea.titulo)
+    if (!nuevoTitulo) return
+    
+    const updateRes = await fetch(`/api/tareas/${tareaId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        ...tarea,
+        titulo: nuevoTitulo
+      })
+    })
+    
+    if (updateRes.ok) {
+      showNotification('Tarea actualizada', 'success')
+      cambiarVistaTareas(vistaActualTareas) // Recargar vista actual
+    }
+  } catch (error) {
+    console.error('Error editando tarea:', error)
+    showNotification('Error al editar tarea', 'error')
+  }
+}
+
+// Actualizar contador del header
+async function actualizarContadoresTareasHeader() {
+  try {
+    const res = await fetch('/api/tareas/contador')
+    const datos = await res.json()
+    
+    document.getElementById('tareas-count-pendientes').textContent = datos.total_pendientes || 0
+    document.getElementById('tareas-count-proceso').textContent = datos.en_proceso || 0
+    document.getElementById('tareas-count-urgentes').textContent = datos.alta_prioridad || 0
+  } catch (error) {
+    console.error('Error actualizando contadores header:', error)
+  }
+}
+
+// Exponer funciones globalmente
+window.cambiarVistaTareas = cambiarVistaTareas
+window.loadTareasKanban = loadTareasKanban
+window.dragStartTarea = dragStartTarea
+window.dragEndTarea = dragEndTarea
+window.cargarCalendarioTareas = cargarCalendarioTareas
+window.cambiarMesCalendario = cambiarMesCalendario
+window.mostrarTareasDia = mostrarTareasDia
+window.cambiarEstadoTareaRapido = cambiarEstadoTareaRapido
+window.editarTarea = editarTarea
+window.actualizarContadoresTareasHeader = actualizarContadoresTareasHeader
+
+console.log('✅ Sistema completo de tareas con 3 vistas cargado')
 
