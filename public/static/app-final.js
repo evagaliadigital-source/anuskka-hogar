@@ -1339,7 +1339,7 @@ async function viewTrabajo(id) {
                         ${tarea.descripcion ? `<p class="text-sm text-gray-600 mb-2">${tarea.descripcion}</p>` : ''}
                         <div class="flex flex-wrap gap-2 text-xs text-gray-500">
                           ${tarea.asignado_a ? `<span><i class="fas fa-user mr-1"></i>${tarea.asignado_a}</span>` : ''}
-                          ${tarea.fecha_limite ? `<span><i class="far fa-calendar mr-1"></i>${new Date(tarea.fecha_limite).toLocaleDateString('es-ES')} ${new Date(tarea.fecha_limite).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}</span>` : ''}
+                          ${tarea.fecha_limite ? `<span><i class="far fa-calendar mr-1"></i>${new Date(tarea.fecha_limite).toLocaleDateString('es-ES')}</span>` : ''}
                           <span><i class="far fa-clock mr-1"></i>${new Date(tarea.created_at).toLocaleDateString('es-ES')}</span>
                         </div>
                       </div>
@@ -7009,7 +7009,6 @@ async function verDetallesTarea(tareaId) {
                 <div class="p-4 bg-orange-50 rounded-lg">
                   <p class="text-xs text-orange-600 font-semibold mb-1">FECHA LÍMITE</p>
                   <p class="text-lg font-bold text-gray-900">${new Date(tarea.fecha_limite).toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year: 'numeric'})}</p>
-                  <p class="text-sm text-gray-600">${new Date(tarea.fecha_limite).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}</p>
                 </div>
               ` : ''}
               
@@ -7233,7 +7232,7 @@ async function showNuevaTarea() {
               <label class="block text-sm font-medium text-gray-700 mb-1">
                 <i class="fas fa-calendar-alt mr-1 text-red-500"></i>Fecha Límite
               </label>
-              <input type="datetime-local" name="fecha_limite"
+              <input type="date" name="fecha_limite"
                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
             </div>
             
@@ -7439,7 +7438,7 @@ async function editarTarea(tareaId) {
                 <label class="block text-sm font-medium text-gray-700 mb-1">
                   <i class="fas fa-calendar-alt mr-1 text-red-500"></i>Fecha Límite
                 </label>
-                <input type="datetime-local" name="fecha_limite" value="${tarea.fecha_limite ? new Date(tarea.fecha_limite).toISOString().slice(0, 16) : ''}"
+                <input type="date" name="fecha_limite" value="${tarea.fecha_limite ? tarea.fecha_limite.split('T')[0] : ''}"
                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
               </div>
               
@@ -7933,7 +7932,7 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
               <label class="block text-sm font-medium text-gray-700 mb-1">
                 <i class="fas fa-calendar-alt mr-1 text-red-500"></i>Fecha Límite
               </label>
-              <input type="datetime-local" name="fecha_limite"
+              <input type="date" name="fecha_limite"
                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
             </div>
             
@@ -8357,9 +8356,7 @@ function renderAlertasGrupo(tipo, tareas, color) {
     const fechaLimite = t.fecha_limite 
       ? new Date(t.fecha_limite).toLocaleDateString('es-ES', { 
           day: '2-digit', 
-          month: 'short',
-          hour: '2-digit',
-          minute: '2-digit'
+          month: 'short'
         })
       : 'Sin fecha'
     
@@ -8480,11 +8477,9 @@ function renderItemResumen(item, tipo) {
   const esTarea = tipo === 'tarea'
   const fechaLimite = esTarea 
     ? item.fecha_limite 
-      ? new Date(item.fecha_limite).toLocaleString('es-ES', { 
+      ? new Date(item.fecha_limite).toLocaleDateString('es-ES', { 
           day: '2-digit', 
-          month: 'short',
-          hour: '2-digit',
-          minute: '2-digit'
+          month: 'short'
         })
       : 'Sin fecha'
     : item.fecha_programada
@@ -9899,11 +9894,6 @@ async function cargarDiarioDia(fechaStr) {
             
             <!-- Información detallada -->
             <div class="grid grid-cols-2 gap-3 text-sm mb-3">
-              <div class="flex items-center gap-2 text-gray-700">
-                <i class="fas fa-clock text-gray-500"></i>
-                <span><strong>Hora:</strong> ${new Date(t.fecha_limite).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}</span>
-              </div>
-              
               <div class="flex items-center gap-2 text-gray-700">
                 <i class="fas fa-flag text-gray-500"></i>
                 <span><strong>Prioridad:</strong> ${prioridadIcon[t.prioridad] || 'Media'}</span>
