@@ -9548,8 +9548,10 @@ function cambiarDiaDiario(direccion) {
 async function cargarDiarioDia(fechaStr) {
   console.log('📖 cargarDiarioDia iniciada con fecha:', fechaStr)
   try {
-    const fecha = new Date(fechaStr)
-    console.log('📅 Fecha parseada:', fecha)
+    // Parsear fecha sin conversión de zona horaria
+    const [year, month, day] = fechaStr.split('-').map(Number)
+    const fecha = new Date(year, month - 1, day)
+    console.log('📅 Fecha parseada (sin timezone):', fecha)
     const { data: tareas } = await axios.get(`${API}/tareas?estado=todas`)
     const { data: trabajos } = await axios.get(`${API}/trabajos`)
     
