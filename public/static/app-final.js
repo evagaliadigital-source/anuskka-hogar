@@ -6439,51 +6439,95 @@ async function loadTareas() {
       }
       
       return `
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-all ${modoSeleccionMultiple ? 'cursor-pointer' : ''}" ${modoSeleccionMultiple ? `onclick="toggleSeleccionTarea(${t.id})"` : ''}>
-          <div class="flex items-start justify-between mb-2">
-            <div class="flex items-start gap-2 flex-1">
+        <div class="bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 overflow-hidden ${modoSeleccionMultiple ? 'cursor-pointer' : ''}" ${modoSeleccionMultiple ? `onclick="toggleSeleccionTarea(${t.id})"` : ''}>
+          <!-- Header con Estado y Prioridad -->
+          <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+            <div class="flex items-center gap-3">
               ${modoSeleccionMultiple ? `
-                <input type="checkbox" class="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500" 
+                <input type="checkbox" class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500" 
                        ${tareasSeleccionadas.has(t.id) ? 'checked' : ''}
                        onclick="event.stopPropagation(); toggleSeleccionTarea(${t.id})">
               ` : ''}
-              <div class="mt-0.5">
+              <div class="w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center text-lg">
                 ${tipoIcon[t.tipo] || '<i class="fas fa-tasks text-gray-600"></i>'}
               </div>
-              <div class="flex-1">
-                <h3 class="text-base font-semibold text-gray-800">${t.titulo}</h3>
-                ${t.descripcion ? `<p class="text-xs text-gray-600 mt-1">${t.descripcion}</p>` : ''}
-                ${t.nombre_proyecto ? `<p class="text-xs text-gray-500 mt-1"><i class="fas fa-project-diagram mr-1"></i>${t.nombre_proyecto}</p>` : ''}
-                ${t.asignado_a ? `<p class="text-xs text-gray-500 mt-1"><i class="fas fa-user mr-1"></i>${t.asignado_a}</p>` : ''}
-                ${t.fecha_limite ? `<p class="text-xs text-gray-500 mt-1"><i class="fas fa-clock mr-1"></i>${new Date(t.fecha_limite).toLocaleString('es-ES')}</p>` : ''}
+              <div>
+                <h3 class="text-base font-bold text-gray-900">${t.titulo}</h3>
+                <span class="text-xs text-gray-500 uppercase tracking-wide">${t.tipo.replace(/_/g, ' ')}</span>
               </div>
             </div>
-            <div class="flex flex-col items-end gap-1">
-              ${estadoBadge[t.estado]}
+            <div class="flex items-center gap-2">
               ${prioridadBadge[t.prioridad]}
+              ${estadoBadge[t.estado]}
             </div>
           </div>
           
-          ${detalleHTML}
-          
-          <div class="mt-3 flex items-center justify-between text-xs text-gray-500">
-            <span><i class="far fa-calendar mr-1"></i>Creada: ${new Date(t.created_at).toLocaleString('es-ES')}</span>
-            ${t.completada_en ? `<span><i class="fas fa-check-circle mr-1"></i>Completada: ${new Date(t.completada_en).toLocaleString('es-ES')}</span>` : ''}
+          <!-- Body -->
+          <div class="p-4">
+            ${t.descripcion ? `
+              <p class="text-sm text-gray-700 mb-3 leading-relaxed">${t.descripcion}</p>
+            ` : ''}
+            
+            <!-- Info Grid -->
+            <div class="grid grid-cols-2 gap-3 mb-3">
+              ${t.asignado_a ? `
+                <div class="flex items-center gap-2 text-sm">
+                  <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                    <i class="fas fa-user text-blue-600 text-xs"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-500">Asignado a</p>
+                    <p class="font-semibold text-gray-900">${t.asignado_a}</p>
+                  </div>
+                </div>
+              ` : ''}
+              
+              ${t.fecha_limite ? `
+                <div class="flex items-center gap-2 text-sm">
+                  <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                    <i class="fas fa-clock text-orange-600 text-xs"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-500">Fecha límite</p>
+                    <p class="font-semibold text-gray-900">${new Date(t.fecha_limite).toLocaleDateString('es-ES')}</p>
+                  </div>
+                </div>
+              ` : ''}
+              
+              ${t.nombre_proyecto ? `
+                <div class="flex items-center gap-2 text-sm col-span-2">
+                  <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                    <i class="fas fa-project-diagram text-purple-600 text-xs"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-500">Proyecto</p>
+                    <p class="font-semibold text-gray-900">${t.nombre_proyecto}</p>
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+            
+            ${detalleHTML}
+            
+            <!-- Footer con fecha de creación -->
+            <div class="text-xs text-gray-400 mt-3 pt-3 border-t border-gray-100">
+              <i class="far fa-calendar mr-1"></i>Creada: ${new Date(t.created_at).toLocaleDateString('es-ES')}
+              ${t.completada_en ? ` • <i class="fas fa-check-circle mr-1"></i>Finalizada: ${new Date(t.completada_en).toLocaleDateString('es-ES')}` : ''}
+            </div>
           </div>
           
+          <!-- Actions Footer -->
           ${!modoSeleccionMultiple ? `
-            <div class="mt-3 flex gap-2">
-              <button onclick="editarTarea(${t.id})" class="flex-1 bg-blue-600 text-white px-3 py-1.5 text-sm rounded-lg hover:bg-blue-700 transition-all">
-                <i class="fas fa-edit mr-1"></i>Editar
+            <div class="bg-gray-50 px-4 py-3 border-t border-gray-200 flex gap-2">
+              <button onclick="verDetallesTarea(${t.id})" class="flex-1 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-all text-sm font-medium">
+                <i class="fas fa-eye mr-2"></i>Ver
               </button>
-              ${t.estado === 'pendiente' && t.tipo !== 'añadir_tela_stock' ? `
-                <button onclick="marcarTareaCompletada(${t.id})" class="flex-1 bg-green-600 text-white px-3 py-1.5 text-sm rounded-lg hover:bg-green-700 transition-all">
-                  <i class="fas fa-check mr-1"></i>Completar
-                </button>
-                <button onclick="cancelarTarea(${t.id})" class="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-50 transition-all">
-                  <i class="fas fa-times mr-1"></i>Cancelar
-                </button>
-              ` : ''}
+              <button onclick="editarTarea(${t.id})" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all text-sm font-medium">
+                <i class="fas fa-edit mr-2"></i>Editar
+              </button>
+              <button onclick="confirmarEliminarTarea(${t.id})" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-all text-sm font-medium">
+                <i class="fas fa-trash mr-2"></i>Borrar
+              </button>
             </div>
           ` : ''}
         </div>
@@ -6572,6 +6616,163 @@ async function cancelarTarea(tareaId) {
   } catch (error) {
     console.error('Error cancelando tarea:', error)
     showError('Error al cancelar tarea')
+  }
+}
+
+// Ver detalles completos de la tarea
+async function verDetallesTarea(tareaId) {
+  try {
+    const { data: tarea } = await axios.get(`${API}/tareas/${tareaId}`)
+    
+    const prioridadText = {
+      1: '🔥 Alta',
+      2: '🟡 Media',
+      3: '🟢 Baja'
+    }
+    
+    const estadoText = {
+      'pendiente': '⏳ Pendiente',
+      'en_proceso': '🔄 En Proceso',
+      'completada': '✅ Finalizada',
+      'cancelada': '❌ Cancelada'
+    }
+    
+    const html = `
+      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onclick="closeModal()">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+          <!-- Header -->
+          <div class="bg-gradient-to-r from-gray-700 to-gray-800 text-white px-6 py-4 rounded-t-2xl">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                  <i class="fas fa-info-circle text-2xl"></i>
+                </div>
+                <div>
+                  <h2 class="text-2xl font-bold">Detalles de la Tarea</h2>
+                  <p class="text-sm text-gray-300">Información completa</p>
+                </div>
+              </div>
+              <button onclick="closeModal()" class="text-white hover:bg-white/20 w-8 h-8 rounded-full flex items-center justify-center transition-all">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Body -->
+          <div class="p-6">
+            <!-- Título -->
+            <div class="mb-6">
+              <h3 class="text-2xl font-bold text-gray-900 mb-2">${tarea.titulo}</h3>
+              <div class="flex gap-2">
+                <span class="px-3 py-1 bg-gray-100 text-gray-800 text-sm rounded-full">${tarea.tipo.replace(/_/g, ' ')}</span>
+                <span class="px-3 py-1 ${tarea.prioridad === 1 ? 'bg-red-100 text-red-800' : tarea.prioridad === 2 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'} text-sm rounded-full">${prioridadText[tarea.prioridad]}</span>
+                <span class="px-3 py-1 ${tarea.estado === 'completada' ? 'bg-green-100 text-green-800' : tarea.estado === 'cancelada' ? 'bg-gray-100 text-gray-800' : tarea.estado === 'en_proceso' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'} text-sm rounded-full">${estadoText[tarea.estado]}</span>
+              </div>
+            </div>
+            
+            <!-- Descripción -->
+            ${tarea.descripcion ? `
+              <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                <p class="text-sm font-semibold text-gray-700 mb-2">Descripción:</p>
+                <p class="text-gray-800 leading-relaxed">${tarea.descripcion}</p>
+              </div>
+            ` : ''}
+            
+            <!-- Info Grid -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+              ${tarea.asignado_a ? `
+                <div class="p-4 bg-blue-50 rounded-lg">
+                  <p class="text-xs text-blue-600 font-semibold mb-1">ASIGNADO A</p>
+                  <p class="text-lg font-bold text-gray-900">${tarea.asignado_a}</p>
+                </div>
+              ` : ''}
+              
+              ${tarea.fecha_limite ? `
+                <div class="p-4 bg-orange-50 rounded-lg">
+                  <p class="text-xs text-orange-600 font-semibold mb-1">FECHA LÍMITE</p>
+                  <p class="text-lg font-bold text-gray-900">${new Date(tarea.fecha_limite).toLocaleDateString('es-ES')}</p>
+                  <p class="text-sm text-gray-600">${new Date(tarea.fecha_limite).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}</p>
+                </div>
+              ` : ''}
+              
+              ${tarea.nombre_proyecto ? `
+                <div class="p-4 bg-purple-50 rounded-lg col-span-2">
+                  <p class="text-xs text-purple-600 font-semibold mb-1">PROYECTO</p>
+                  <p class="text-lg font-bold text-gray-900">${tarea.nombre_proyecto}</p>
+                </div>
+              ` : ''}
+              
+              ${tarea.recordatorio_minutos ? `
+                <div class="p-4 bg-yellow-50 rounded-lg">
+                  <p class="text-xs text-yellow-600 font-semibold mb-1">RECORDATORIO</p>
+                  <p class="text-lg font-bold text-gray-900">${tarea.recordatorio_minutos} minutos antes</p>
+                </div>
+              ` : ''}
+            </div>
+            
+            <!-- Notas -->
+            ${tarea.notas ? `
+              <div class="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                <p class="text-sm font-semibold text-green-700 mb-2"><i class="fas fa-sticky-note mr-2"></i>Notas:</p>
+                <p class="text-gray-800 leading-relaxed">${tarea.notas}</p>
+              </div>
+            ` : ''}
+            
+            <!-- Fechas -->
+            <div class="text-xs text-gray-500 space-y-1 border-t pt-4">
+              <p><i class="far fa-calendar mr-2"></i>Creada: ${new Date(tarea.created_at).toLocaleString('es-ES')}</p>
+              ${tarea.completada_en ? `<p><i class="fas fa-check-circle mr-2"></i>Finalizada: ${new Date(tarea.completada_en).toLocaleString('es-ES')}</p>` : ''}
+            </div>
+          </div>
+          
+          <!-- Footer Actions -->
+          <div class="bg-gray-50 px-6 py-4 border-t flex gap-3 rounded-b-2xl">
+            <button onclick="editarTarea(${tareaId})" class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all font-medium">
+              <i class="fas fa-edit mr-2"></i>Editar
+            </button>
+            <button onclick="closeModal()" class="flex-1 bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-all font-medium">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    `
+    
+    document.body.insertAdjacentHTML('beforeend', html)
+  } catch (error) {
+    console.error('Error cargando detalles:', error)
+    showError('Error al cargar detalles de la tarea')
+  }
+}
+
+// Confirmar y eliminar tarea
+async function confirmarEliminarTarea(tareaId) {
+  if (!confirm('⚠️ ¿Estás segura de que quieres BORRAR esta tarea?\n\nEsta acción no se puede deshacer.')) return
+  
+  try {
+    showLoading('Eliminando tarea...')
+    await axios.delete(`${API}/tareas/${tareaId}`)
+    hideLoading()
+    
+    showSuccess('✅ Tarea eliminada correctamente')
+    
+    // Recargar vista actual
+    if (typeof vistaActualTareas === 'undefined' || vistaActualTareas === 'lista') {
+      loadTareas()
+    } else if (vistaActualTareas === 'kanban') {
+      loadTareasKanban()
+    } else if (vistaActualTareas === 'calendario') {
+      cargarCalendarioTareas()
+    } else {
+      loadTareas()
+    }
+    
+    actualizarContadorTareas()
+    actualizarContadoresTareasHeader()
+  } catch (error) {
+    hideLoading()
+    console.error('Error eliminando tarea:', error)
+    showError('Error al eliminar tarea')
   }
 }
 
@@ -8241,13 +8442,15 @@ async function loadTareasKanban() {
     const tareasAgrupadas = {
       pendiente: tareas.filter(t => t.estado === 'pendiente'),
       en_proceso: tareas.filter(t => t.estado === 'en_proceso'),
-      completada: tareas.filter(t => t.estado === 'completada')
+      completada: tareas.filter(t => t.estado === 'completada'),
+      cancelada: tareas.filter(t => t.estado === 'cancelada')
     }
     
     // Actualizar contadores
     document.getElementById('kanban-count-pendiente').textContent = tareasAgrupadas.pendiente.length
     document.getElementById('kanban-count-en_proceso').textContent = tareasAgrupadas.en_proceso.length
     document.getElementById('kanban-count-completada').textContent = tareasAgrupadas.completada.length
+    document.getElementById('kanban-count-cancelada').textContent = tareasAgrupadas.cancelada.length
     
     // Renderizar cada columna
     for (const [estado, listaTareas] of Object.entries(tareasAgrupadas)) {
@@ -8273,18 +8476,26 @@ async function loadTareasKanban() {
                ondragstart="dragStartTarea(event)"
                ondragend="dragEndTarea(event)">
             <div class="flex items-start justify-between mb-2">
-              <div class="flex items-center gap-2">
-                <span>${prioridadIcono}</span>
-                <h4 class="font-medium text-gray-800 text-sm">${tarea.titulo}</h4>
+              <div class="flex items-center gap-2 flex-1">
+                <span class="text-lg">${prioridadIcono}</span>
+                <h4 class="font-semibold text-gray-900 text-sm">${tarea.titulo}</h4>
               </div>
-              <button onclick="editarTarea(${tarea.id})" class="text-gray-400 hover:text-gray-600">
-                <i class="fas fa-edit text-xs"></i>
-              </button>
             </div>
-            ${tarea.descripcion ? `<p class="text-xs text-gray-600 mb-2">${tarea.descripcion.substring(0, 60)}...</p>` : ''}
-            <div class="flex items-center justify-between text-xs text-gray-500 mt-3">
+            ${tarea.descripcion ? `<p class="text-xs text-gray-600 mb-3">${tarea.descripcion.substring(0, 80)}${tarea.descripcion.length > 80 ? '...' : ''}</p>` : ''}
+            <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
               <span><i class="far fa-calendar mr-1"></i>${fechaTexto}</span>
               ${tarea.asignado_a ? `<span><i class="far fa-user mr-1"></i>${tarea.asignado_a}</span>` : ''}
+            </div>
+            <div class="flex gap-1 pt-2 border-t border-gray-100">
+              <button onclick="event.stopPropagation(); verDetallesTarea(${tarea.id})" class="flex-1 bg-gray-100 text-gray-700 px-2 py-1.5 rounded text-xs hover:bg-gray-200 transition-all" title="Ver detalles">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button onclick="event.stopPropagation(); editarTarea(${tarea.id})" class="flex-1 bg-blue-100 text-blue-700 px-2 py-1.5 rounded text-xs hover:bg-blue-200 transition-all" title="Editar">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button onclick="event.stopPropagation(); confirmarEliminarTarea(${tarea.id})" class="flex-1 bg-red-100 text-red-700 px-2 py-1.5 rounded text-xs hover:bg-red-200 transition-all" title="Borrar">
+                <i class="fas fa-trash"></i>
+              </button>
             </div>
           </div>
         `
@@ -8337,25 +8548,25 @@ async function dropTareaEnColumna(event, nuevoEstado) {
   if (estadoAnterior === nuevoEstado) return
   
   try {
-    const res = await fetch(`/api/tareas/${tareaId}/estado`, {
+    const res = await fetch(`${API}/tareas/${tareaId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
-        estado: nuevoEstado,
-        completada_por: getUserInfo()?.nombre || 'Usuario'
+        estado: nuevoEstado
       })
     })
     
     if (res.ok) {
-      showNotification('Tarea actualizada', 'success')
+      showNotification('✅ Tarea movida correctamente', 'success')
       loadTareasKanban()
       actualizarContadorTareas()
+      actualizarContadoresTareasHeader()
     } else {
       throw new Error('Error al actualizar')
     }
   } catch (error) {
     console.error('Error moviendo tarea:', error)
-    showNotification('Error al mover tarea', 'error')
+    showNotification('❌ Error al mover tarea', 'error')
   }
   
   tareaArrastrando = null
@@ -8794,6 +9005,8 @@ window.eliminarTareasSeleccionadas = eliminarTareasSeleccionadas
 window.cancelarSeleccion = cancelarSeleccion
 window.exportarTareas = exportarTareas
 window.toggleTipoManual = toggleTipoManual
+window.verDetallesTarea = verDetallesTarea
+window.confirmarEliminarTarea = confirmarEliminarTarea
 
 console.log('✅ Sistema completo de tareas con 3 vistas cargado')
 

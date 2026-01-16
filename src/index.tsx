@@ -2859,15 +2859,15 @@ app.get('/', (c) => {
 
                 <!-- VISTA KANBAN -->
                 <div id="vista-tareas-kanban" class="vista-tareas-content hidden">
-                    <div class="grid grid-cols-3 gap-6">
+                    <div class="grid grid-cols-4 gap-4">
                         <!-- Columna Pendiente -->
-                        <div class="bg-gray-50 rounded-xl p-4">
+                        <div class="bg-orange-50 rounded-xl p-4 border-2 border-orange-200">
                             <div class="flex items-center justify-between mb-4">
-                                <h3 class="font-bold text-gray-700 flex items-center gap-2">
-                                    <i class="fas fa-circle text-yellow-500 text-xs"></i>
+                                <h3 class="font-bold text-gray-800 flex items-center gap-2">
+                                    <i class="fas fa-circle text-orange-500 text-xs"></i>
                                     Pendientes
                                 </h3>
-                                <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-medium" id="kanban-count-pendiente">0</span>
+                                <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-bold" id="kanban-count-pendiente">0</span>
                             </div>
                             <div id="kanban-pendiente" class="space-y-3 min-h-[500px]">
                                 <!-- Tareas pendientes -->
@@ -2875,30 +2875,44 @@ app.get('/', (c) => {
                         </div>
 
                         <!-- Columna En Proceso -->
-                        <div class="bg-gray-50 rounded-xl p-4">
+                        <div class="bg-blue-50 rounded-xl p-4 border-2 border-blue-200">
                             <div class="flex items-center justify-between mb-4">
-                                <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                                <h3 class="font-bold text-gray-800 flex items-center gap-2">
                                     <i class="fas fa-circle text-blue-500 text-xs"></i>
                                     En Proceso
                                 </h3>
-                                <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium" id="kanban-count-en_proceso">0</span>
+                                <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-bold" id="kanban-count-en_proceso">0</span>
                             </div>
                             <div id="kanban-en_proceso" class="space-y-3 min-h-[500px]">
                                 <!-- Tareas en proceso -->
                             </div>
                         </div>
 
-                        <!-- Columna Completada -->
-                        <div class="bg-gray-50 rounded-xl p-4">
+                        <!-- Columna Finalizada -->
+                        <div class="bg-green-50 rounded-xl p-4 border-2 border-green-200">
                             <div class="flex items-center justify-between mb-4">
-                                <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                                <h3 class="font-bold text-gray-800 flex items-center gap-2">
                                     <i class="fas fa-circle text-green-500 text-xs"></i>
-                                    Completadas
+                                    Finalizadas
                                 </h3>
-                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium" id="kanban-count-completada">0</span>
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold" id="kanban-count-completada">0</span>
                             </div>
                             <div id="kanban-completada" class="space-y-3 min-h-[500px]">
                                 <!-- Tareas completadas -->
+                            </div>
+                        </div>
+                        
+                        <!-- Columna Cancelada -->
+                        <div class="bg-gray-50 rounded-xl p-4 border-2 border-gray-300">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-bold text-gray-800 flex items-center gap-2">
+                                    <i class="fas fa-circle text-gray-500 text-xs"></i>
+                                    Canceladas
+                                </h3>
+                                <span class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm font-bold" id="kanban-count-cancelada">0</span>
+                            </div>
+                            <div id="kanban-cancelada" class="space-y-3 min-h-[500px]">
+                                <!-- Tareas canceladas -->
                             </div>
                         </div>
                     </div>
