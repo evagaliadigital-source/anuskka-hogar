@@ -67,7 +67,11 @@ tareas.get('/', async (c) => {
       datos_tarea: t.datos_tarea ? JSON.parse(t.datos_tarea) : null
     }))
     
-    return c.json(tareasConDatos)
+    return c.json(tareasConDatos, 200, {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    })
   } catch (error) {
     console.error('Error obteniendo tareas:', error)
     return c.json({ error: 'Error al obtener tareas' }, 500)
@@ -88,7 +92,11 @@ tareas.get('/contador', async (c) => {
       WHERE estado != 'completada'
     `).first()
     
-    return c.json(result)
+    return c.json(result, 200, {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    })
   } catch (error) {
     console.error('Error obteniendo contador:', error)
     return c.json({ error: 'Error al obtener contador' }, 500)
@@ -122,7 +130,11 @@ tareas.get('/:id', async (c) => {
       datos_tarea: tarea.datos_tarea ? JSON.parse(tarea.datos_tarea) : null
     }
     
-    return c.json(tareaCompleta)
+    return c.json(tareaCompleta, 200, {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    })
   } catch (error) {
     console.error('Error obteniendo tarea:', error)
     return c.json({ error: 'Error al obtener tarea' }, 500)
