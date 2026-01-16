@@ -78,8 +78,8 @@ function tienePermiso(seccion) {
     return true
   }
   
-  // Tienda solo tiene acceso a secciones operativas + consultor IA + diseñador virtual + tareas
-  const seccionesTienda = ['dashboard', 'clientes', 'presupuestos', 'trabajos', 'stock', 'tareas', 'consultor', 'disenador']
+  // Tienda solo tiene acceso a secciones operativas + consultor IA + diseñador virtual + tareas + calendario
+  const seccionesTienda = ['dashboard', 'clientes', 'presupuestos', 'trabajos', 'stock', 'tareas', 'calendario', 'consultor', 'disenador']
   return seccionesTienda.includes(seccion)
 }
 
@@ -6731,76 +6731,76 @@ async function loadTareas() {
       }
       
       return `
-        <div class="bg-white rounded-xl border-2 border-gray-100 hover:border-gray-300 hover:shadow-xl transition-all duration-300 overflow-hidden ${modoSeleccionMultiple ? 'cursor-pointer' : ''}" ${modoSeleccionMultiple ? `onclick="toggleSeleccionTarea(${t.id})"` : ''}>
-          <!-- Header Elegante con Gradiente -->
-          <div class="bg-gradient-to-r from-slate-50 via-gray-50 to-slate-50 px-6 py-4 border-b border-gray-200">
+        <div class="bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 overflow-hidden ${modoSeleccionMultiple ? 'cursor-pointer' : ''}" ${modoSeleccionMultiple ? `onclick="toggleSeleccionTarea(${t.id})"` : ''}>
+          <!-- Header Compacto -->
+          <div class="bg-gradient-to-r from-slate-50 via-gray-50 to-slate-50 px-4 py-2.5 border-b border-gray-200">
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-4">
+              <div class="flex items-center gap-3">
                 ${modoSeleccionMultiple ? `
-                  <input type="checkbox" class="w-5 h-5 text-gray-600 rounded focus:ring-2 focus:ring-gray-500" 
+                  <input type="checkbox" class="w-4 h-4 text-gray-600 rounded focus:ring-2 focus:ring-gray-500" 
                          ${tareasSeleccionadas.has(t.id) ? 'checked' : ''}
                          onclick="event.stopPropagation(); toggleSeleccionTarea(${t.id})">
                 ` : ''}
-                <!-- Icono circular elegante -->
-                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-white shadow-sm flex items-center justify-center text-xl">
+                <!-- Icono circular pequeño -->
+                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 border border-white shadow-sm flex items-center justify-center text-base">
                   ${tipoIcon[t.tipo] || '<i class="fas fa-tasks text-gray-700"></i>'}
                 </div>
                 <!-- Título y tipo -->
                 <div>
-                  <h3 class="text-lg font-bold text-gray-900 mb-1">${t.titulo}</h3>
-                  <div class="flex items-center gap-2">
-                    <span class="text-xs text-gray-500 uppercase tracking-wider font-medium">${t.tipo.replace(/_/g, ' ')}</span>
+                  <h3 class="text-base font-bold text-gray-900">${t.titulo}</h3>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <span class="text-xs text-gray-500 uppercase tracking-wide font-medium">${t.tipo.replace(/_/g, ' ')}</span>
                     ${prioridadBadge[t.prioridad]}
                   </div>
                 </div>
               </div>
-              <!-- Estado Badge Grande -->
+              <!-- Estado Badge -->
               <div>
                 ${estadoBadge[t.estado]}
               </div>
             </div>
           </div>
           
-          <!-- Body Elegante -->
-          <div class="p-6">
+          <!-- Body Compacto -->
+          <div class="p-4">
             ${t.descripcion ? `
-              <p class="text-sm text-gray-700 mb-3 leading-relaxed">${t.descripcion}</p>
+              <p class="text-sm text-gray-600 mb-2 leading-relaxed">${t.descripcion}</p>
             ` : ''}
             
-            <!-- Info Grid -->
-            <div class="grid grid-cols-2 gap-3 mb-3">
+            <!-- Info Grid Compacto -->
+            <div class="grid grid-cols-2 gap-2 mb-2">
               ${t.asignado_a ? `
                 <div class="flex items-center gap-2 text-sm">
-                  <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                  <div class="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center">
                     <i class="fas fa-user text-blue-600 text-xs"></i>
                   </div>
                   <div>
-                    <p class="text-xs text-gray-500">Asignado a</p>
-                    <p class="font-semibold text-gray-900">${t.asignado_a}</p>
+                    <p class="text-xs text-gray-500">Asignado</p>
+                    <p class="text-xs font-semibold text-gray-900">${t.asignado_a}</p>
                   </div>
                 </div>
               ` : ''}
               
               ${t.fecha_limite ? `
                 <div class="flex items-center gap-2 text-sm">
-                  <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                  <div class="w-7 h-7 rounded-full bg-orange-100 flex items-center justify-center">
                     <i class="fas fa-clock text-orange-600 text-xs"></i>
                   </div>
                   <div>
                     <p class="text-xs text-gray-500">Fecha límite</p>
-                    <p class="font-semibold text-gray-900">${new Date(t.fecha_limite).toLocaleDateString('es-ES')}</p>
+                    <p class="text-xs font-semibold text-gray-900">${new Date(t.fecha_limite).toLocaleDateString('es-ES')}</p>
                   </div>
                 </div>
               ` : ''}
               
               ${t.nombre_proyecto ? `
                 <div class="flex items-center gap-2 text-sm col-span-2">
-                  <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                  <div class="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center">
                     <i class="fas fa-project-diagram text-purple-600 text-xs"></i>
                   </div>
                   <div>
                     <p class="text-xs text-gray-500">Proyecto</p>
-                    <p class="font-semibold text-gray-900">${t.nombre_proyecto}</p>
+                    <p class="text-xs font-semibold text-gray-900">${t.nombre_proyecto}</p>
                   </div>
                 </div>
               ` : ''}
@@ -6808,24 +6808,24 @@ async function loadTareas() {
             
             ${detalleHTML}
             
-            <!-- Footer con fecha de creación -->
-            <div class="text-xs text-gray-400 mt-3 pt-3 border-t border-gray-100">
+            <!-- Footer fecha -->
+            <div class="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-100">
               <i class="far fa-calendar mr-1"></i>Creada: ${new Date(t.created_at).toLocaleDateString('es-ES')}
               ${t.completada_en ? ` • <i class="fas fa-check-circle mr-1"></i>Finalizada: ${new Date(t.completada_en).toLocaleDateString('es-ES')}` : ''}
             </div>
           </div>
           
-          <!-- Actions Footer Elegante -->
+          <!-- Actions Footer Compacto -->
           ${!modoSeleccionMultiple ? `
-            <div class="bg-gradient-to-r from-gray-50 to-slate-50 px-6 py-4 border-t border-gray-200 flex gap-3">
-              <button onclick="verDetallesTarea(${t.id})" class="flex-1 bg-white border-2 border-gray-200 text-gray-700 px-4 py-2.5 rounded-lg hover:border-gray-300 hover:shadow-md transition-all text-sm font-semibold">
-                <i class="fas fa-eye mr-2"></i>Ver Detalles
+            <div class="bg-gradient-to-r from-gray-50 to-slate-50 px-4 py-2.5 border-t border-gray-200 flex gap-2">
+              <button onclick="verDetallesTarea(${t.id})" class="flex-1 bg-white border-2 border-gray-200 text-gray-700 px-3 py-2 rounded-lg hover:border-gray-300 hover:shadow-md transition-all text-xs font-semibold">
+                <i class="fas fa-eye mr-1"></i>Ver
               </button>
-              <button onclick="editarTarea(${t.id})" class="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-4 py-2.5 rounded-lg hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg transition-all text-sm font-semibold">
-                <i class="fas fa-edit mr-2"></i>Editar
+              <button onclick="editarTarea(${t.id})" class="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-3 py-2 rounded-lg hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg transition-all text-xs font-semibold">
+                <i class="fas fa-edit mr-1"></i>Editar
               </button>
-              <button onclick="confirmarEliminarTarea(${t.id})" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2.5 rounded-lg hover:from-orange-600 hover:to-orange-700 hover:shadow-lg transition-all text-sm font-semibold">
-                <i class="fas fa-trash mr-2"></i>Borrar
+              <button onclick="confirmarEliminarTarea(${t.id})" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-3 py-2 rounded-lg hover:from-orange-600 hover:to-orange-700 hover:shadow-lg transition-all text-xs font-semibold">
+                <i class="fas fa-trash mr-1"></i>Borrar
               </button>
             </div>
           ` : ''}
