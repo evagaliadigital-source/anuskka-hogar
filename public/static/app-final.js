@@ -8314,7 +8314,10 @@ function toggleAvisos() {
 async function cargarAlertas() {
   try {
     console.log('🔔 Cargando alertas de tareas...')
+    console.log('📍 URL:', `${API}/tareas/alertas`)
     const { data } = await axios.get(`${API}/tareas/alertas`)
+    
+    console.log('📦 Respuesta recibida:', data)
     
     // Actualizar contadores
     document.getElementById('count-retrasadas').textContent = data.retrasadas.length
@@ -8340,7 +8343,23 @@ async function cargarAlertas() {
     
     console.log('✅ Alertas cargadas:', data)
   } catch (error) {
-    console.error('Error cargando alertas:', error)
+    console.error('❌ Error cargando alertas:', error)
+    console.error('❌ Error completo:', error.response || error)
+    
+    // Mostrar mensaje amigable en el panel
+    const panelAvisos = document.getElementById('avisos-lista')
+    if (panelAvisos) {
+      panelAvisos.innerHTML = `
+        <div class="p-6 text-center">
+          <div class="text-yellow-500 text-5xl mb-3">⚠️</div>
+          <p class="text-gray-700 font-medium mb-2">No se pudieron cargar las alertas</p>
+          <p class="text-sm text-gray-500">Por favor, recarga la página o intenta más tarde.</p>
+          <button onclick="cargarAlertas()" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">
+            <i class="fas fa-sync mr-2"></i>Reintentar
+          </button>
+        </div>
+      `
+    }
   }
 }
 
