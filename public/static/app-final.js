@@ -8836,12 +8836,10 @@ async function loadTareasKanban() {
           : 'Sin fecha'
         
         return `
-          <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all cursor-move"
+          <div class="tarea-kanban-card bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all cursor-move"
                draggable="true"
                data-tarea-id="${tarea.id}"
-               data-estado="${tarea.estado}"
-               ondragstart="dragStartTarea(event)"
-               ondragend="dragEndTarea(event)">
+               data-estado="${tarea.estado}">
             <div class="flex items-start justify-between mb-2">
               <div class="flex items-center gap-2 flex-1">
                 <span class="text-lg">${prioridadIcono}</span>
@@ -8867,6 +8865,12 @@ async function loadTareasKanban() {
           </div>
         `
       }).join('')
+      
+      // Añadir eventos drag a todas las tarjetas
+      contenedor.querySelectorAll('.tarea-kanban-card').forEach(card => {
+        card.addEventListener('dragstart', dragStartTarea)
+        card.addEventListener('dragend', dragEndTarea)
+      })
       
       // Añadir eventos de drop a cada columna
       contenedor.ondragover = (e) => {
