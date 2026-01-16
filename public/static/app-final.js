@@ -6643,7 +6643,7 @@ async function verDetallesTarea(tareaId) {
     }
     
     const html = `
-      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onclick="closeModal()">
+      <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onclick="closeModal()">
         <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
           <!-- Header -->
           <div class="bg-gradient-to-r from-gray-700 to-gray-800 text-white px-6 py-4 rounded-t-2xl">
@@ -6695,8 +6695,15 @@ async function verDetallesTarea(tareaId) {
               ${tarea.fecha_limite ? `
                 <div class="p-4 bg-orange-50 rounded-lg">
                   <p class="text-xs text-orange-600 font-semibold mb-1">FECHA LÍMITE</p>
-                  <p class="text-lg font-bold text-gray-900">${new Date(tarea.fecha_limite).toLocaleDateString('es-ES')}</p>
+                  <p class="text-lg font-bold text-gray-900">${new Date(tarea.fecha_limite).toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year: 'numeric'})}</p>
                   <p class="text-sm text-gray-600">${new Date(tarea.fecha_limite).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}</p>
+                </div>
+              ` : ''}
+              
+              ${tarea.trabajo_id ? `
+                <div class="p-4 bg-indigo-50 rounded-lg col-span-2">
+                  <p class="text-xs text-indigo-600 font-semibold mb-1">TRABAJO ASOCIADO</p>
+                  <p class="text-lg font-bold text-gray-900">${tarea.cliente_nombre || 'Cliente'} - ${tarea.trabajo_tipo || 'Trabajo'}</p>
                 </div>
               ` : ''}
               
@@ -6789,9 +6796,11 @@ async function showNuevaTarea() {
     const response = await axios.get(`${API}/trabajos`);
     if (response.data && Array.isArray(response.data)) {
       const trabajosActivos = response.data.filter(t => t.estado !== 'completado' && t.estado !== 'cancelado');
-      trabajosOptions += trabajosActivos.map(t => 
-        `<option value="${t.id}">${t.nombre_cliente || 'Sin nombre'} - ${t.nombre_trabajo || 'Sin descripción'}</option>`
-      ).join('');
+      trabajosOptions += trabajosActivos.map(t => {
+        const clienteNombre = t.cliente_nombre || t.nombre_cliente || 'Sin nombre'
+        const trabajoDesc = t.nombre_trabajo || t.descripcion || t.tipo_servicio || 'Sin descripción'
+        return `<option value="${t.id}">${clienteNombre} - ${trabajoDesc}</option>`
+      }).join('');
     }
   } catch (error) {
     console.error('Error cargando trabajos:', error);
@@ -6995,9 +7004,11 @@ async function editarTarea(tareaId) {
       const response = await axios.get(`${API}/trabajos`);
       if (response.data && Array.isArray(response.data)) {
         const trabajosActivos = response.data.filter(t => t.estado !== 'completado' && t.estado !== 'cancelado');
-        trabajosOptions += trabajosActivos.map(t => 
-          `<option value="${t.id}" ${tarea.trabajo_id === t.id ? 'selected' : ''}>${t.nombre_cliente || 'Sin nombre'} - ${t.nombre_trabajo || 'Sin descripción'}</option>`
-        ).join('');
+        trabajosOptions += trabajosActivos.map(t => {
+          const clienteNombre = t.cliente_nombre || t.nombre_cliente || 'Sin nombre'
+          const trabajoDesc = t.nombre_trabajo || t.descripcion || t.tipo_servicio || 'Sin descripción'
+          return `<option value="${t.id}" ${tarea.trabajo_id === t.id ? 'selected' : ''}>${clienteNombre} - ${trabajoDesc}</option>`
+        }).join('');
       }
     } catch (error) {
       console.error('Error cargando trabajos:', error);
