@@ -172,6 +172,12 @@ function showToast(message, type = 'info') {
   }, 3000)
 }
 
+// Alias para compatibilidad
+const showNotification = showToast
+const showError = (msg) => showToast(msg, 'error')
+const showSuccess = (msg) => showToast(msg, 'success')
+const showWarning = (msg) => showToast(msg, 'warning')
+
 // Loading spinner
 function showLoading(message = 'Cargando...') {
   console.log('📊 showLoading llamado:', message)

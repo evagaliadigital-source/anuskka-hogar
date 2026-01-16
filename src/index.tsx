@@ -230,11 +230,9 @@ app.get('/api/trabajos', async (c) => {
   
   let query = `
     SELECT t.*, 
-           c.nombre as cliente_nombre, c.apellidos as cliente_apellidos,
-           e.nombre as empleada_nombre, e.apellidos as empleada_apellidos
+           c.nombre as cliente_nombre, c.apellidos as cliente_apellidos
     FROM trabajos t
     LEFT JOIN clientes c ON t.cliente_id = c.id
-    LEFT JOIN empleadas e ON t.empleada_id = e.id
     WHERE 1=1
   `
   const bindings: any[] = []
@@ -261,11 +259,9 @@ app.get('/api/trabajos/:id', async (c) => {
   
   const trabajo = await c.env.DB.prepare(`
     SELECT t.*, 
-           c.nombre as cliente_nombre, c.apellidos as cliente_apellidos,
-           e.nombre as empleada_nombre, e.apellidos as empleada_apellidos
+           c.nombre as cliente_nombre, c.apellidos as cliente_apellidos
     FROM trabajos t
     LEFT JOIN clientes c ON t.cliente_id = c.id
-    LEFT JOIN empleadas e ON t.empleada_id = e.id
     WHERE t.id = ?
   `).bind(id).first()
   
