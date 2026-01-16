@@ -230,7 +230,8 @@ app.get('/api/trabajos', async (c) => {
   
   let query = `
     SELECT t.*, 
-           c.nombre as cliente_nombre, c.apellidos as cliente_apellidos
+           c.nombre as cliente_nombre, c.apellidos as cliente_apellidos,
+           t.descripcion as nombre_trabajo
     FROM trabajos t
     LEFT JOIN clientes c ON t.cliente_id = c.id
     WHERE 1=1
@@ -259,7 +260,8 @@ app.get('/api/trabajos/:id', async (c) => {
   
   const trabajo = await c.env.DB.prepare(`
     SELECT t.*, 
-           c.nombre as cliente_nombre, c.apellidos as cliente_apellidos
+           c.nombre as cliente_nombre, c.apellidos as cliente_apellidos,
+           t.descripcion as nombre_trabajo
     FROM trabajos t
     LEFT JOIN clientes c ON t.cliente_id = c.id
     WHERE t.id = ?
