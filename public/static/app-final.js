@@ -6722,7 +6722,7 @@ async function loadTareas() {
         'instalar': 'bg-green-100 border-green-300',
         'medir': 'bg-yellow-100 border-yellow-300',
         'presupuesto': 'bg-purple-100 border-purple-300',
-        'pedidos': 'bg-orange-100 border-orange-300',
+        'pedidos': 'bg-red-100 border-red-300',
         'varios': 'bg-gray-50 border-gray-300'
       }
       
@@ -6732,7 +6732,7 @@ async function loadTareas() {
         'instalar': '<i class="fas fa-tools text-green-700"></i>',
         'medir': '<i class="fas fa-ruler text-yellow-700"></i>',
         'presupuesto': '<i class="fas fa-file-invoice-dollar text-purple-700"></i>',
-        'pedidos': '<i class="fas fa-box text-orange-700"></i>',
+        'pedidos': '<i class="fas fa-box text-red-700"></i>',
         'varios': '<i class="fas fa-tasks text-gray-700"></i>'
       }
       
@@ -8637,6 +8637,16 @@ function abrirNotasFlotante() {
       </div>
     </div>
     
+    <!-- AVISO: No usar para tareas -->
+    <div class="mx-6 mt-4 mb-2 px-4 py-3 bg-yellow-50 border border-yellow-300 rounded-lg flex items-start space-x-3">
+      <i class="fas fa-exclamation-triangle text-yellow-600 mt-0.5"></i>
+      <div class="flex-1 text-sm text-yellow-800">
+        <strong>⚠️ AVISO:</strong> Las notas rápidas son para recordatorios breves.
+        <br>
+        Para gestionar tareas completas, usa la sección <strong>"Tareas"</strong> del menú.
+      </div>
+    </div>
+    
     <div id="notas-panel-contenido" class="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-yellow-50 to-orange-50">
       <div class="text-center py-8 text-gray-500">
         <i class="fas fa-spinner fa-spin text-3xl mb-2"></i>
@@ -8843,7 +8853,7 @@ async function loadTareasKanban() {
           'instalar': 'bg-green-100 border-green-300',
           'medir': 'bg-yellow-100 border-yellow-300',
           'presupuesto': 'bg-purple-100 border-purple-300',
-          'pedidos': 'bg-orange-100 border-orange-300',
+          'pedidos': 'bg-red-100 border-red-300',
           'varios': 'bg-gray-50 border-gray-300'
         }
         
@@ -8853,7 +8863,7 @@ async function loadTareasKanban() {
           'instalar': '<i class="fas fa-tools text-green-700"></i>',
           'medir': '<i class="fas fa-ruler text-yellow-700"></i>',
           'presupuesto': '<i class="fas fa-file-invoice-dollar text-purple-700"></i>',
-          'pedidos': '<i class="fas fa-box text-orange-700"></i>',
+          'pedidos': '<i class="fas fa-box text-red-700"></i>',
           'varios': '<i class="fas fa-tasks text-gray-700"></i>'
         }
         
@@ -9474,7 +9484,7 @@ async function cargarCalendarioGlobal() {
                   'instalar': 'bg-green-200 text-green-800',
                   'medir': 'bg-yellow-200 text-yellow-800',
                   'presupuesto': 'bg-purple-200 text-purple-800',
-                  'pedidos': 'bg-orange-200 text-orange-800',
+                  'pedidos': 'bg-red-200 text-red-800',
                   'varios': 'bg-gray-200 text-gray-800'
                 }
                 return `
@@ -9547,7 +9557,7 @@ async function mostrarEventosDia(fechaStr) {
           'instalar': 'bg-green-100 border-green-300',
           'medir': 'bg-yellow-100 border-yellow-300',
           'presupuesto': 'bg-purple-100 border-purple-300',
-          'pedidos': 'bg-orange-100 border-orange-300',
+          'pedidos': 'bg-red-100 border-red-300',
           'varios': 'bg-gray-50 border-gray-300'
         }
         
