@@ -3110,12 +3110,29 @@ app.get('/', (c) => {
                 </div>
 
                 <!-- Lista de eventos del día seleccionado -->
-                <div id="calendario-global-eventos" class="hidden bg-white rounded-xl shadow-md p-6">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4" id="calendario-global-fecha-titulo">
-                        <!-- Fecha seleccionada -->
-                    </h3>
-                    <div id="calendario-global-eventos-lista" class="space-y-4">
+                <!-- Diario del Día (Modal estilo cuaderno) -->
+                <div id="calendario-global-eventos" class="hidden">
+                    <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl shadow-2xl p-8 border-4 border-amber-200" style="max-height: 70vh; overflow-y: auto;">
+                        <!-- Header del diario con navegación -->
+                        <div id="calendario-global-fecha-titulo" class="mb-6">
+                            <!-- Se llena con JS -->
+                        </div>
+                        
+                        <!-- Línea decorativa -->
+                        <div class="border-t-2 border-dashed border-amber-300 mb-6"></div>
+                        
                         <!-- Eventos del día -->
+                        <div id="calendario-global-eventos-lista" class="space-y-4">
+                            <!-- Se llena con JS -->
+                        </div>
+                        
+                        <!-- Botón cerrar -->
+                        <div class="mt-6 pt-4 border-t-2 border-dashed border-amber-300 text-center">
+                            <button onclick="document.getElementById('calendario-global-eventos').classList.add('hidden')" 
+                                    class="bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-lg transition-all font-medium">
+                                <i class="fas fa-times mr-2"></i>Cerrar Diario
+                            </button>
+                        </div>
                     </div>
                 </div>
 

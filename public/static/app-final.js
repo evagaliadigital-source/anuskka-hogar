@@ -9517,7 +9517,24 @@ async function cargarCalendarioGlobal() {
   }
 }
 
+// Variable global para la fecha actual del diario
+let diarioFechaActual = null
+
 async function mostrarEventosDia(fechaStr) {
+  diarioFechaActual = fechaStr
+  await cargarDiarioDia(fechaStr)
+}
+
+// Función para navegar entre días
+function cambiarDiaDiario(direccion) {
+  const fecha = new Date(diarioFechaActual)
+  fecha.setDate(fecha.getDate() + direccion)
+  diarioFechaActual = fecha.toISOString().split('T')[0]
+  cargarDiarioDia(diarioFechaActual)
+}
+
+// Función principal del diario
+async function cargarDiarioDia(fechaStr) {
   try {
     const fecha = new Date(fechaStr)
     const { data: tareas } = await axios.get(`${API}/tareas?estado=todas`)
@@ -9534,57 +9551,145 @@ async function mostrarEventosDia(fechaStr) {
       return new Date(t.fecha_programada).toISOString().split('T')[0] === fechaStr
     })
     
+    // Mostrar modal estilo diario
+    document.getElementById('calendario-global-eventos').classList.remove('hidden')
+    
+    // Título con navegación de flechas
+    const fechaTitulo = fecha.toLocaleDateString('es-ES', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    })
+    
+    document.getElementById('calendario-global-fecha-titulo').innerHTML = `
+      <div class="flex items-center justify-between">
+        <button onclick="cambiarDiaDiario(-1)" 
+                class="p-2 hover:bg-gray-100 rounded-lg transition-all" 
+                title="Día anterior">
+          <i class="fas fa-chevron-left text-xl"></i>
+        </button>
+        <div class="text-center flex-1">
+          <h3 class="text-2xl font-bold text-gray-800 capitalize">${fechaTitulo}</h3>
+          <p class="text-sm text-gray-500 mt-1">${tareasDia.length + trabajosDia.length} eventos programados</p>
+        </div>
+        <button onclick="cambiarDiaDiario(1)" 
+                class="p-2 hover:bg-gray-100 rounded-lg transition-all" 
+                title="Día siguiente">
+          <i class="fas fa-chevron-right text-xl"></i>
+        </button>
+      </div>
+    `
+    
+    const lista = document.getElementById('calendario-global-eventos-lista')
+    
     if (tareasDia.length === 0 && trabajosDia.length === 0) {
-      showNotification('No hay eventos programados para este día')
+      lista.innerHTML = `
+        <div class="text-center py-12 text-gray-400">
+          <i class="fas fa-calendar-times text-6xl mb-4 opacity-30"></i>
+          <p class="text-xl font-semibold">No hay eventos para este día</p>
+          <p class="text-sm mt-2">Usa las flechas para navegar a otros días</p>
+        </div>
+      `
       return
     }
     
-    // Mostrar modal con eventos
-    document.getElementById('calendario-global-eventos').classList.remove('hidden')
-    document.getElementById('calendario-global-fecha-titulo').textContent = 
-      `Eventos del ${fecha.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`
-    
-    const lista = document.getElementById('calendario-global-eventos-lista')
     lista.innerHTML = ''
     
-    // Tareas
+    // TAREAS - Con información completa y edición
     if (tareasDia.length > 0) {
-      lista.innerHTML += `<h4 class="font-bold text-gray-800 mb-2 flex items-center gap-2"><i class="fas fa-clipboard-list text-orange-600"></i>Tareas (${tareasDia.length})</h4>`
-      tareasDia.forEach(t => {
-        // Colores según tipo de tarea
+      lista.innerHTML += `
+        <div class="mb-6">
+          <h4 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2 border-b-2 border-orange-200 pb-2">
+            <i class="fas fa-clipboard-list text-orange-600"></i>
+            Tareas del Día (${tareasDia.length})
+          </h4>
+        </div>
+      `
+      
+      tareasDia.forEach((t, index) => {
+        // Colores según tipo
         const tipoColor = {
-          'llamar': 'bg-blue-100 border-blue-300',
-          'instalar': 'bg-green-100 border-green-300',
-          'medir': 'bg-yellow-100 border-yellow-300',
-          'presupuesto': 'bg-purple-100 border-purple-300',
-          'pedidos': 'bg-red-100 border-red-300',
-          'varios': 'bg-gray-50 border-gray-300'
+          'llamar': { bg: 'bg-blue-100', border: 'border-blue-300', icon: 'fa-phone', color: 'text-blue-700' },
+          'instalar': { bg: 'bg-green-100', border: 'border-green-300', icon: 'fa-tools', color: 'text-green-700' },
+          'medir': { bg: 'bg-yellow-100', border: 'border-yellow-300', icon: 'fa-ruler', color: 'text-yellow-700' },
+          'presupuesto': { bg: 'bg-purple-100', border: 'border-purple-300', icon: 'fa-file-invoice-dollar', color: 'text-purple-700' },
+          'pedidos': { bg: 'bg-red-100', border: 'border-red-300', icon: 'fa-box', color: 'text-red-700' },
+          'varios': { bg: 'bg-gray-50', border: 'border-gray-300', icon: 'fa-tasks', color: 'text-gray-700' }
         }
         
+        const tipo = tipoColor[t.tipo] || tipoColor['varios']
+        
         const estadoBadge = {
-          'pendiente': '<span class="px-2 py-1 bg-orange-200 text-orange-900 text-xs rounded-full font-semibold">⏳ Pendiente</span>',
-          'en_proceso': '<span class="px-2 py-1 bg-blue-200 text-blue-900 text-xs rounded-full font-semibold">🔄 En Proceso</span>',
-          'completada': '<span class="px-2 py-1 bg-green-200 text-green-900 text-xs rounded-full font-semibold">✅ Completada</span>',
-          'cancelada': '<span class="px-2 py-1 bg-gray-200 text-gray-900 text-xs rounded-full font-semibold">❌ Cancelada</span>'
+          'pendiente': '<span class="px-3 py-1 bg-orange-200 text-orange-900 text-xs rounded-full font-semibold">⏳ Pendiente</span>',
+          'en_proceso': '<span class="px-3 py-1 bg-blue-200 text-blue-900 text-xs rounded-full font-semibold">🔄 En Proceso</span>',
+          'completada': '<span class="px-3 py-1 bg-green-200 text-green-900 text-xs rounded-full font-semibold">✅ Completada</span>',
+          'cancelada': '<span class="px-3 py-1 bg-gray-200 text-gray-900 text-xs rounded-full font-semibold">❌ Cancelada</span>'
+        }
+        
+        const prioridadIcon = {
+          'alta': '<span class="text-red-600 font-bold">🔥 Alta</span>',
+          'media': '<span class="text-yellow-600 font-bold">🟡 Media</span>',
+          'baja': '<span class="text-green-600 font-bold">🟢 Baja</span>'
         }
         
         lista.innerHTML += `
-          <div class="${tipoColor[t.tipo] || 'bg-gray-50 border-gray-300'} border-2 rounded-lg p-4 hover:shadow-md transition-all">
-            <div class="flex items-start justify-between mb-2">
-              <div class="flex-1">
-                <h5 class="font-bold text-gray-900">${t.titulo}</h5>
-                <p class="text-sm text-gray-700 mt-1">${t.descripcion || 'Sin descripción'}</p>
+          <div class="${tipo.bg} ${tipo.border} border-l-4 rounded-lg p-5 mb-4 shadow-sm hover:shadow-md transition-all">
+            <!-- Header -->
+            <div class="flex items-start justify-between mb-3">
+              <div class="flex items-center gap-3">
+                <i class="fas ${tipo.icon} ${tipo.color} text-2xl"></i>
+                <div>
+                  <h5 class="text-lg font-bold text-gray-900">${t.titulo}</h5>
+                  <span class="text-xs ${tipo.color} font-semibold uppercase">${t.tipo.replace(/_/g, ' ')}</span>
+                </div>
               </div>
               ${estadoBadge[t.estado]}
             </div>
-            <div class="flex items-center gap-4 text-xs text-gray-600 mt-2">
-              ${t.asignado_a ? `<span><i class="fas fa-user mr-1"></i>${t.asignado_a}</span>` : ''}
-              <span><i class="fas fa-clock mr-1"></i>${new Date(t.fecha_limite).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}</span>
+            
+            <!-- Descripción -->
+            ${t.descripcion ? `
+              <div class="bg-white/70 rounded-lg p-3 mb-3">
+                <p class="text-sm text-gray-700 leading-relaxed">${t.descripcion}</p>
+              </div>
+            ` : ''}
+            
+            <!-- Información detallada -->
+            <div class="grid grid-cols-2 gap-3 text-sm mb-3">
+              <div class="flex items-center gap-2 text-gray-700">
+                <i class="fas fa-clock text-gray-500"></i>
+                <span><strong>Hora:</strong> ${new Date(t.fecha_limite).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}</span>
+              </div>
+              
+              <div class="flex items-center gap-2 text-gray-700">
+                <i class="fas fa-flag text-gray-500"></i>
+                <span><strong>Prioridad:</strong> ${prioridadIcon[t.prioridad] || 'Media'}</span>
+              </div>
+              
+              ${t.asignado_a ? `
+                <div class="flex items-center gap-2 text-gray-700">
+                  <i class="fas fa-user text-gray-500"></i>
+                  <span><strong>Asignado:</strong> ${t.asignado_a}</span>
+                </div>
+              ` : ''}
+              
+              ${t.cliente_nombre ? `
+                <div class="flex items-center gap-2 text-gray-700">
+                  <i class="fas fa-user-tie text-gray-500"></i>
+                  <span><strong>Cliente:</strong> ${t.cliente_nombre}</span>
+                </div>
+              ` : ''}
             </div>
-            <div class="mt-3">
-              <button onclick="showTab('tareas'); setTimeout(() => verDetallesTarea(${t.id}), 300)" 
-                      class="text-sm text-orange-600 hover:text-orange-700 font-medium">
-                <i class="fas fa-eye mr-1"></i>Ver Detalles
+            
+            <!-- Acciones -->
+            <div class="flex items-center gap-2 pt-3 border-t border-gray-300/50">
+              <button onclick="editarTarea(${t.id})" 
+                      class="flex-1 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg transition-all text-sm font-medium border border-gray-300">
+                <i class="fas fa-edit mr-2"></i>Editar
+              </button>
+              <button onclick="verDetallesTarea(${t.id})" 
+                      class="flex-1 bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-all text-sm font-medium">
+                <i class="fas fa-eye mr-2"></i>Ver Completo
               </button>
             </div>
           </div>
@@ -9592,36 +9697,91 @@ async function mostrarEventosDia(fechaStr) {
       })
     }
     
-    // Trabajos
+    // TRABAJOS - Con información completa y edición
     if (trabajosDia.length > 0) {
-      lista.innerHTML += `<h4 class="font-bold text-gray-800 mt-4 mb-2 flex items-center gap-2"><i class="fas fa-briefcase text-gray-700"></i>Trabajos (${trabajosDia.length})</h4>`
+      lista.innerHTML += `
+        <div class="mt-8 mb-6">
+          <h4 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2 border-b-2 border-gray-300 pb-2">
+            <i class="fas fa-briefcase text-gray-700"></i>
+            Trabajos del Día (${trabajosDia.length})
+          </h4>
+        </div>
+      `
+      
       trabajosDia.forEach(t => {
         const estadoBadge = {
-          'pendiente': '<span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">⏳ Pendiente</span>',
-          'en_proceso': '<span class="px-2 py-1 bg-indigo-100 text-indigo-700 text-xs rounded-full">🔄 En Proceso</span>',
-          'completado': '<span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">✅ Completado</span>',
-          'cancelado': '<span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">❌ Cancelado</span>'
+          'pendiente': '<span class="px-3 py-1 bg-orange-200 text-orange-900 text-xs rounded-full font-semibold">⏳ Pendiente</span>',
+          'en_proceso': '<span class="px-3 py-1 bg-blue-200 text-blue-900 text-xs rounded-full font-semibold">🔄 En Proceso</span>',
+          'completado': '<span class="px-3 py-1 bg-green-200 text-green-900 text-xs rounded-full font-semibold">✅ Completado</span>',
+          'cancelado': '<span class="px-3 py-1 bg-gray-200 text-gray-900 text-xs rounded-full font-semibold">❌ Cancelado</span>'
         }
         
         lista.innerHTML += `
-          <div class="bg-white border-2 border-purple-200 rounded-lg p-4 hover:shadow-md transition-all">
-            <div class="flex items-start justify-between mb-2">
-              <div class="flex-1">
-                <h5 class="font-bold text-gray-900">${t.cliente_nombre} ${t.cliente_apellidos}</h5>
-                <p class="text-sm text-gray-600 mt-1">${t.tipo_servicio.replace(/_/g, ' ')}</p>
-                ${t.descripcion ? `<p class="text-sm text-gray-500 mt-1">${t.descripcion}</p>` : ''}
+          <div class="bg-white border-l-4 border-gray-700 rounded-lg p-5 mb-4 shadow-sm hover:shadow-md transition-all">
+            <!-- Header -->
+            <div class="flex items-start justify-between mb-3">
+              <div class="flex items-center gap-3">
+                <i class="fas fa-briefcase text-gray-700 text-2xl"></i>
+                <div>
+                  <h5 class="text-lg font-bold text-gray-900">${t.cliente_nombre || 'Sin nombre'} ${t.cliente_apellidos || ''}</h5>
+                  <span class="text-xs text-gray-600 font-semibold uppercase">${(t.tipo_servicio || 'Sin tipo').replace(/_/g, ' ')}</span>
+                </div>
               </div>
               ${estadoBadge[t.estado]}
             </div>
-            <div class="flex items-center gap-4 text-xs text-gray-500 mt-2">
-              ${t.nombre_empleada ? `<span><i class="fas fa-user mr-1"></i>${t.nombre_empleada}</span>` : ''}
-              <span><i class="fas fa-clock mr-1"></i>${new Date(t.fecha_programada).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}</span>
-              ${t.precio_cliente ? `<span><i class="fas fa-euro-sign mr-1"></i>${t.precio_cliente.toFixed(2)}</span>` : ''}
+            
+            <!-- Descripción -->
+            ${t.descripcion ? `
+              <div class="bg-gray-50 rounded-lg p-3 mb-3">
+                <p class="text-sm text-gray-700 leading-relaxed">${t.descripcion}</p>
+              </div>
+            ` : ''}
+            
+            <!-- Información detallada -->
+            <div class="grid grid-cols-2 gap-3 text-sm mb-3">
+              <div class="flex items-center gap-2 text-gray-700">
+                <i class="fas fa-clock text-gray-500"></i>
+                <span><strong>Hora:</strong> ${new Date(t.fecha_programada).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}</span>
+              </div>
+              
+              ${t.duracion_estimada ? `
+                <div class="flex items-center gap-2 text-gray-700">
+                  <i class="fas fa-hourglass-half text-gray-500"></i>
+                  <span><strong>Duración:</strong> ${t.duracion_estimada} min</span>
+                </div>
+              ` : ''}
+              
+              ${t.nombre_empleada ? `
+                <div class="flex items-center gap-2 text-gray-700">
+                  <i class="fas fa-user text-gray-500"></i>
+                  <span><strong>Empleada:</strong> ${t.nombre_empleada}</span>
+                </div>
+              ` : ''}
+              
+              ${t.precio_cliente ? `
+                <div class="flex items-center gap-2 text-gray-700">
+                  <i class="fas fa-euro-sign text-gray-500"></i>
+                  <span><strong>Precio:</strong> ${t.precio_cliente.toFixed(2)}€</span>
+                </div>
+              ` : ''}
+              
+              ${t.direccion ? `
+                <div class="col-span-2 flex items-center gap-2 text-gray-700">
+                  <i class="fas fa-map-marker-alt text-gray-500"></i>
+                  <span><strong>Dirección:</strong> ${t.direccion}</span>
+                </div>
+              ` : ''}
             </div>
-            <div class="mt-3">
-              <button onclick="showTab('trabajos'); setTimeout(() => viewTrabajo(${t.id}), 300)" 
-                      class="text-sm text-purple-600 hover:text-purple-700 font-medium">
-                <i class="fas fa-eye mr-1"></i>Ver Detalles
+            
+            <!-- Acciones -->
+            <div class="flex items-center gap-2 pt-3 border-t border-gray-300/50">
+              <button onclick="editTrabajo(${t.id})" 
+                      class="flex-1 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg transition-all text-sm font-medium border border-gray-300">
+                <i class="fas fa-edit mr-2"></i>Editar
+              </button>
+              <button onclick="viewTrabajo(${t.id})" 
+                      class="flex-1 bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition-all text-sm font-medium">
+                <i class="fas fa-eye mr-2"></i>Ver Completo
               </button>
             </div>
           </div>
@@ -9630,7 +9790,7 @@ async function mostrarEventosDia(fechaStr) {
     }
     
   } catch (error) {
-    console.error('Error mostrando eventos:', error)
+    console.error('Error cargando diario:', error)
     showNotification('Error al cargar eventos del día', 'error')
   }
 }
