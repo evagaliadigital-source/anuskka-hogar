@@ -6716,34 +6716,30 @@ async function loadTareas() {
         'cancelada': '<span class="px-3 py-1 bg-gray-100 text-gray-800 text-sm rounded-full">❌ Cancelada</span>'
       }
       
+      // Colores de tarjeta según tipo
+      const tipoColor = {
+        'llamar': 'border-l-4 border-blue-500 bg-blue-50',
+        'instalar': 'border-l-4 border-green-500 bg-green-50',
+        'medir': 'border-l-4 border-yellow-500 bg-yellow-50',
+        'presupuesto': 'border-l-4 border-purple-500 bg-purple-50',
+        'pedidos': 'border-l-4 border-orange-500 bg-orange-50',
+        'varios': 'border-l-4 border-gray-400 bg-white'
+      }
+      
+      // Iconos según tipo
       const tipoIcon = {
-        'añadir_tela_stock': '<i class="fas fa-fabric text-purple-600"></i>',
-        'revisar_presupuesto': '<i class="fas fa-file-invoice text-orange-600"></i>',
-        'seguimiento_cliente': '<i class="fas fa-phone text-blue-600"></i>'
+        'llamar': '<i class="fas fa-phone text-blue-600"></i>',
+        'instalar': '<i class="fas fa-tools text-green-600"></i>',
+        'medir': '<i class="fas fa-ruler text-yellow-600"></i>',
+        'presupuesto': '<i class="fas fa-file-invoice-dollar text-purple-600"></i>',
+        'pedidos': '<i class="fas fa-box text-orange-600"></i>',
+        'varios': '<i class="fas fa-tasks text-gray-600"></i>'
       }
       
       let detalleHTML = ''
-      if (t.tipo === 'añadir_tela_stock' && t.datos_tarea) {
-        const datos = t.datos_tarea
-        detalleHTML = `
-          <div class="mt-3 p-3 bg-gray-50 rounded-lg flex items-center gap-4">
-            ${datos.imagen_url ? `<img src="${datos.imagen_url}" class="w-20 h-20 object-cover rounded-lg border-2 border-purple-200">` : ''}
-            <div class="flex-1">
-              <p class="text-sm text-gray-600"><strong>Nombre:</strong> ${datos.tela_nombre}</p>
-              <p class="text-sm text-gray-600"><strong>Precio:</strong> ${datos.tela_precio}€/m²</p>
-              <p class="text-sm text-gray-600"><strong>Referencia:</strong> ${datos.referencia}</p>
-            </div>
-            ${t.estado === 'pendiente' ? `
-              <button onclick="completarTareaTela(${t.id})" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all">
-                <i class="fas fa-check mr-2"></i>Añadir al Catálogo
-              </button>
-            ` : ''}
-          </div>
-        `
-      }
       
       return `
-        <div class="bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 overflow-hidden ${modoSeleccionMultiple ? 'cursor-pointer' : ''}" ${modoSeleccionMultiple ? `onclick="toggleSeleccionTarea(${t.id})"` : ''}>
+        <div class="bg-white rounded-lg ${tipoColor[t.tipo] || 'border-l-4 border-gray-400'} hover:shadow-lg transition-all duration-200 overflow-hidden ${modoSeleccionMultiple ? 'cursor-pointer' : ''}" ${modoSeleccionMultiple ? `onclick="toggleSeleccionTarea(${t.id})"` : ''}>
           <!-- Header Compacto -->
           <div class="bg-gradient-to-r from-slate-50 via-gray-50 to-slate-50 px-4 py-2.5 border-b border-gray-200">
             <div class="flex items-center justify-between">
@@ -7174,23 +7170,14 @@ async function showNuevaTarea() {
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
-              <select id="tipo-tarea-select" name="tipo" onchange="toggleTipoManual(this)" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
-                <option value="general">General</option>
-                <option value="seguimiento_cliente">Seguimiento Cliente</option>
-                <option value="revisar_presupuesto">Revisar Presupuesto</option>
-                <option value="añadir_tela_stock">Añadir Tela a Stock</option>
-                <option value="llamada_telefonica">Llamada Telefónica</option>
-                <option value="enviar_email">Enviar Email</option>
-                <option value="reunion">Reunión</option>
-                <option value="instalacion">Instalación</option>
-                <option value="medicion">Medición</option>
-                <option value="cotizacion">Cotización</option>
-                <option value="manual">✏️ Otro (escribir manualmente)</option>
+              <select id="tipo-tarea-select" name="tipo" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
+                <option value="llamar">📞 Llamar</option>
+                <option value="instalar">🔧 Instalar</option>
+                <option value="medir">📏 Medir</option>
+                <option value="presupuesto">💰 Presupuesto</option>
+                <option value="pedidos">📦 Pedidos</option>
+                <option value="varios">📋 Varios</option>
               </select>
-              <input type="text" id="tipo-tarea-manual" name="tipo_manual" 
-                     placeholder="Escribe el tipo de tarea..." 
-                     style="display: none;"
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500 mt-2">
             </div>
             
             <div>
@@ -7898,23 +7885,14 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
-              <select id="tipo-tarea-select" name="tipo" onchange="toggleTipoManual(this)" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
-                <option value="general">General</option>
-                <option value="seguimiento_cliente">Seguimiento Cliente</option>
-                <option value="revisar_presupuesto">Revisar Presupuesto</option>
-                <option value="añadir_tela_stock">Añadir Tela a Stock</option>
-                <option value="llamada_telefonica">Llamada Telefónica</option>
-                <option value="enviar_email">Enviar Email</option>
-                <option value="reunion">Reunión</option>
-                <option value="instalacion">Instalación</option>
-                <option value="medicion">Medición</option>
-                <option value="cotizacion">Cotización</option>
-                <option value="manual">✏️ Otro (escribir manualmente)</option>
+              <select id="tipo-tarea-select" name="tipo" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
+                <option value="llamar">📞 Llamar</option>
+                <option value="instalar">🔧 Instalar</option>
+                <option value="medir">📏 Medir</option>
+                <option value="presupuesto">💰 Presupuesto</option>
+                <option value="pedidos">📦 Pedidos</option>
+                <option value="varios">📋 Varios</option>
               </select>
-              <input type="text" id="tipo-tarea-manual" name="tipo_manual" 
-                     placeholder="Escribe el tipo de tarea..." 
-                     style="display: none;"
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500 mt-2">
             </div>
             
             <div>
@@ -8859,16 +8837,40 @@ async function loadTareasKanban() {
           ? new Date(tarea.fecha_limite).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
           : 'Sin fecha'
         
+        // Colores según tipo de tarea
+        const tipoColor = {
+          'llamar': 'border-l-4 border-blue-500 bg-blue-50',
+          'instalar': 'border-l-4 border-green-500 bg-green-50',
+          'medir': 'border-l-4 border-yellow-500 bg-yellow-50',
+          'presupuesto': 'border-l-4 border-purple-500 bg-purple-50',
+          'pedidos': 'border-l-4 border-orange-500 bg-orange-50',
+          'varios': 'border-l-4 border-gray-400 bg-white'
+        }
+        
+        // Iconos según tipo
+        const tipoIcon = {
+          'llamar': '<i class="fas fa-phone text-blue-600"></i>',
+          'instalar': '<i class="fas fa-tools text-green-600"></i>',
+          'medir': '<i class="fas fa-ruler text-yellow-600"></i>',
+          'presupuesto': '<i class="fas fa-file-invoice-dollar text-purple-600"></i>',
+          'pedidos': '<i class="fas fa-box text-orange-600"></i>',
+          'varios': '<i class="fas fa-tasks text-gray-600"></i>'
+        }
+        
         return `
-          <div class="tarea-kanban-card bg-white rounded-lg p-4 shadow-sm border border-gray-200 hover:shadow-md transition-all cursor-move"
+          <div class="tarea-kanban-card ${tipoColor[tarea.tipo] || 'border-l-4 border-gray-400'} rounded-lg p-4 shadow-sm hover:shadow-md transition-all cursor-move"
                draggable="true"
                data-tarea-id="${tarea.id}"
                data-estado="${tarea.estado}">
             <div class="flex items-start justify-between mb-2">
               <div class="flex items-center gap-2 flex-1">
-                <span class="text-lg">${prioridadIcono}</span>
+                <span class="text-lg">${tipoIcon[tarea.tipo] || '<i class="fas fa-tasks text-gray-600"></i>'}</span>
                 <h4 class="font-semibold text-gray-900 text-sm">${tarea.titulo}</h4>
               </div>
+              <span class="text-lg">${prioridadIcono}</span>
+            </div>
+            <div class="mb-2">
+              <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700 font-medium">${tarea.tipo.replace(/_/g, ' ').toUpperCase()}</span>
             </div>
             ${tarea.descripcion ? `<p class="text-xs text-gray-600 mb-3">${tarea.descripcion.substring(0, 80)}${tarea.descripcion.length > 80 ? '...' : ''}</p>` : ''}
             <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
