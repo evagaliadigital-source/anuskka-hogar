@@ -2099,6 +2099,20 @@ app.get('/', (c) => {
                     <img src="/static/logo.jpg" alt="Anushka Hogar" class="h-16 object-contain">
                 </div>
                 <div class="flex items-center space-x-4">
+                    <!-- Botón de Notas -->
+                    <button onclick="abrirNotasFlotante()" class="relative bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-white px-4 py-2 rounded-lg transition-all shadow-md hover:shadow-lg" title="Notas rápidas">
+                        <i class="fas fa-sticky-note text-lg"></i>
+                    </button>
+                    
+                    <!-- Botón de GAL IA -->
+                    <button onclick="openGalIA()" class="relative bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300 px-3 py-2 rounded-lg transition-all shadow-md hover:shadow-lg group" title="¡Hola! Soy GAL IA, tu asistente virtual">
+                        <div class="flex items-center gap-2">
+                            <img src="/static/galia-pulpo.png" alt="GAL IA" class="w-6 h-6 object-contain group-hover:scale-110 transition-transform">
+                            <span class="text-sm font-semibold text-gray-700">GAL IA</span>
+                        </div>
+                        <span id="galia-badge" class="hidden absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg">!</span>
+                    </button>
+                    
                     <!-- Botón de Avisos -->
                     <button onclick="toggleAvisos()" class="relative bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg transition-all">
                         <i class="fas fa-bell text-xl"></i>
@@ -3463,21 +3477,6 @@ app.get('/', (c) => {
         </div>
 
     </div>
-
-    <!-- 📝 NOTAS - Botón Flotante (Lado Izquierdo) -->
-    <button id="notas-float-btn" onclick="abrirNotasFlotante()" 
-            class="fixed bottom-8 left-8 w-20 h-20 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 z-50 bg-gradient-to-br from-yellow-300 to-yellow-500 flex items-center justify-center hover:shadow-yellow-500/50"
-            title="Notas rápidas">
-        <i class="fas fa-sticky-note text-white text-3xl"></i>
-    </button>
-
-    <!-- 🐙 GAL IA - Asistente Flotante (Lado Derecho) -->
-    <button id="galia-float-btn" onclick="openGalIA()" 
-            class="fixed bottom-8 right-8 w-20 h-20 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 z-50 bg-white p-2 hover:animate-none"
-            title="¡Hola! Soy GAL IA, tu asistente virtual">
-        <img src="/static/galia-pulpo.png" alt="GAL IA" class="w-full h-full object-contain">
-        <span id="galia-badge" class="hidden absolute -top-2 -right-2 bg-brand-orange text-white text-sm rounded-full w-7 h-7 flex items-center justify-center font-bold shadow-lg">!</span>
-    </button>
 
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <!-- SheetJS para parsear Excel -->
