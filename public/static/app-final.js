@@ -8820,13 +8820,25 @@ async function loadTareasKanban() {
     document.getElementById('kanban-count-cancelada').textContent = tareasAgrupadas.cancelada.length
     
     // Renderizar cada columna
-    for (const [estado, listaTareas] of Object.entries(tareasAgrupadas)) {
+    const estados = ['pendiente', 'en_proceso', 'completada', 'cancelada']
+    
+    estados.forEach(estado => {
       const contenedor = document.getElementById(`kanban-${estado}`)
-      if (!contenedor) continue
+      if (!contenedor) return
+      
+      const listaTareas = tareasAgrupadas[estado] || []
       
       if (listaTareas.length === 0) {
         contenedor.innerHTML = '<p class="text-gray-400 text-center py-8">Sin tareas</p>'
-        continue
+        // Configurar drop incluso si no hay tareas
+        contenedor.ondragover = (e) => e.preventDefault()
+        contenedor.ondrop = (e) => {
+          e.preventDefault()
+          if (tareaArrastrando) {
+            dropTareaEnColumna(e, estado)
+          }
+        }
+        return
       }
       
       contenedor.innerHTML = listaTareas.map(tarea => {
@@ -8867,6 +8879,7 @@ async function loadTareasKanban() {
       }).join('')
       
       // Añadir eventos de drop a cada columna
+      console.log(`🔧 Configurando columna ${estado}`)
       contenedor.ondragover = (e) => {
         e.preventDefault()
         contenedor.classList.add('bg-gray-100')
@@ -8877,14 +8890,22 @@ async function loadTareasKanban() {
       }
       
       contenedor.ondrop = (e) => {
+        console.log(`💧 DROP en columna ${estado}`)
         e.preventDefault()
+        e.stopPropagation()
         contenedor.classList.remove('bg-gray-100')
-        dropTareaEnColumna(e, estado)
+        if (tareaArrastrando) {
+          dropTareaEnColumna(e, estado)
+        }
       }
-    }
+    })
+    
     
     // Añadir eventos drag a TODAS las tarjetas (después de renderizar todas las columnas)
-    document.querySelectorAll('.tarea-kanban-card').forEach(card => {
+    const tarjetas = document.querySelectorAll('.tarea-kanban-card')
+    console.log('🔍 Total tarjetas encontradas:', tarjetas.length)
+    tarjetas.forEach((card, index) => {
+      console.log(`📌 Añadiendo eventos a tarjeta ${index + 1}:`, card.dataset)
       card.addEventListener('dragstart', dragStartTarea)
       card.addEventListener('dragend', dragEndTarea)
     })
@@ -8899,26 +8920,42 @@ async function loadTareasKanban() {
 let tareaArrastrando = null
 
 function dragStartTarea(event) {
+  const card = event.currentTarget
+  console.log('🔥 dragStartTarea called', card, card.dataset)
   tareaArrastrando = {
-    id: event.target.dataset.tareaId,
-    estadoAnterior: event.target.dataset.estado
+    id: card.dataset.tareaId,
+    estadoAnterior: card.dataset.estado
   }
-  event.target.style.opacity = '0.5'
+  card.style.opacity = '0.5'
+  console.log('✅ tareaArrastrando:', tareaArrastrando)
 }
 
 function dragEndTarea(event) {
-  event.target.style.opacity = '1'
+  const card = event.currentTarget
+  console.log('🔥 dragEndTarea called')
+  card.style.opacity = '1'
 }
 
 async function dropTareaEnColumna(event, nuevoEstado) {
-  if (!tareaArrastrando) return
+  console.log('🎯 dropTareaEnColumna called', { nuevoEstado, tareaArrastrando })
+  
+  if (!tareaArrastrando) {
+    console.error('❌ No hay tarea arrastrando')
+    return
+  }
   
   const tareaId = tareaArrastrando.id
   const estadoAnterior = tareaArrastrando.estadoAnterior
   
-  if (estadoAnterior === nuevoEstado) return
+  console.log('📋 Moviendo tarea:', { tareaId, estadoAnterior, nuevoEstado })
+  
+  if (estadoAnterior === nuevoEstado) {
+    console.log('⚠️ Estado igual, no hacer nada')
+    return
+  }
   
   try {
+    console.log('🚀 Enviando PUT a API...')
     const res = await fetch(`${API}/tareas/${tareaId}/estado`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -8928,7 +8965,10 @@ async function dropTareaEnColumna(event, nuevoEstado) {
       })
     })
     
+    console.log('📥 Respuesta API:', res.status, res.ok)
+    
     if (res.ok) {
+      console.log('✅ Tarea movida con éxito')
       showNotification('✅ Tarea movida correctamente', 'success')
       loadTareasKanban()
       actualizarContadorTareas()
@@ -8937,7 +8977,7 @@ async function dropTareaEnColumna(event, nuevoEstado) {
       throw new Error('Error al actualizar')
     }
   } catch (error) {
-    console.error('Error moviendo tarea:', error)
+    console.error('❌ Error moviendo tarea:', error)
     showNotification('❌ Error al mover tarea', 'error')
   }
   
