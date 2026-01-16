@@ -9814,6 +9814,8 @@ function cambiarMesGlobal(direccion) {
 window.cargarCalendarioGlobal = cargarCalendarioGlobal
 window.mostrarEventosDia = mostrarEventosDia
 window.cambiarMesGlobal = cambiarMesGlobal
+window.cambiarDiaDiario = cambiarDiaDiario
+window.cargarDiarioDia = cargarDiarioDia
 
 console.log('✅ Calendario global cargado')
 
