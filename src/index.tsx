@@ -2857,10 +2857,10 @@ app.get('/', (c) => {
                     <div class="flex flex-wrap gap-4 items-center justify-between mb-4">
                         <!-- Selector de vista -->
                         <div class="flex gap-2">
-                            <button onclick="cambiarVistaTareas('lista')" id="vista-lista-btn" class="vista-tareas-btn bg-gray-700 text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-all" title="Ver tareas en lista vertical">
+                            <button onclick="cambiarVistaTareas('lista')" id="vista-lista-btn" class="vista-tareas-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-all" title="Ver tareas en lista vertical">
                                 <i class="fas fa-list mr-2"></i>Lista
                             </button>
-                            <button onclick="cambiarVistaTareas('miniatura')" id="vista-miniatura-btn" class="vista-tareas-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-all" title="Ver tareas en tabla compacta">
+                            <button onclick="cambiarVistaTareas('miniatura')" id="vista-miniatura-btn" class="vista-tareas-btn bg-gray-700 text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-all" title="Ver tareas en tabla compacta">
                                 <i class="fas fa-table mr-2"></i>Miniatura
                             </button>
                             <button onclick="cambiarVistaTareas('kanban')" id="vista-kanban-btn" class="vista-tareas-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-all" title="Ver tareas por columnas de estado">
@@ -2966,7 +2966,7 @@ app.get('/', (c) => {
                 </div>
 
                 <!-- VISTA LISTA -->
-                <div id="vista-tareas-lista" class="vista-tareas-content">
+                <div id="vista-tareas-lista" class="vista-tareas-content hidden">
                     <div class="space-y-2" id="tareas-lista">
                         <!-- Se llena dinámicamente -->
                     </div>
@@ -3013,7 +3013,7 @@ app.get('/', (c) => {
                 </div>
 
                 <!-- VISTA MINIATURA (TABLA COMPACTA) -->
-                <div id="vista-tareas-miniatura" class="vista-tareas-content hidden">
+                <div id="vista-tareas-miniatura" class="vista-tareas-content">
                     <div class="bg-white rounded-xl shadow-md overflow-hidden">
                         <div class="overflow-x-auto">
                             <table class="w-full text-sm" id="tareas-miniatura-table">

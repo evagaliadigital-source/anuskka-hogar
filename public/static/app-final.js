@@ -9135,7 +9135,7 @@ window.eliminarNotaYRecargar = eliminarNotaYRecargar
 // ============================================
 
 // Variables globales de tareas
-let vistaActualTareas = 'lista'
+let vistaActualTareas = 'miniatura'
 let calendarioMesActual = new Date().getMonth()
 let calendarioAnioActual = new Date().getFullYear()
 let calendarioDiaSeleccionado = null
