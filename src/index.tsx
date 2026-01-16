@@ -106,15 +106,30 @@ app.get('/api/clientes/:id', async (c) => {
 // Crear cliente
 app.post('/api/clientes', async (c) => {
   const data = await c.req.json()
+  
+  // Obtener el último número de cliente
+  const lastCliente = await c.env.DB.prepare(`
+    SELECT numero_cliente FROM clientes 
+    WHERE numero_cliente IS NOT NULL 
+    ORDER BY id DESC LIMIT 1
+  `).first()
+  
+  // Generar nuevo número (C-0001, C-0002, etc.)
+  let numeroCliente = 'C-0001'
+  if (lastCliente && lastCliente.numero_cliente) {
+    const lastNum = parseInt(lastCliente.numero_cliente.split('-')[1])
+    numeroCliente = `C-${String(lastNum + 1).padStart(4, '0')}`
+  }
+  
   const result = await c.env.DB.prepare(`
-    INSERT INTO clientes (nombre, apellidos, telefono, email, direccion, ciudad, codigo_postal, notas)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO clientes (nombre, apellidos, telefono, email, direccion, ciudad, codigo_postal, notas, numero_cliente)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     data.nombre, data.apellidos, data.telefono, data.email || null,
-    data.direccion, data.ciudad, data.codigo_postal || null, data.notas || null
+    data.direccion, data.ciudad, data.codigo_postal || null, data.notas || null, numeroCliente
   ).run()
   
-  return c.json({ id: result.meta.last_row_id, ...data })
+  return c.json({ id: result.meta.last_row_id, numero_cliente: numeroCliente, ...data })
 })
 
 // Actualizar cliente
@@ -277,17 +292,33 @@ app.get('/api/trabajos/:id', async (c) => {
 // Crear trabajo
 app.post('/api/trabajos', async (c) => {
   const data = await c.req.json()
+  
+  // Obtener el último número de trabajo del año actual
+  const year = new Date().getFullYear()
+  const lastTrabajo = await c.env.DB.prepare(`
+    SELECT numero_trabajo FROM trabajos 
+    WHERE numero_trabajo LIKE ? 
+    ORDER BY id DESC LIMIT 1
+  `).bind(`T-${year}-%`).first()
+  
+  // Generar nuevo número (T-2025-0001, T-2025-0002, etc.)
+  let numeroTrabajo = `T-${year}-0001`
+  if (lastTrabajo && lastTrabajo.numero_trabajo) {
+    const lastNum = parseInt(lastTrabajo.numero_trabajo.split('-')[2])
+    numeroTrabajo = `T-${year}-${String(lastNum + 1).padStart(4, '0')}`
+  }
+  
   const result = await c.env.DB.prepare(`
     INSERT INTO trabajos (cliente_id, nombre_empleada, tipo_servicio, descripcion, direccion,
-                         fecha_programada, duracion_estimada, estado, prioridad, precio_cliente, notas)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                         fecha_programada, duracion_estimada, estado, prioridad, precio_cliente, notas, numero_trabajo)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     data.cliente_id, data.nombre_empleada || null, data.tipo_servicio, data.descripcion || null,
     data.direccion, data.fecha_programada, data.duracion_estimada || 120,
-    data.estado || 'pendiente', data.prioridad || 'normal', data.precio_cliente || null, data.notas || null
+    data.estado || 'pendiente', data.prioridad || 'normal', data.precio_cliente || null, data.notas || null, numeroTrabajo
   ).run()
   
-  return c.json({ id: result.meta.last_row_id, ...data })
+  return c.json({ id: result.meta.last_row_id, numero_trabajo: numeroTrabajo, ...data })
 })
 
 // Actualizar trabajo

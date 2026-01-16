@@ -611,6 +611,7 @@ async function loadClientes() {
       <table class="min-w-full">
         <thead class="bg-gray-50">
           <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Número</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Teléfono</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dirección</th>
@@ -621,6 +622,11 @@ async function loadClientes() {
         <tbody class="bg-white divide-y divide-gray-200">
           ${data.map(c => `
             <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  ${c.numero_cliente || 'Sin número'}
+                </span>
+              </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="font-medium text-gray-900">${c.nombre} ${c.apellidos}</div>
                 ${c.email ? `<div class="text-sm text-gray-500">${c.email}</div>` : ''}
@@ -771,6 +777,7 @@ async function loadTrabajos() {
       <table class="min-w-full">
         <thead class="bg-gray-50">
           <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Número</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Inicio</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
@@ -783,6 +790,11 @@ async function loadTrabajos() {
         <tbody class="bg-white divide-y divide-gray-200">
           ${data.map(t => `
             <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                  ${t.numero_trabajo || 'Sin número'}
+                </span>
+              </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 ${new Date(t.fecha_programada).toLocaleDateString('es-ES')}
                 <div class="text-xs text-gray-500">${new Date(t.fecha_programada).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</div>
