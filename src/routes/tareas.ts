@@ -773,4 +773,94 @@ tareas.get('/alertas', async (c) => {
   }
 })
 
+// GET /tareas/resumen-diario - Resumen diario para alerta de las 9:00 AM
+tareas.get('/resumen-diario', async (c) => {
+  try {
+    const hoy = new Date().toISOString().split('T')[0]
+    
+    // Tareas que vencen hoy
+    const tareasHoy = await c.env.DB.prepare(`
+      SELECT t.*, 
+             cl.nombre as cliente_nombre,
+             tr.descripcion as trabajo_descripcion
+      FROM tareas_pendientes t
+      LEFT JOIN clientes cl ON t.cliente_id = cl.id
+      LEFT JOIN trabajos tr ON t.trabajo_id = tr.id
+      WHERE date(t.fecha_limite) = date(?)
+        AND t.estado != 'completada'
+        AND t.estado != 'cancelada'
+      ORDER BY t.fecha_limite ASC, t.prioridad ASC
+    `).bind(hoy).all()
+    
+    // Trabajos que vencen hoy
+    const trabajosHoy = await c.env.DB.prepare(`
+      SELECT tr.*,
+             cl.nombre as cliente_nombre,
+             cl.telefono as cliente_telefono,
+             cl.email as cliente_email
+      FROM trabajos tr
+      LEFT JOIN clientes cl ON tr.cliente_id = cl.id
+      WHERE date(tr.fecha_programada) = date(?)
+        AND tr.estado != 'completado'
+        AND tr.estado != 'cancelado'
+      ORDER BY tr.fecha_programada ASC
+    `).bind(hoy).all()
+    
+    // Todas las tareas pendientes (sin completar)
+    const tareasPendientes = await c.env.DB.prepare(`
+      SELECT t.*, 
+             cl.nombre as cliente_nombre,
+             tr.descripcion as trabajo_descripcion
+      FROM tareas_pendientes t
+      LEFT JOIN clientes cl ON t.cliente_id = cl.id
+      LEFT JOIN trabajos tr ON t.trabajo_id = tr.id
+      WHERE t.estado != 'completada'
+        AND t.estado != 'cancelada'
+      ORDER BY 
+        CASE 
+          WHEN t.fecha_limite IS NULL THEN 1
+          ELSE 0
+        END,
+        t.fecha_limite ASC,
+        t.prioridad ASC
+      LIMIT 20
+    `).all()
+    
+    // Todos los trabajos pendientes
+    const trabajosPendientes = await c.env.DB.prepare(`
+      SELECT tr.*,
+             cl.nombre as cliente_nombre,
+             cl.telefono as cliente_telefono
+      FROM trabajos tr
+      LEFT JOIN clientes cl ON tr.cliente_id = cl.id
+      WHERE tr.estado != 'completado'
+        AND tr.estado != 'cancelado'
+      ORDER BY 
+        CASE 
+          WHEN tr.fecha_programada IS NULL THEN 1
+          ELSE 0
+        END,
+        tr.fecha_programada ASC
+      LIMIT 20
+    `).all()
+    
+    return c.json({
+      fecha: hoy,
+      tareasHoy: tareasHoy.results || [],
+      trabajosHoy: trabajosHoy.results || [],
+      tareasPendientes: tareasPendientes.results || [],
+      trabajosPendientes: trabajosPendientes.results || [],
+      totalHoy: (tareasHoy.results?.length || 0) + (trabajosHoy.results?.length || 0),
+      totalPendientes: (tareasPendientes.results?.length || 0) + (trabajosPendientes.results?.length || 0)
+    }, 200, {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    })
+  } catch (error) {
+    console.error('Error obteniendo resumen diario:', error)
+    return c.json({ error: 'Error al obtener resumen diario' }, 500)
+  }
+})
+
 export default tareas

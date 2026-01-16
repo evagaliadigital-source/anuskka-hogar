@@ -2213,6 +2213,60 @@ app.get('/', (c) => {
         </div>
     </div>
 
+    <!-- Modal de Resumen Diario (Alerta 9:00 AM) -->
+    <div id="resumen-diario-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-orange-500 to-yellow-500 text-white px-6 py-5 flex items-center justify-between">
+                <div>
+                    <h3 class="text-2xl font-bold flex items-center">
+                        <i class="fas fa-sun mr-3"></i>Buenos días, Eva 🌅
+                    </h3>
+                    <p class="text-sm text-white/90 mt-1">Resumen de tu día - <span id="resumen-fecha"></span></p>
+                </div>
+                <button onclick="cerrarResumenDiario()" class="hover:bg-white/20 p-2 rounded-lg transition-all">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <!-- Content -->
+            <div class="overflow-y-auto max-h-[calc(90vh-120px)] p-6">
+                <!-- Vencen Hoy -->
+                <div class="mb-6">
+                    <div class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 mb-3">
+                        <h4 class="text-lg font-bold text-red-700 flex items-center">
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            Vencen Hoy (<span id="count-vencen-hoy">0</span>)
+                        </h4>
+                    </div>
+                    <div id="lista-vencen-hoy" class="space-y-2"></div>
+                </div>
+                
+                <!-- Pendientes -->
+                <div>
+                    <div class="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4 mb-3">
+                        <h4 class="text-lg font-bold text-blue-700 flex items-center">
+                            <i class="fas fa-list-check mr-2"></i>
+                            Pendientes (<span id="count-pendientes">0</span>)
+                        </h4>
+                    </div>
+                    <div id="lista-pendientes" class="space-y-2"></div>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="bg-gray-50 px-6 py-4 flex items-center justify-between border-t">
+                <label class="flex items-center space-x-2 text-sm text-gray-600 cursor-pointer">
+                    <input type="checkbox" id="no-mostrar-hoy" class="rounded">
+                    <span>No mostrar más hoy</span>
+                </label>
+                <button onclick="cerrarResumenDiario()" class="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white px-6 py-2 rounded-lg font-medium transition-all">
+                    <i class="fas fa-check mr-2"></i>Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Navigation Tabs -->
     <div class="container mx-auto px-6 mt-6">
         <div class="bg-white rounded-xl shadow-md p-2 flex flex-wrap gap-2">

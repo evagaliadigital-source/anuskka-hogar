@@ -7237,17 +7237,6 @@ async function showNuevaTarea() {
                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
             </div>
             
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                <i class="fas fa-bell mr-1 text-yellow-500"></i>Fecha Recordatorio
-              </label>
-              <input type="datetime-local" name="fecha_recordatorio"
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
-              <p class="text-xs text-gray-500 mt-1">
-                <i class="fas fa-info-circle mr-1"></i>Se te avisará en esta fecha y hora
-              </p>
-            </div>
-            
             <div class="col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
               <textarea name="notas" rows="2"
@@ -7296,7 +7285,6 @@ async function showNuevaTarea() {
           cliente_id: formData.get('cliente_id') ? parseInt(formData.get('cliente_id')) : null,
           fecha_inicio: formData.get('fecha_inicio') || null,
           fecha_limite: formData.get('fecha_limite') || null,
-          fecha_recordatorio: formData.get('fecha_recordatorio') || null,
           notas: formData.get('notas') || null
         })
       })
@@ -7949,17 +7937,6 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
             </div>
             
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                <i class="fas fa-bell mr-1 text-yellow-500"></i>Fecha Recordatorio
-              </label>
-              <input type="datetime-local" name="fecha_recordatorio"
-                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
-              <p class="text-xs text-gray-500 mt-1">
-                <i class="fas fa-info-circle mr-1"></i>Se te avisará en esta fecha y hora
-              </p>
-            </div>
-            
             <div class="col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
               <textarea name="notas" rows="2"
@@ -8445,6 +8422,153 @@ setTimeout(cargarAlertas, 1000)
 // Exponer funciones globalmente
 window.toggleAvisos = toggleAvisos
 window.cargarAlertas = cargarAlertas
+
+// ============================================
+// SISTEMA DE RESUMEN DIARIO - ALERTA 9:00 AM
+// ============================================
+
+async function mostrarResumenDiario() {
+  try {
+    console.log('☀️ Cargando resumen diario...')
+    const { data } = await axios.get(`${API}/tareas/resumen-diario`)
+    
+    // Actualizar fecha
+    const fecha = new Date(data.fecha)
+    document.getElementById('resumen-fecha').textContent = fecha.toLocaleDateString('es-ES', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })
+    
+    // Actualizar contadores
+    document.getElementById('count-vencen-hoy').textContent = data.totalHoy
+    document.getElementById('count-pendientes').textContent = data.totalPendientes
+    
+    // Renderizar tareas/trabajos que vencen hoy
+    const listaVencenHoy = document.getElementById('lista-vencen-hoy')
+    if (data.totalHoy === 0) {
+      listaVencenHoy.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">✅ No hay tareas ni trabajos para hoy</p>'
+    } else {
+      listaVencenHoy.innerHTML = [
+        ...data.tareasHoy.map(t => renderItemResumen(t, 'tarea')),
+        ...data.trabajosHoy.map(t => renderItemResumen(t, 'trabajo'))
+      ].join('')
+    }
+    
+    // Renderizar pendientes
+    const listaPendientes = document.getElementById('lista-pendientes')
+    if (data.totalPendientes === 0) {
+      listaPendientes.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">✅ No hay tareas pendientes</p>'
+    } else {
+      listaPendientes.innerHTML = [
+        ...data.tareasPendientes.map(t => renderItemResumen(t, 'tarea')),
+        ...data.trabajosPendientes.map(t => renderItemResumen(t, 'trabajo'))
+      ].join('')
+    }
+    
+    // Mostrar modal
+    document.getElementById('resumen-diario-modal').classList.remove('hidden')
+    
+    console.log('✅ Resumen diario cargado:', data)
+  } catch (error) {
+    console.error('Error cargando resumen diario:', error)
+  }
+}
+
+function renderItemResumen(item, tipo) {
+  const esTarea = tipo === 'tarea'
+  const fechaLimite = esTarea 
+    ? item.fecha_limite 
+      ? new Date(item.fecha_limite).toLocaleString('es-ES', { 
+          day: '2-digit', 
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      : 'Sin fecha'
+    : item.fecha_programada
+      ? new Date(item.fecha_programada).toLocaleString('es-ES', { 
+          day: '2-digit', 
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      : 'Sin fecha'
+  
+  const titulo = esTarea ? item.titulo : `${item.tipo_servicio} - ${item.cliente_nombre}`
+  const icono = esTarea ? getTipoIcon(item.tipo) : '💼 Trabajo'
+  const onclick = esTarea ? `verDetallesTarea(${item.id})` : `viewTrabajo(${item.id})`
+  
+  return `
+    <div class="p-3 bg-white border border-gray-200 rounded-lg hover:shadow-md cursor-pointer transition-all"
+         onclick="${onclick}; cerrarResumenDiario()">
+      <div class="flex items-start justify-between">
+        <div class="flex-1">
+          <h5 class="font-medium text-gray-800">${titulo}</h5>
+          <p class="text-xs text-gray-600 mt-1">
+            <i class="fas fa-calendar-alt mr-1"></i>${fechaLimite}
+          </p>
+          ${item.cliente_nombre && esTarea ? `
+            <p class="text-xs text-gray-500 mt-1">
+              <i class="fas fa-user mr-1"></i>${item.cliente_nombre}
+            </p>
+          ` : ''}
+        </div>
+        <span class="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded">
+          ${icono}
+        </span>
+      </div>
+    </div>
+  `
+}
+
+function cerrarResumenDiario() {
+  const modal = document.getElementById('resumen-diario-modal')
+  const noMostrar = document.getElementById('no-mostrar-hoy').checked
+  
+  if (noMostrar) {
+    // Guardar en localStorage para no mostrar más hoy
+    const hoy = new Date().toISOString().split('T')[0]
+    localStorage.setItem('resumen-diario-visto', hoy)
+  }
+  
+  modal.classList.add('hidden')
+}
+
+// Verificar si debe mostrarse el resumen diario
+function verificarResumenDiario() {
+  const ahora = new Date()
+  const hora = ahora.getHours()
+  const diaSemana = ahora.getDay() // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
+  const hoy = ahora.toISOString().split('T')[0]
+  
+  // Verificar si ya se mostró hoy
+  const visto = localStorage.getItem('resumen-diario-visto')
+  if (visto === hoy) {
+    console.log('📅 Resumen diario ya visto hoy')
+    return
+  }
+  
+  // Solo mostrar de lunes a viernes (1-5)
+  if (diaSemana === 0 || diaSemana === 6) {
+    console.log('📅 Fin de semana - no mostrar resumen')
+    return
+  }
+  
+  // Mostrar si es después de las 9:00 AM
+  if (hora >= 9) {
+    console.log('☀️ Es hora del resumen diario')
+    setTimeout(mostrarResumenDiario, 2000) // Esperar 2 segundos después de cargar
+  }
+}
+
+// Ejecutar verificación al cargar la página
+setTimeout(verificarResumenDiario, 3000)
+
+// Exponer funciones globalmente
+window.mostrarResumenDiario = mostrarResumenDiario
+window.cerrarResumenDiario = cerrarResumenDiario
 
 // ============================================
 // SISTEMA DE NOTAS - LIBRETA DE APUNTES
