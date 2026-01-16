@@ -8866,12 +8866,6 @@ async function loadTareasKanban() {
         `
       }).join('')
       
-      // Añadir eventos drag a todas las tarjetas
-      contenedor.querySelectorAll('.tarea-kanban-card').forEach(card => {
-        card.addEventListener('dragstart', dragStartTarea)
-        card.addEventListener('dragend', dragEndTarea)
-      })
-      
       // Añadir eventos de drop a cada columna
       contenedor.ondragover = (e) => {
         e.preventDefault()
@@ -8888,6 +8882,12 @@ async function loadTareasKanban() {
         dropTareaEnColumna(e, estado)
       }
     }
+    
+    // Añadir eventos drag a TODAS las tarjetas (después de renderizar todas las columnas)
+    document.querySelectorAll('.tarea-kanban-card').forEach(card => {
+      card.addEventListener('dragstart', dragStartTarea)
+      card.addEventListener('dragend', dragEndTarea)
+    })
     
   } catch (error) {
     console.error('Error cargando tareas Kanban:', error)
