@@ -6716,32 +6716,32 @@ async function loadTareas() {
         'cancelada': '<span class="px-3 py-1 bg-gray-100 text-gray-800 text-sm rounded-full">❌ Cancelada</span>'
       }
       
-      // Colores de tarjeta según tipo
+      // Colores de tarjeta según tipo (TODO el fondo)
       const tipoColor = {
-        'llamar': 'border-l-4 border-blue-500 bg-blue-50',
-        'instalar': 'border-l-4 border-green-500 bg-green-50',
-        'medir': 'border-l-4 border-yellow-500 bg-yellow-50',
-        'presupuesto': 'border-l-4 border-purple-500 bg-purple-50',
-        'pedidos': 'border-l-4 border-orange-500 bg-orange-50',
-        'varios': 'border-l-4 border-gray-400 bg-white'
+        'llamar': 'bg-blue-100 border-blue-300',
+        'instalar': 'bg-green-100 border-green-300',
+        'medir': 'bg-yellow-100 border-yellow-300',
+        'presupuesto': 'bg-purple-100 border-purple-300',
+        'pedidos': 'bg-orange-100 border-orange-300',
+        'varios': 'bg-gray-50 border-gray-300'
       }
       
       // Iconos según tipo
       const tipoIcon = {
-        'llamar': '<i class="fas fa-phone text-blue-600"></i>',
-        'instalar': '<i class="fas fa-tools text-green-600"></i>',
-        'medir': '<i class="fas fa-ruler text-yellow-600"></i>',
-        'presupuesto': '<i class="fas fa-file-invoice-dollar text-purple-600"></i>',
-        'pedidos': '<i class="fas fa-box text-orange-600"></i>',
-        'varios': '<i class="fas fa-tasks text-gray-600"></i>'
+        'llamar': '<i class="fas fa-phone text-blue-700"></i>',
+        'instalar': '<i class="fas fa-tools text-green-700"></i>',
+        'medir': '<i class="fas fa-ruler text-yellow-700"></i>',
+        'presupuesto': '<i class="fas fa-file-invoice-dollar text-purple-700"></i>',
+        'pedidos': '<i class="fas fa-box text-orange-700"></i>',
+        'varios': '<i class="fas fa-tasks text-gray-700"></i>'
       }
       
       let detalleHTML = ''
       
       return `
-        <div class="bg-white rounded-lg ${tipoColor[t.tipo] || 'border-l-4 border-gray-400'} hover:shadow-lg transition-all duration-200 overflow-hidden ${modoSeleccionMultiple ? 'cursor-pointer' : ''}" ${modoSeleccionMultiple ? `onclick="toggleSeleccionTarea(${t.id})"` : ''}>
+        <div class="rounded-lg border-2 ${tipoColor[t.tipo] || 'bg-gray-50 border-gray-300'} hover:shadow-lg transition-all duration-200 overflow-hidden ${modoSeleccionMultiple ? 'cursor-pointer' : ''}" ${modoSeleccionMultiple ? `onclick="toggleSeleccionTarea(${t.id})"` : ''}>
           <!-- Header Compacto -->
-          <div class="bg-gradient-to-r from-slate-50 via-gray-50 to-slate-50 px-4 py-2.5 border-b border-gray-200">
+          <div class="px-4 py-2.5 border-b border-gray-200">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3">
                 ${modoSeleccionMultiple ? `
@@ -8837,54 +8837,54 @@ async function loadTareasKanban() {
           ? new Date(tarea.fecha_limite).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
           : 'Sin fecha'
         
-        // Colores según tipo de tarea
+        // Colores según tipo de tarea (TODO el fondo)
         const tipoColor = {
-          'llamar': 'border-l-4 border-blue-500 bg-blue-50',
-          'instalar': 'border-l-4 border-green-500 bg-green-50',
-          'medir': 'border-l-4 border-yellow-500 bg-yellow-50',
-          'presupuesto': 'border-l-4 border-purple-500 bg-purple-50',
-          'pedidos': 'border-l-4 border-orange-500 bg-orange-50',
-          'varios': 'border-l-4 border-gray-400 bg-white'
+          'llamar': 'bg-blue-100 border-blue-300',
+          'instalar': 'bg-green-100 border-green-300',
+          'medir': 'bg-yellow-100 border-yellow-300',
+          'presupuesto': 'bg-purple-100 border-purple-300',
+          'pedidos': 'bg-orange-100 border-orange-300',
+          'varios': 'bg-gray-50 border-gray-300'
         }
         
         // Iconos según tipo
         const tipoIcon = {
-          'llamar': '<i class="fas fa-phone text-blue-600"></i>',
-          'instalar': '<i class="fas fa-tools text-green-600"></i>',
-          'medir': '<i class="fas fa-ruler text-yellow-600"></i>',
-          'presupuesto': '<i class="fas fa-file-invoice-dollar text-purple-600"></i>',
-          'pedidos': '<i class="fas fa-box text-orange-600"></i>',
-          'varios': '<i class="fas fa-tasks text-gray-600"></i>'
+          'llamar': '<i class="fas fa-phone text-blue-700"></i>',
+          'instalar': '<i class="fas fa-tools text-green-700"></i>',
+          'medir': '<i class="fas fa-ruler text-yellow-700"></i>',
+          'presupuesto': '<i class="fas fa-file-invoice-dollar text-purple-700"></i>',
+          'pedidos': '<i class="fas fa-box text-orange-700"></i>',
+          'varios': '<i class="fas fa-tasks text-gray-700"></i>'
         }
         
         return `
-          <div class="tarea-kanban-card ${tipoColor[tarea.tipo] || 'border-l-4 border-gray-400'} rounded-lg p-4 shadow-sm hover:shadow-md transition-all cursor-move"
+          <div class="tarea-kanban-card ${tipoColor[tarea.tipo] || 'bg-gray-50 border-gray-300'} rounded-lg p-4 shadow-sm border-2 hover:shadow-md transition-all cursor-move"
                draggable="true"
                data-tarea-id="${tarea.id}"
                data-estado="${tarea.estado}">
             <div class="flex items-start justify-between mb-2">
               <div class="flex items-center gap-2 flex-1">
-                <span class="text-lg">${tipoIcon[tarea.tipo] || '<i class="fas fa-tasks text-gray-600"></i>'}</span>
+                <span class="text-lg">${tipoIcon[tarea.tipo] || '<i class="fas fa-tasks text-gray-700"></i>'}</span>
                 <h4 class="font-semibold text-gray-900 text-sm">${tarea.titulo}</h4>
               </div>
               <span class="text-lg">${prioridadIcono}</span>
             </div>
             <div class="mb-2">
-              <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700 font-medium">${tarea.tipo.replace(/_/g, ' ').toUpperCase()}</span>
+              <span class="text-xs px-2 py-1 rounded-full bg-white/50 text-gray-800 font-medium">${tarea.tipo.replace(/_/g, ' ').toUpperCase()}</span>
             </div>
-            ${tarea.descripcion ? `<p class="text-xs text-gray-600 mb-3">${tarea.descripcion.substring(0, 80)}${tarea.descripcion.length > 80 ? '...' : ''}</p>` : ''}
-            <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
+            ${tarea.descripcion ? `<p class="text-xs text-gray-700 mb-3">${tarea.descripcion.substring(0, 80)}${tarea.descripcion.length > 80 ? '...' : ''}</p>` : ''}
+            <div class="flex items-center justify-between text-xs text-gray-600 mb-3">
               <span><i class="far fa-calendar mr-1"></i>${fechaTexto}</span>
               ${tarea.asignado_a ? `<span><i class="far fa-user mr-1"></i>${tarea.asignado_a}</span>` : ''}
             </div>
-            <div class="flex gap-1 pt-2 border-t border-gray-100">
-              <button onclick="event.stopPropagation(); verDetallesTarea(${tarea.id})" class="flex-1 bg-gray-100 text-gray-700 px-2 py-1.5 rounded text-xs hover:bg-gray-200 transition-all" title="Ver detalles">
+            <div class="flex gap-1 pt-2 border-t border-gray-200/50">
+              <button onclick="event.stopPropagation(); verDetallesTarea(${tarea.id})" class="flex-1 bg-white/70 text-gray-700 px-2 py-1.5 rounded text-xs hover:bg-white transition-all" title="Ver detalles">
                 <i class="fas fa-eye"></i>
               </button>
-              <button onclick="event.stopPropagation(); editarTarea(${tarea.id})" class="flex-1 bg-blue-100 text-blue-700 px-2 py-1.5 rounded text-xs hover:bg-blue-200 transition-all" title="Editar">
+              <button onclick="event.stopPropagation(); editarTarea(${tarea.id})" class="flex-1 bg-white/70 text-gray-700 px-2 py-1.5 rounded text-xs hover:bg-white transition-all" title="Editar">
                 <i class="fas fa-edit"></i>
               </button>
-              <button onclick="event.stopPropagation(); confirmarEliminarTarea(${tarea.id})" class="flex-1 bg-red-100 text-red-700 px-2 py-1.5 rounded text-xs hover:bg-red-200 transition-all" title="Borrar">
+              <button onclick="event.stopPropagation(); confirmarEliminarTarea(${tarea.id})" class="flex-1 bg-white/70 text-gray-700 px-2 py-1.5 rounded text-xs hover:bg-white transition-all" title="Borrar">
                 <i class="fas fa-trash"></i>
               </button>
             </div>
@@ -9467,15 +9467,22 @@ async function cargarCalendarioGlobal() {
           <div class="font-bold text-gray-800 mb-1">${dia}</div>
           ${totalEventos > 0 ? `
             <div class="space-y-1">
-              ${tareasDia.slice(0, 2).map(t => `
-                <div class="text-xs px-2 py-1 rounded ${
-                  t.estado === 'pendiente' ? 'bg-orange-100 text-orange-700' : 
-                  t.estado === 'en_proceso' ? 'bg-blue-100 text-blue-700' : 
-                  'bg-gray-100 text-gray-600'
-                } truncate" title="${t.titulo}">
-                  📋 ${t.titulo.substring(0, 10)}${t.titulo.length > 10 ? '...' : ''}
-                </div>
-              `).join('')}
+              ${tareasDia.slice(0, 2).map(t => {
+                // Colores según tipo de tarea
+                const tipoColor = {
+                  'llamar': 'bg-blue-200 text-blue-800',
+                  'instalar': 'bg-green-200 text-green-800',
+                  'medir': 'bg-yellow-200 text-yellow-800',
+                  'presupuesto': 'bg-purple-200 text-purple-800',
+                  'pedidos': 'bg-orange-200 text-orange-800',
+                  'varios': 'bg-gray-200 text-gray-800'
+                }
+                return `
+                  <div class="text-xs px-2 py-1 rounded ${tipoColor[t.tipo] || 'bg-gray-200 text-gray-800'} truncate" title="${t.titulo}">
+                    📋 ${t.titulo.substring(0, 10)}${t.titulo.length > 10 ? '...' : ''}
+                  </div>
+                `
+              }).join('')}
               ${trabajosDia.slice(0, 2).map(t => `
                 <div class="text-xs px-2 py-1 rounded ${
                   t.estado === 'pendiente' ? 'bg-purple-100 text-purple-700' : 
@@ -9534,23 +9541,33 @@ async function mostrarEventosDia(fechaStr) {
     if (tareasDia.length > 0) {
       lista.innerHTML += `<h4 class="font-bold text-gray-800 mb-2 flex items-center gap-2"><i class="fas fa-clipboard-list text-orange-600"></i>Tareas (${tareasDia.length})</h4>`
       tareasDia.forEach(t => {
+        // Colores según tipo de tarea
+        const tipoColor = {
+          'llamar': 'bg-blue-100 border-blue-300',
+          'instalar': 'bg-green-100 border-green-300',
+          'medir': 'bg-yellow-100 border-yellow-300',
+          'presupuesto': 'bg-purple-100 border-purple-300',
+          'pedidos': 'bg-orange-100 border-orange-300',
+          'varios': 'bg-gray-50 border-gray-300'
+        }
+        
         const estadoBadge = {
-          'pendiente': '<span class="px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded-full">⏳ Pendiente</span>',
-          'en_proceso': '<span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">🔄 En Proceso</span>',
-          'completada': '<span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">✅ Completada</span>',
-          'cancelada': '<span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">❌ Cancelada</span>'
+          'pendiente': '<span class="px-2 py-1 bg-orange-200 text-orange-900 text-xs rounded-full font-semibold">⏳ Pendiente</span>',
+          'en_proceso': '<span class="px-2 py-1 bg-blue-200 text-blue-900 text-xs rounded-full font-semibold">🔄 En Proceso</span>',
+          'completada': '<span class="px-2 py-1 bg-green-200 text-green-900 text-xs rounded-full font-semibold">✅ Completada</span>',
+          'cancelada': '<span class="px-2 py-1 bg-gray-200 text-gray-900 text-xs rounded-full font-semibold">❌ Cancelada</span>'
         }
         
         lista.innerHTML += `
-          <div class="bg-white border-2 border-orange-200 rounded-lg p-4 hover:shadow-md transition-all">
+          <div class="${tipoColor[t.tipo] || 'bg-gray-50 border-gray-300'} border-2 rounded-lg p-4 hover:shadow-md transition-all">
             <div class="flex items-start justify-between mb-2">
               <div class="flex-1">
                 <h5 class="font-bold text-gray-900">${t.titulo}</h5>
-                <p class="text-sm text-gray-600 mt-1">${t.descripcion || 'Sin descripción'}</p>
+                <p class="text-sm text-gray-700 mt-1">${t.descripcion || 'Sin descripción'}</p>
               </div>
               ${estadoBadge[t.estado]}
             </div>
-            <div class="flex items-center gap-4 text-xs text-gray-500 mt-2">
+            <div class="flex items-center gap-4 text-xs text-gray-600 mt-2">
               ${t.asignado_a ? `<span><i class="fas fa-user mr-1"></i>${t.asignado_a}</span>` : ''}
               <span><i class="fas fa-clock mr-1"></i>${new Date(t.fecha_limite).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}</span>
             </div>
