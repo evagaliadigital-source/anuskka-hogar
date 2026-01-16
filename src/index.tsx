@@ -2860,6 +2860,9 @@ app.get('/', (c) => {
                             <button onclick="cambiarVistaTareas('lista')" id="vista-lista-btn" class="vista-tareas-btn bg-gray-700 text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition-all" title="Ver tareas en lista vertical">
                                 <i class="fas fa-list mr-2"></i>Lista
                             </button>
+                            <button onclick="cambiarVistaTareas('miniatura')" id="vista-miniatura-btn" class="vista-tareas-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-all" title="Ver tareas en tabla compacta">
+                                <i class="fas fa-table mr-2"></i>Miniatura
+                            </button>
                             <button onclick="cambiarVistaTareas('kanban')" id="vista-kanban-btn" class="vista-tareas-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-all" title="Ver tareas por columnas de estado">
                                 <i class="fas fa-columns mr-2"></i>Kanban
                             </button>
@@ -3006,6 +3009,41 @@ app.get('/', (c) => {
                                 Quitar filtros
                             </button>
                         </div>
+                    </div>
+                </div>
+
+                <!-- VISTA MINIATURA (TABLA COMPACTA) -->
+                <div id="vista-tareas-miniatura" class="vista-tareas-content hidden">
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm" id="tareas-miniatura-table">
+                                <thead class="bg-gradient-to-r from-gray-700 to-gray-900 text-white">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left font-semibold">Tipo</th>
+                                        <th class="px-4 py-3 text-left font-semibold">Título</th>
+                                        <th class="px-4 py-3 text-left font-semibold">Cliente</th>
+                                        <th class="px-4 py-3 text-left font-semibold">Fecha</th>
+                                        <th class="px-4 py-3 text-left font-semibold">Estado</th>
+                                        <th class="px-4 py-3 text-left font-semibold">Prioridad</th>
+                                        <th class="px-4 py-3 text-left font-semibold">Asignado</th>
+                                        <th class="px-4 py-3 text-center font-semibold">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tareas-miniatura-body">
+                                    <!-- Se llena dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Estado vacío para vista miniatura -->
+                    <div id="tareas-miniatura-empty" class="hidden text-center py-16 bg-white rounded-xl shadow-md mt-4">
+                        <i class="fas fa-clipboard-check text-7xl text-green-300 mb-4"></i>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-3">No hay tareas</h3>
+                        <p class="text-gray-600 mb-4">Crea tu primera tarea para comenzar</p>
+                        <button onclick="showNuevaTarea()" class="bg-gray-700 text-white px-8 py-3 rounded-lg hover:bg-gray-800 transition-all">
+                            <i class="fas fa-plus-circle mr-2"></i>Crear Tarea
+                        </button>
                     </div>
                 </div>
 

@@ -9153,6 +9153,9 @@ function cambiarVistaTareas(vista) {
   if (vista === 'lista') {
     document.getElementById('vista-lista-btn').classList.remove('bg-gray-200', 'text-gray-700')
     document.getElementById('vista-lista-btn').classList.add('bg-gray-700', 'text-white')
+  } else if (vista === 'miniatura') {
+    document.getElementById('vista-miniatura-btn').classList.remove('bg-gray-200', 'text-gray-700')
+    document.getElementById('vista-miniatura-btn').classList.add('bg-gray-700', 'text-white')
   } else if (vista === 'kanban') {
     document.getElementById('vista-kanban-btn').classList.remove('bg-gray-200', 'text-gray-700')
     document.getElementById('vista-kanban-btn').classList.add('bg-gray-700', 'text-white')
@@ -9163,12 +9166,15 @@ function cambiarVistaTareas(vista) {
   
   // Mostrar/ocultar vistas
   document.getElementById('vista-tareas-lista').classList.toggle('hidden', vista !== 'lista')
+  document.getElementById('vista-tareas-miniatura').classList.toggle('hidden', vista !== 'miniatura')
   document.getElementById('vista-tareas-kanban').classList.toggle('hidden', vista !== 'kanban')
   document.getElementById('vista-tareas-calendario').classList.toggle('hidden', vista !== 'calendario')
   
   // Cargar contenido según vista
   if (vista === 'lista') {
     loadTareas()
+  } else if (vista === 'miniatura') {
+    loadTareasMiniatura()
   } else if (vista === 'kanban') {
     loadTareasKanban()
   } else if (vista === 'calendario') {
@@ -9316,6 +9322,124 @@ async function loadTareasKanban() {
     
   } catch (error) {
     console.error('Error cargando tareas Kanban:', error)
+    showNotification('Error al cargar tareas', 'error')
+  }
+}
+
+// Cargar tareas en vista Miniatura (Tabla compacta)
+async function loadTareasMiniatura() {
+  try {
+    const prioridad = document.getElementById('filtro-prioridad-tareas')?.value || ''
+    const asignado = document.getElementById('filtro-asignado-tareas')?.value || ''
+    const estado = document.getElementById('filtro-estado-tareas')?.value || 'todas'
+    const busqueda = document.getElementById('buscar-tareas')?.value || ''
+    
+    let url = `${API}/tareas?estado=${estado}`
+    if (prioridad) url += `&prioridad=${prioridad}`
+    if (asignado) url += `&asignado_a=${encodeURIComponent(asignado)}`
+    
+    const { data } = await axios.get(url)
+    
+    // Aplicar búsqueda
+    let tareasFiltradas = data
+    if (busqueda) {
+      const termino = busqueda.toLowerCase()
+      tareasFiltradas = data.filter(t => 
+        t.titulo.toLowerCase().includes(termino) ||
+        (t.descripcion && t.descripcion.toLowerCase().includes(termino))
+      )
+    }
+    
+    const tbody = document.getElementById('tareas-miniatura-body')
+    const emptyState = document.getElementById('tareas-miniatura-empty')
+    
+    if (tareasFiltradas.length === 0) {
+      tbody.innerHTML = ''
+      emptyState.classList.remove('hidden')
+      return
+    }
+    
+    emptyState.classList.add('hidden')
+    
+    // Mapeo de tipos a iconos y colores
+    const tipoConfig = {
+      'llamar': { icon: '📞', color: 'text-blue-600', bg: 'bg-blue-50' },
+      'instalar': { icon: '🔧', color: 'text-green-600', bg: 'bg-green-50' },
+      'medir': { icon: '📏', color: 'text-yellow-600', bg: 'bg-yellow-50' },
+      'presupuesto': { icon: '💰', color: 'text-purple-600', bg: 'bg-purple-50' },
+      'pedidos': { icon: '📦', color: 'text-red-600', bg: 'bg-red-50' },
+      'varios': { icon: '📋', color: 'text-gray-600', bg: 'bg-gray-50' }
+    }
+    
+    const estadoConfig = {
+      'pendiente': { text: 'Pendiente', color: 'bg-orange-100 text-orange-800' },
+      'en_proceso': { text: 'En Proceso', color: 'bg-blue-100 text-blue-800' },
+      'completada': { text: 'Completada', color: 'bg-green-100 text-green-800' },
+      'cancelada': { text: 'Cancelada', color: 'bg-gray-100 text-gray-800' }
+    }
+    
+    const prioridadConfig = {
+      1: { text: 'Alta', color: 'bg-red-100 text-red-800', icon: '🔥' },
+      2: { text: 'Media', color: 'bg-yellow-100 text-yellow-800', icon: '🟡' },
+      3: { text: 'Baja', color: 'bg-green-100 text-green-800', icon: '🟢' }
+    }
+    
+    tbody.innerHTML = tareasFiltradas.map(t => {
+      const tipo = tipoConfig[t.tipo] || tipoConfig['varios']
+      const estado = estadoConfig[t.estado] || estadoConfig['pendiente']
+      const prioridad = prioridadConfig[t.prioridad] || prioridadConfig[2]
+      const fecha = t.fecha_limite 
+        ? new Date(t.fecha_limite).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
+        : '-'
+      
+      return `
+        <tr class="border-b hover:bg-gray-50 transition-colors cursor-pointer" onclick="verDetallesTarea(${t.id})">
+          <td class="px-4 py-3">
+            <span class="${tipo.bg} ${tipo.color} px-3 py-1 rounded-full text-xs font-semibold inline-block">
+              ${tipo.icon} ${t.tipo.charAt(0).toUpperCase() + t.tipo.slice(1)}
+            </span>
+          </td>
+          <td class="px-4 py-3">
+            <div class="font-medium text-gray-900">${t.titulo}</div>
+            ${t.descripcion ? `<div class="text-xs text-gray-500 truncate max-w-xs">${t.descripcion}</div>` : ''}
+          </td>
+          <td class="px-4 py-3 text-gray-700">
+            ${t.cliente_nombre ? `<i class="fas fa-user mr-1 text-gray-400"></i>${t.cliente_nombre}` : '-'}
+          </td>
+          <td class="px-4 py-3 text-gray-700">
+            ${fecha !== '-' ? `<i class="far fa-calendar mr-1 text-gray-400"></i>${fecha}` : '-'}
+          </td>
+          <td class="px-4 py-3">
+            <span class="${estado.color} px-2 py-1 rounded-full text-xs font-semibold">
+              ${estado.text}
+            </span>
+          </td>
+          <td class="px-4 py-3">
+            <span class="${prioridad.color} px-2 py-1 rounded-full text-xs font-semibold">
+              ${prioridad.icon} ${prioridad.text}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-gray-700">
+            ${t.asignado_a || '-'}
+          </td>
+          <td class="px-4 py-3">
+            <div class="flex items-center justify-center gap-2">
+              <button onclick="event.stopPropagation(); editarTarea(${t.id})" 
+                      class="text-blue-600 hover:text-blue-800 p-1" title="Editar">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button onclick="event.stopPropagation(); verDetallesTarea(${t.id})" 
+                      class="text-gray-600 hover:text-gray-800 p-1" title="Ver detalles">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `
+    }).join('')
+    
+  } catch (error) {
+    console.error('Error cargando vista miniatura:', error)
     showNotification('Error al cargar tareas', 'error')
   }
 }
