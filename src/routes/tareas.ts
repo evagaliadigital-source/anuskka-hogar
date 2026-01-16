@@ -153,16 +153,19 @@ tareas.post('/', async (c) => {
     const result = await c.env.DB.prepare(`
       INSERT INTO tareas_pendientes (
         tipo, titulo, descripcion, estado, prioridad,
-        fecha_limite, proyecto_id, cliente_id, trabajo_id, asignado_a,
-        tiempo_estimado, recordatorio_minutos, notas, datos_tarea
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        fecha_inicio, fecha_limite, fecha_recordatorio,
+        proyecto_id, cliente_id, trabajo_id, asignado_a,
+        tiempo_estimado, recordatorio_minutos, notas, notas_internas, datos_tarea
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       data.tipo,
       data.titulo,
       data.descripcion || null,
       data.estado || 'pendiente',
       data.prioridad || 2,
+      data.fecha_inicio || null,
       data.fecha_limite || null,
+      data.fecha_recordatorio || null,
       data.proyecto_id || null,
       data.cliente_id || null,
       data.trabajo_id || null,
@@ -170,6 +173,7 @@ tareas.post('/', async (c) => {
       data.tiempo_estimado || null,
       data.recordatorio_minutos || null,
       data.notas || null,
+      data.notas_internas || null,
       data.datos_tarea ? JSON.stringify(data.datos_tarea) : null
     ).run()
     
@@ -247,6 +251,16 @@ tareas.put('/:id', async (c) => {
       params.push(data.fecha_limite)
     }
     
+    if (data.fecha_inicio !== undefined) {
+      updates.push('fecha_inicio = ?')
+      params.push(data.fecha_inicio)
+    }
+    
+    if (data.fecha_recordatorio !== undefined) {
+      updates.push('fecha_recordatorio = ?')
+      params.push(data.fecha_recordatorio)
+    }
+    
     if (data.asignado_a !== undefined) {
       updates.push('asignado_a = ?')
       params.push(data.asignado_a)
@@ -270,6 +284,11 @@ tareas.put('/:id', async (c) => {
     if (data.notas !== undefined) {
       updates.push('notas = ?')
       params.push(data.notas)
+    }
+    
+    if (data.notas_internas !== undefined) {
+      updates.push('notas_internas = ?')
+      params.push(data.notas_internas)
     }
     
     if (data.datos_tarea !== undefined) {
@@ -637,6 +656,120 @@ tareas.post('/:id/completar-tela', async (c) => {
   } catch (error) {
     console.error('Error completando tarea:', error)
     return c.json({ error: 'Error al completar tarea' }, 500)
+  }
+})
+
+// GET - Obtener alertas de tareas
+tareas.get('/alertas', async (c) => {
+  try {
+    const hoy = new Date()
+    const hoyStr = hoy.toISOString().split('T')[0]
+    const mañana = new Date(hoy)
+    mañana.setDate(mañana.getDate() + 1)
+    const mañanaStr = mañana.toISOString().split('T')[0]
+    const en2dias = new Date(hoy)
+    en2dias.setDate(en2dias.getDate() + 2)
+    const en2diasStr = en2dias.toISOString().split('T')[0]
+    
+    // Tareas retrasadas (fecha_limite pasada y NO completada)
+    const retrasadas = await c.env.DB.prepare(`
+      SELECT t.*, 
+             cl.nombre as cliente_nombre,
+             cl.apellidos as cliente_apellidos,
+             tr.tipo_servicio as trabajo_tipo
+      FROM tareas_pendientes t
+      LEFT JOIN clientes cl ON t.cliente_id = cl.id
+      LEFT JOIN trabajos tr ON t.trabajo_id = tr.id
+      WHERE t.fecha_limite < ?
+        AND t.estado != 'completada'
+        AND t.estado != 'cancelada'
+      ORDER BY t.fecha_limite ASC, t.prioridad ASC
+      LIMIT 20
+    `).bind(hoyStr).all()
+    
+    // Tareas urgentes HOY
+    const urgentesHoy = await c.env.DB.prepare(`
+      SELECT t.*,
+             cl.nombre as cliente_nombre,
+             cl.apellidos as cliente_apellidos,
+             tr.tipo_servicio as trabajo_tipo
+      FROM tareas_pendientes t
+      LEFT JOIN clientes cl ON t.cliente_id = cl.id
+      LEFT JOIN trabajos tr ON t.trabajo_id = tr.id
+      WHERE t.fecha_limite = ?
+        AND t.estado != 'completada'
+        AND t.estado != 'cancelada'
+      ORDER BY t.prioridad ASC
+      LIMIT 20
+    `).bind(hoyStr).all()
+    
+    // Tareas próximas (24-48h)
+    const proximas = await c.env.DB.prepare(`
+      SELECT t.*,
+             cl.nombre as cliente_nombre,
+             cl.apellidos as cliente_apellidos,
+             tr.tipo_servicio as trabajo_tipo
+      FROM tareas_pendientes t
+      LEFT JOIN clientes cl ON t.cliente_id = cl.id
+      LEFT JOIN trabajos tr ON t.trabajo_id = tr.id
+      WHERE t.fecha_limite > ?
+        AND t.fecha_limite <= ?
+        AND t.estado != 'completada'
+        AND t.estado != 'cancelada'
+      ORDER BY t.fecha_limite ASC, t.prioridad ASC
+      LIMIT 20
+    `).bind(hoyStr, en2diasStr).all()
+    
+    // Tareas sin fecha asignada
+    const sinFecha = await c.env.DB.prepare(`
+      SELECT t.*,
+             cl.nombre as cliente_nombre,
+             cl.apellidos as cliente_apellidos,
+             tr.tipo_servicio as trabajo_tipo
+      FROM tareas_pendientes t
+      LEFT JOIN clientes cl ON t.cliente_id = cl.id
+      LEFT JOIN trabajos tr ON t.trabajo_id = tr.id
+      WHERE (t.fecha_limite IS NULL OR t.fecha_limite = '')
+        AND t.estado != 'completada'
+        AND t.estado != 'cancelada'
+      ORDER BY t.prioridad ASC, t.created_at DESC
+      LIMIT 20
+    `).all()
+    
+    // Recordatorios de hoy
+    const recordatoriosHoy = await c.env.DB.prepare(`
+      SELECT t.*,
+             cl.nombre as cliente_nombre,
+             cl.apellidos as cliente_apellidos,
+             tr.tipo_servicio as trabajo_tipo
+      FROM tareas_pendientes t
+      LEFT JOIN clientes cl ON t.cliente_id = cl.id
+      LEFT JOIN trabajos tr ON t.trabajo_id = tr.id
+      WHERE t.fecha_recordatorio = ?
+        AND t.recordatorio_enviado = 0
+        AND t.estado != 'completada'
+        AND t.estado != 'cancelada'
+      ORDER BY t.prioridad ASC
+      LIMIT 20
+    `).bind(hoyStr).all()
+    
+    return c.json({
+      retrasadas: retrasadas.results || [],
+      urgentesHoy: urgentesHoy.results || [],
+      proximas: proximas.results || [],
+      sinFecha: sinFecha.results || [],
+      recordatoriosHoy: recordatoriosHoy.results || [],
+      total: (retrasadas.results?.length || 0) + 
+             (urgentesHoy.results?.length || 0) + 
+             (recordatoriosHoy.results?.length || 0)
+    }, 200, {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    })
+  } catch (error) {
+    console.error('Error obteniendo alertas:', error)
+    return c.json({ error: 'Error al obtener alertas' }, 500)
   }
 })
 
