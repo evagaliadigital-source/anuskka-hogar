@@ -310,11 +310,16 @@ async function loadDashboard() {
     const { data } = await axios.get(`${API}/dashboard`)
     currentData.dashboard = data
     
-    // Actualizar KPIs principales
-    document.getElementById('kpi-trabajos').textContent = data.trabajos_activos || 0
-    document.getElementById('kpi-presupuestos').textContent = data.presupuestos_pendientes || 0
-    document.getElementById('kpi-fases').textContent = data.fases_en_proceso || 0
-    document.getElementById('kpi-completados').textContent = data.trabajos_completados_mes || 0
+    // Actualizar KPIs principales (con verificación de existencia)
+    const kpiTrabajos = document.getElementById('kpi-trabajos')
+    const kpiPresupuestos = document.getElementById('kpi-presupuestos')
+    const kpiFases = document.getElementById('kpi-fases')
+    const kpiCompletados = document.getElementById('kpi-completados')
+    
+    if (kpiTrabajos) kpiTrabajos.textContent = data.trabajos_activos || 0
+    if (kpiPresupuestos) kpiPresupuestos.textContent = data.presupuestos_pendientes || 0
+    if (kpiFases) kpiFases.textContent = data.fases_en_proceso || 0
+    if (kpiCompletados) kpiCompletados.textContent = data.trabajos_completados_mes || 0
     
     // Gráficos enfocados en operaciones
     renderChartTrabajos(data.trabajos_por_estado)
@@ -323,7 +328,7 @@ async function loadDashboard() {
     
   } catch (error) {
     console.error('Error cargando dashboard:', error)
-    showError('Error al cargar el dashboard')
+    // No mostrar showError aquí para evitar spam
   }
 }
 
@@ -7025,12 +7030,24 @@ async function editarTarea(tareaId) {
               
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
-                <select name="tipo" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
+                <select id="tipo-tarea-select-edit" name="tipo" onchange="toggleTipoManual(this)" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
                   <option value="general" ${tarea.tipo === 'general' ? 'selected' : ''}>General</option>
                   <option value="seguimiento_cliente" ${tarea.tipo === 'seguimiento_cliente' ? 'selected' : ''}>Seguimiento Cliente</option>
                   <option value="revisar_presupuesto" ${tarea.tipo === 'revisar_presupuesto' ? 'selected' : ''}>Revisar Presupuesto</option>
                   <option value="añadir_tela_stock" ${tarea.tipo === 'añadir_tela_stock' ? 'selected' : ''}>Añadir Tela a Stock</option>
+                  <option value="llamada_telefonica" ${tarea.tipo === 'llamada_telefonica' ? 'selected' : ''}>Llamada Telefónica</option>
+                  <option value="enviar_email" ${tarea.tipo === 'enviar_email' ? 'selected' : ''}>Enviar Email</option>
+                  <option value="reunion" ${tarea.tipo === 'reunion' ? 'selected' : ''}>Reunión</option>
+                  <option value="instalacion" ${tarea.tipo === 'instalacion' ? 'selected' : ''}>Instalación</option>
+                  <option value="medicion" ${tarea.tipo === 'medicion' ? 'selected' : ''}>Medición</option>
+                  <option value="cotizacion" ${tarea.tipo === 'cotizacion' ? 'selected' : ''}>Cotización</option>
+                  <option value="manual" ${!['general','seguimiento_cliente','revisar_presupuesto','añadir_tela_stock','llamada_telefonica','enviar_email','reunion','instalacion','medicion','cotizacion'].includes(tarea.tipo) ? 'selected' : ''}>✏️ Otro (escribir manualmente)</option>
                 </select>
+                <input type="text" id="tipo-tarea-manual" name="tipo_manual" 
+                       value="${!['general','seguimiento_cliente','revisar_presupuesto','añadir_tela_stock','llamada_telefonica','enviar_email','reunion','instalacion','medicion','cotizacion'].includes(tarea.tipo) ? tarea.tipo : ''}"
+                       placeholder="Escribe el tipo de tarea..." 
+                       style="display: ${!['general','seguimiento_cliente','revisar_presupuesto','añadir_tela_stock','llamada_telefonica','enviar_email','reunion','instalacion','medicion','cotizacion'].includes(tarea.tipo) ? 'block' : 'none'};"
+                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500 mt-2">
               </div>
               
               <div>
@@ -8759,35 +8776,6 @@ async function cambiarEstadoTareaRapido(tareaId, nuevoEstado) {
 }
 
 // Función para editar tarea (modal)
-async function editarTarea(tareaId) {
-  try {
-    const res = await fetch(`/api/tareas/${tareaId}`)
-    const tarea = await res.json()
-    
-    // Aquí iría el modal de edición completo
-    // Por ahora, mostrar un prompt simple
-    const nuevoTitulo = prompt('Editar título:', tarea.titulo)
-    if (!nuevoTitulo) return
-    
-    const updateRes = await fetch(`/api/tareas/${tareaId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        ...tarea,
-        titulo: nuevoTitulo
-      })
-    })
-    
-    if (updateRes.ok) {
-      showNotification('Tarea actualizada', 'success')
-      cambiarVistaTareas(vistaActualTareas) // Recargar vista actual
-    }
-  } catch (error) {
-    console.error('Error editando tarea:', error)
-    showNotification('Error al editar tarea', 'error')
-  }
-}
-
 // Actualizar contador del header
 async function actualizarContadoresTareasHeader() {
   try {
