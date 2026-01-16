@@ -3038,15 +3038,15 @@ app.get('/', (c) => {
             <div class="space-y-6">
                 
                 <!-- Header -->
-                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+                <div class="bg-gradient-to-r from-gray-700 to-gray-900 rounded-xl shadow-lg p-6 text-white">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-4">
-                            <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center">
-                                <i class="fas fa-calendar-alt text-indigo-600 text-2xl"></i>
+                            <div class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center">
+                                <i class="fas fa-calendar-alt text-white text-2xl"></i>
                             </div>
                             <div>
                                 <h1 class="text-3xl font-bold">Calendario Global</h1>
-                                <p class="text-indigo-100 text-sm mt-1">Visualiza todas las tareas y trabajos programados</p>
+                                <p class="text-gray-300 text-sm mt-1">Visualiza todas las tareas y trabajos programados</p>
                             </div>
                         </div>
                     </div>

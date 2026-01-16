@@ -9473,7 +9473,7 @@ async function cargarCalendarioGlobal() {
       
       grid.innerHTML += `
         <div onclick="mostrarEventosDia('${fechaStr}')" 
-             class="h-24 border-2 ${esHoy ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 bg-white'} rounded-lg p-2 cursor-pointer hover:shadow-lg hover:border-indigo-300 transition-all">
+             class="h-24 border-2 ${esHoy ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200 bg-white'} rounded-lg p-2 cursor-pointer hover:shadow-lg hover:border-yellow-400 transition-all">
           <div class="font-bold text-gray-800 mb-1">${dia}</div>
           ${totalEventos > 0 ? `
             <div class="space-y-1">
@@ -9594,7 +9594,7 @@ async function mostrarEventosDia(fechaStr) {
     
     // Trabajos
     if (trabajosDia.length > 0) {
-      lista.innerHTML += `<h4 class="font-bold text-gray-800 mt-4 mb-2 flex items-center gap-2"><i class="fas fa-briefcase text-purple-600"></i>Trabajos (${trabajosDia.length})</h4>`
+      lista.innerHTML += `<h4 class="font-bold text-gray-800 mt-4 mb-2 flex items-center gap-2"><i class="fas fa-briefcase text-gray-700"></i>Trabajos (${trabajosDia.length})</h4>`
       trabajosDia.forEach(t => {
         const estadoBadge = {
           'pendiente': '<span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">⏳ Pendiente</span>',
