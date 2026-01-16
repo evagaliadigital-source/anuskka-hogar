@@ -3111,8 +3111,8 @@ app.get('/', (c) => {
 
                 <!-- Lista de eventos del día seleccionado -->
                 <!-- Diario del Día (Modal estilo cuaderno) -->
-                <div id="calendario-global-eventos" class="hidden">
-                    <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl shadow-2xl p-8 border-4 border-amber-200" style="max-height: 70vh; overflow-y: auto;">
+                <div id="calendario-global-eventos" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onclick="if(event.target === this) this.classList.add('hidden')">
+                    <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl shadow-2xl p-8 border-4 border-amber-200 max-w-4xl w-full" style="max-height: 80vh; overflow-y: auto;">
                         <!-- Header del diario con navegación -->
                         <div id="calendario-global-fecha-titulo" class="mb-6">
                             <!-- Se llena con JS -->

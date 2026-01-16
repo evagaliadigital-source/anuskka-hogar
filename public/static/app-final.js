@@ -9568,7 +9568,12 @@ async function cargarDiarioDia(fechaStr) {
     })
     
     // Mostrar modal estilo diario
-    document.getElementById('calendario-global-eventos').classList.remove('hidden')
+    const modalElement = document.getElementById('calendario-global-eventos')
+    console.log('🪟 Modal element:', modalElement)
+    console.log('🪟 Modal classList antes:', modalElement.classList.toString())
+    modalElement.classList.remove('hidden')
+    console.log('🪟 Modal classList después:', modalElement.classList.toString())
+    console.log('✅ Modal debería estar visible ahora')
     
     // Título con navegación de flechas
     const fechaTitulo = fecha.toLocaleDateString('es-ES', { 
