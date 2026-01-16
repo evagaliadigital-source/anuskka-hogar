@@ -311,6 +311,27 @@ app.put('/api/trabajos/:id', async (c) => {
   return c.json({ success: true })
 })
 
+// Borrar trabajo
+app.delete('/api/trabajos/:id', async (c) => {
+  const id = c.req.param('id')
+  
+  try {
+    // Eliminar fases asociadas
+    await c.env.DB.prepare(`DELETE FROM trabajos_fases WHERE trabajo_id = ?`).bind(id).run()
+    
+    // Eliminar tareas asociadas (opcional - puedes decidir si mantenerlas huérfanas)
+    // await c.env.DB.prepare(`DELETE FROM tareas_pendientes WHERE trabajo_id = ?`).bind(id).run()
+    
+    // Eliminar el trabajo
+    await c.env.DB.prepare(`DELETE FROM trabajos WHERE id = ?`).bind(id).run()
+    
+    return c.json({ success: true })
+  } catch (error) {
+    console.error('Error eliminando trabajo:', error)
+    return c.json({ error: 'Error al eliminar el trabajo' }, 500)
+  }
+})
+
 // Cambiar estado de trabajo (simplificado, sin auto-factura)
 app.put('/api/trabajos/:id/estado', async (c) => {
   const id = c.req.param('id')

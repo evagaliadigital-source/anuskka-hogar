@@ -807,6 +807,9 @@ async function loadTrabajos() {
                 <button onclick="editTrabajo(${t.id})" class="text-green-600 hover:text-green-800" title="Editar">
                   <i class="fas fa-edit"></i>
                 </button>
+                <button onclick="deleteTrabajo(${t.id})" class="text-red-600 hover:text-red-800" title="Borrar">
+                  <i class="fas fa-trash"></i>
+                </button>
               </td>
             </tr>
           `).join('')}
@@ -2911,6 +2914,21 @@ window.viewCliente = async (id) => {
 
 window.editCliente = (id) => showClienteForm(id)
 window.editTrabajo = (id) => showTrabajoForm(id)
+window.deleteTrabajo = async (id) => {
+  if (!confirm('⚠️ ¿Estás segura de que quieres BORRAR este trabajo?\n\nEsta acción NO se puede deshacer.')) {
+    return
+  }
+  
+  try {
+    await axios.delete(`${API}/trabajos/${id}`)
+    showNotification('Trabajo eliminado correctamente')
+    loadTrabajos()
+    actualizarContadoresTrabajos()
+  } catch (error) {
+    console.error('Error eliminando trabajo:', error)
+    showNotification('Error al eliminar el trabajo', 'error')
+  }
+}
 window.closeModal = closeModal
 window.viewPersonal = async (id) => {
   const { data } = await axios.get(`${API}/personal/${id}`)
@@ -9001,6 +9019,11 @@ function toggleTipoManual(selectElement) {
     manualInput.value = ''
   }
 }
+
+// EXPONER FUNCIONES DE TRABAJOS GLOBALMENTE
+window.viewTrabajo = viewTrabajo
+window.editTrabajo = editTrabajo
+window.deleteTrabajo = deleteTrabajo
 
 // Exponer funciones globalmente
 window.cambiarVistaTareas = cambiarVistaTareas
