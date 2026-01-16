@@ -8966,9 +8966,6 @@ async function dropTareaEnColumna(event, nuevoEstado) {
   
   tareaArrastrando = null
 }
-  
-  tareaArrastrando = null
-}
 
 // ============================================
 // VISTA CALENDARIO
