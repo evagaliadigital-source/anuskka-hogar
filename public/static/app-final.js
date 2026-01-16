@@ -8566,6 +8566,170 @@ window.mostrarResumenDiario = mostrarResumenDiario
 window.cerrarResumenDiario = cerrarResumenDiario
 
 // ============================================
+// FUNCIÓN DE PRUEBA - RESUMEN DIARIO CON DATOS FAKE
+// ============================================
+
+async function probarResumenDiario() {
+  console.log('🧪 Creando resumen diario de prueba...')
+  
+  // Datos fake para la prueba
+  const datosFake = {
+    fecha: new Date().toISOString().split('T')[0],
+    tareasHoy: [
+      {
+        id: 1,
+        titulo: 'Instalar cortina en salón',
+        tipo: 'instalar',
+        fecha_limite: new Date().toISOString().split('T')[0],
+        cliente_nombre: 'Ana García',
+        estado: 'pendiente'
+      },
+      {
+        id: 2,
+        titulo: 'Llamar a cliente urgente',
+        tipo: 'llamar',
+        fecha_limite: new Date().toISOString().split('T')[0],
+        cliente_nombre: 'Luis Pérez',
+        estado: 'pendiente'
+      },
+      {
+        id: 3,
+        titulo: 'Presupuesto cocina nueva',
+        tipo: 'presupuesto',
+        fecha_limite: new Date().toISOString().split('T')[0],
+        cliente_nombre: 'María López',
+        estado: 'pendiente'
+      }
+    ],
+    trabajosHoy: [
+      {
+        id: 1,
+        tipo_servicio: 'Instalación de cortinas',
+        cliente_nombre: 'Pedro Martínez',
+        fecha_programada: new Date().toISOString().split('T')[0],
+        estado: 'programado'
+      },
+      {
+        id: 2,
+        tipo_servicio: 'Medición de ventanas',
+        cliente_nombre: 'Carmen Ruiz',
+        fecha_programada: new Date().toISOString().split('T')[0],
+        estado: 'programado'
+      }
+    ],
+    tareasPendientes: [
+      {
+        id: 4,
+        titulo: 'Revisar stock de telas',
+        tipo: 'varios',
+        fecha_limite: null,
+        cliente_nombre: null,
+        estado: 'pendiente'
+      },
+      {
+        id: 5,
+        titulo: 'Medir ventana cocina',
+        tipo: 'medir',
+        fecha_limite: new Date(Date.now() + 2*24*60*60*1000).toISOString().split('T')[0],
+        cliente_nombre: 'Roberto Gil',
+        estado: 'pendiente'
+      },
+      {
+        id: 6,
+        titulo: 'Pedido de tela azul',
+        tipo: 'pedidos',
+        fecha_limite: new Date(Date.now() + 3*24*60*60*1000).toISOString().split('T')[0],
+        cliente_nombre: 'Laura Sanz',
+        estado: 'pendiente'
+      },
+      {
+        id: 7,
+        titulo: 'Instalar cortina dormitorio',
+        tipo: 'instalar',
+        fecha_limite: new Date(Date.now() + 5*24*60*60*1000).toISOString().split('T')[0],
+        cliente_nombre: 'José Torres',
+        estado: 'pendiente'
+      },
+      {
+        id: 8,
+        titulo: 'Llamar proveedor urgente',
+        tipo: 'llamar',
+        fecha_limite: new Date(Date.now() - 1*24*60*60*1000).toISOString().split('T')[0],
+        cliente_nombre: null,
+        estado: 'pendiente'
+      }
+    ],
+    trabajosPendientes: [
+      {
+        id: 3,
+        tipo_servicio: 'Reparación cortina',
+        cliente_nombre: 'Isabel Vega',
+        fecha_programada: new Date(Date.now() + 4*24*60*60*1000).toISOString().split('T')[0],
+        estado: 'programado'
+      },
+      {
+        id: 4,
+        tipo_servicio: 'Instalación estores',
+        cliente_nombre: 'Antonio Ramos',
+        fecha_programada: new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0],
+        estado: 'programado'
+      }
+    ],
+    totalHoy: 5,
+    totalPendientes: 7
+  }
+  
+  try {
+    // Actualizar fecha
+    const fecha = new Date(datosFake.fecha)
+    document.getElementById('resumen-fecha').textContent = fecha.toLocaleDateString('es-ES', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })
+    
+    // Actualizar contadores
+    document.getElementById('count-vencen-hoy').textContent = datosFake.totalHoy
+    document.getElementById('count-pendientes').textContent = datosFake.totalPendientes
+    
+    // Renderizar tareas/trabajos que vencen hoy
+    const listaVencenHoy = document.getElementById('lista-vencen-hoy')
+    if (datosFake.totalHoy === 0) {
+      listaVencenHoy.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">✅ No hay tareas ni trabajos para hoy</p>'
+    } else {
+      listaVencenHoy.innerHTML = [
+        ...datosFake.tareasHoy.map(t => renderItemResumen(t, 'tarea')),
+        ...datosFake.trabajosHoy.map(t => renderItemResumen(t, 'trabajo'))
+      ].join('')
+    }
+    
+    // Renderizar pendientes
+    const listaPendientes = document.getElementById('lista-pendientes')
+    if (datosFake.totalPendientes === 0) {
+      listaPendientes.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">✅ No hay tareas pendientes</p>'
+    } else {
+      listaPendientes.innerHTML = [
+        ...datosFake.tareasPendientes.map(t => renderItemResumen(t, 'tarea')),
+        ...datosFake.trabajosPendientes.map(t => renderItemResumen(t, 'trabajo'))
+      ].join('')
+    }
+    
+    // Mostrar modal
+    document.getElementById('resumen-diario-modal').classList.remove('hidden')
+    
+    console.log('✅ Resumen de prueba cargado con:', datosFake)
+    console.log('📋 Tareas que vencen hoy:', datosFake.totalHoy)
+    console.log('📋 Tareas pendientes:', datosFake.totalPendientes)
+  } catch (error) {
+    console.error('Error mostrando resumen de prueba:', error)
+  }
+}
+
+// Exponer función de prueba
+window.probarResumenDiario = probarResumenDiario
+
+// ============================================
 // SISTEMA DE NOTAS - LIBRETA DE APUNTES
 // ============================================
 
