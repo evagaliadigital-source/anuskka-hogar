@@ -6618,12 +6618,23 @@ async function showNuevaTarea() {
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
-              <select name="tipo" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
+              <select id="tipo-tarea-select" name="tipo" onchange="toggleTipoManual(this)" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
                 <option value="general">General</option>
                 <option value="seguimiento_cliente">Seguimiento Cliente</option>
                 <option value="revisar_presupuesto">Revisar Presupuesto</option>
                 <option value="añadir_tela_stock">Añadir Tela a Stock</option>
+                <option value="llamada_telefonica">Llamada Telefónica</option>
+                <option value="enviar_email">Enviar Email</option>
+                <option value="reunion">Reunión</option>
+                <option value="instalacion">Instalación</option>
+                <option value="medicion">Medición</option>
+                <option value="cotizacion">Cotización</option>
+                <option value="manual">✏️ Otro (escribir manualmente)</option>
               </select>
+              <input type="text" id="tipo-tarea-manual" name="tipo_manual" 
+                     placeholder="Escribe el tipo de tarea..." 
+                     style="display: none;"
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500 mt-2">
             </div>
             
             <div>
@@ -6642,6 +6653,8 @@ async function showNuevaTarea() {
               <select name="estado" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
                 <option value="pendiente" selected>⏳ Pendiente</option>
                 <option value="en_proceso">🔄 En Proceso</option>
+                <option value="completada">✅ Finalizada</option>
+                <option value="cancelada">❌ Cancelada</option>
               </select>
             </div>
             
@@ -6711,12 +6724,18 @@ async function showNuevaTarea() {
     e.preventDefault()
     const formData = new FormData(e.target)
     
+    // Determinar tipo: si selecciona "manual", usar tipo_manual, sino usar tipo
+    let tipo = formData.get('tipo')
+    if (tipo === 'manual') {
+      tipo = formData.get('tipo_manual') || 'general'
+    }
+    
     try {
       const res = await fetch(`${API}/tareas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tipo: formData.get('tipo'),
+          tipo: tipo,
           titulo: formData.get('titulo'),
           descripcion: formData.get('descripcion') || null,
           prioridad: parseInt(formData.get('prioridad')),
@@ -6900,12 +6919,18 @@ async function editarTarea(tareaId) {
       e.preventDefault()
       const formData = new FormData(e.target)
       
+      // Determinar tipo: si selecciona "manual", usar tipo_manual, sino usar tipo
+      let tipo = formData.get('tipo')
+      if (tipo === 'manual') {
+        tipo = formData.get('tipo_manual') || 'general'
+      }
+      
       try {
         const res = await fetch(`${API}/tareas/${tareaId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            tipo: formData.get('tipo'),
+            tipo: tipo,
             titulo: formData.get('titulo'),
             descripcion: formData.get('descripcion') || null,
             prioridad: parseInt(formData.get('prioridad')),
@@ -7293,12 +7318,23 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
-              <select name="tipo" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
+              <select id="tipo-tarea-select" name="tipo" onchange="toggleTipoManual(this)" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
                 <option value="general">General</option>
                 <option value="seguimiento_cliente">Seguimiento Cliente</option>
                 <option value="revisar_presupuesto">Revisar Presupuesto</option>
                 <option value="añadir_tela_stock">Añadir Tela a Stock</option>
+                <option value="llamada_telefonica">Llamada Telefónica</option>
+                <option value="enviar_email">Enviar Email</option>
+                <option value="reunion">Reunión</option>
+                <option value="instalacion">Instalación</option>
+                <option value="medicion">Medición</option>
+                <option value="cotizacion">Cotización</option>
+                <option value="manual">✏️ Otro (escribir manualmente)</option>
               </select>
+              <input type="text" id="tipo-tarea-manual" name="tipo_manual" 
+                     placeholder="Escribe el tipo de tarea..." 
+                     style="display: none;"
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500 mt-2">
             </div>
             
             <div>
@@ -7317,6 +7353,8 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
               <select name="estado" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
                 <option value="pendiente" selected>⏳ Pendiente</option>
                 <option value="en_proceso">🔄 En Proceso</option>
+                <option value="completada">✅ Finalizada</option>
+                <option value="cancelada">❌ Cancelada</option>
               </select>
             </div>
             
@@ -8719,6 +8757,21 @@ document.addEventListener('keydown', (e) => {
   }
 })
 
+// Toggle tipo manual de tarea
+function toggleTipoManual(selectElement) {
+  const manualInput = document.getElementById('tipo-tarea-manual')
+  if (!manualInput) return
+  
+  if (selectElement.value === 'manual') {
+    manualInput.style.display = 'block'
+    manualInput.required = true
+  } else {
+    manualInput.style.display = 'none'
+    manualInput.required = false
+    manualInput.value = ''
+  }
+}
+
 // Exponer funciones globalmente
 window.cambiarVistaTareas = cambiarVistaTareas
 window.loadTareasKanban = loadTareasKanban
@@ -8740,6 +8793,7 @@ window.completarTareasSeleccionadas = completarTareasSeleccionadas
 window.eliminarTareasSeleccionadas = eliminarTareasSeleccionadas
 window.cancelarSeleccion = cancelarSeleccion
 window.exportarTareas = exportarTareas
+window.toggleTipoManual = toggleTipoManual
 
 console.log('✅ Sistema completo de tareas con 3 vistas cargado')
 
