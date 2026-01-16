@@ -7230,9 +7230,30 @@ async function showNuevaTarea() {
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Límite</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-play mr-1 text-green-500"></i>Fecha Inicio
+              </label>
+              <input type="date" name="fecha_inicio"
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-calendar-alt mr-1 text-red-500"></i>Fecha Límite
+              </label>
               <input type="datetime-local" name="fecha_limite"
                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-bell mr-1 text-yellow-500"></i>Fecha Recordatorio
+              </label>
+              <input type="datetime-local" name="fecha_recordatorio"
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
+              <p class="text-xs text-gray-500 mt-1">
+                <i class="fas fa-info-circle mr-1"></i>Se te avisará en esta fecha y hora
+              </p>
             </div>
             
             <div>
@@ -7927,9 +7948,30 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Límite</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-play mr-1 text-green-500"></i>Fecha Inicio
+              </label>
+              <input type="date" name="fecha_inicio"
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-calendar-alt mr-1 text-red-500"></i>Fecha Límite
+              </label>
               <input type="datetime-local" name="fecha_limite"
                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                <i class="fas fa-bell mr-1 text-yellow-500"></i>Fecha Recordatorio
+              </label>
+              <input type="datetime-local" name="fecha_recordatorio"
+                     class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
+              <p class="text-xs text-gray-500 mt-1">
+                <i class="fas fa-info-circle mr-1"></i>Se te avisará en esta fecha y hora
+              </p>
             </div>
             
             <div>
@@ -8315,54 +8357,122 @@ function toggleAvisos() {
   const panel = document.getElementById('avisos-panel')
   if (panel.classList.contains('hidden')) {
     panel.classList.remove('hidden')
-    cargarAvisos()
+    cargarAlertas()
   } else {
     panel.classList.add('hidden')
   }
 }
 
-async function marcarLeido(id) {
+async function cargarAlertas() {
   try {
-    await axios.put(`${API}/avisos/${id}/leer`)
-    await cargarAvisos()
+    console.log('🔔 Cargando alertas de tareas...')
+    const { data } = await axios.get(`${API}/tareas/alertas`)
+    
+    // Actualizar contadores
+    document.getElementById('count-retrasadas').textContent = data.retrasadas.length
+    document.getElementById('count-urgentes').textContent = data.urgentes.length
+    document.getElementById('count-proximas').textContent = data.proximas.length
+    document.getElementById('count-sin-fecha').textContent = data.sin_fecha.length
+    
+    // Actualizar badge del header
+    const totalAlertas = data.retrasadas.length + data.urgentes.length
+    const badge = document.getElementById('avisos-badge')
+    if (totalAlertas > 0) {
+      badge.textContent = totalAlertas
+      badge.classList.remove('hidden')
+    } else {
+      badge.classList.add('hidden')
+    }
+    
+    // Renderizar cada tipo de alerta
+    renderAlertasGrupo('retrasadas', data.retrasadas, 'red')
+    renderAlertasGrupo('urgentes', data.urgentes, 'orange')
+    renderAlertasGrupo('proximas', data.proximas, 'yellow')
+    renderAlertasGrupo('sin-fecha', data.sin_fecha, 'gray')
+    
+    console.log('✅ Alertas cargadas:', data)
   } catch (error) {
-    console.error('Error marcando aviso como leído:', error)
+    console.error('Error cargando alertas:', error)
   }
 }
 
-async function marcarTodosLeidos() {
-  try {
-    await axios.put(`${API}/avisos/leer-todos`)
-    await cargarAvisos()
-  } catch (error) {
-    console.error('Error marcando todos como leídos:', error)
+function renderAlertasGrupo(tipo, tareas, color) {
+  const lista = document.getElementById(`lista-${tipo}`)
+  
+  if (tareas.length === 0) {
+    lista.innerHTML = '<p class="text-sm text-gray-500 text-center py-2">Sin tareas</p>'
+    return
   }
+  
+  lista.innerHTML = tareas.map(t => {
+    const fechaLimite = t.fecha_limite 
+      ? new Date(t.fecha_limite).toLocaleDateString('es-ES', { 
+          day: '2-digit', 
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      : 'Sin fecha'
+    
+    return `
+      <div class="p-3 mb-2 border-l-4 border-${color}-500 bg-${color}-50 hover:bg-${color}-100 cursor-pointer rounded transition-all"
+           onclick="verDetallesTarea(${t.id})">
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <h5 class="font-medium text-gray-800 text-sm">${t.titulo}</h5>
+            <p class="text-xs text-gray-600 mt-1">
+              <i class="fas fa-calendar-alt mr-1"></i>${fechaLimite}
+            </p>
+            ${t.cliente_nombre ? `
+              <p class="text-xs text-gray-500 mt-1">
+                <i class="fas fa-user mr-1"></i>${t.cliente_nombre}
+              </p>
+            ` : ''}
+          </div>
+          <span class="px-2 py-1 text-xs font-semibold bg-${color}-200 text-${color}-800 rounded">
+            ${getTipoIcon(t.tipo)}
+          </span>
+        </div>
+      </div>
+    `
+  }).join('')
 }
 
-// Cargar contador de avisos cada 30 segundos
+function getTipoIcon(tipo) {
+  const iconos = {
+    'llamar': '📞 Llamar',
+    'instalar': '🔧 Instalar',
+    'medir': '📏 Medir',
+    'presupuesto': '💰 Presup.',
+    'pedidos': '📦 Pedido',
+    'varios': '📋 Varios'
+  }
+  return iconos[tipo] || '📋 Tarea'
+}
+
+// Cargar contador de alertas cada 30 segundos
 setInterval(async () => {
   try {
-    const { data } = await axios.get(`${API}/avisos/contador`)
+    const { data } = await axios.get(`${API}/tareas/alertas`)
+    const totalAlertas = data.retrasadas.length + data.urgentes.length
     const badge = document.getElementById('avisos-badge')
-    if (data.total > 0) {
-      badge.textContent = data.total
+    if (totalAlertas > 0) {
+      badge.textContent = totalAlertas
       badge.classList.remove('hidden')
     } else {
       badge.classList.add('hidden')
     }
   } catch (error) {
-    console.error('Error actualizando contador de avisos:', error)
+    console.error('Error actualizando contador de alertas:', error)
   }
 }, 30000)
 
-// Cargar avisos al inicio
-setTimeout(cargarAvisos, 1000)
+// Cargar alertas al inicio
+setTimeout(cargarAlertas, 1000)
 
 // Exponer funciones globalmente
 window.toggleAvisos = toggleAvisos
-window.cargarAvisos = cargarAvisos
-window.marcarLeido = marcarLeido
-window.marcarTodosLeidos = marcarTodosLeidos
+window.cargarAlertas = cargarAlertas
 
 // ============================================
 // SISTEMA DE NOTAS - LIBRETA DE APUNTES

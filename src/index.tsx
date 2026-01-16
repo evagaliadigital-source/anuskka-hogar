@@ -2166,20 +2166,50 @@ app.get('/', (c) => {
     <div id="avisos-panel" class="hidden fixed top-20 right-6 w-96 max-h-[600px] bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
         <div class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-4 flex items-center justify-between">
             <h3 class="text-lg font-bold">
-                <i class="fas fa-bell mr-2"></i>Avisos
+                <i class="fas fa-bell mr-2"></i>Alertas de Tareas
             </h3>
-            <div class="flex items-center space-x-2">
-                <button onclick="marcarTodosLeidos()" class="text-sm hover:bg-white/20 px-3 py-1 rounded transition-all">
-                    <i class="fas fa-check-double mr-1"></i>Marcar todos
-                </button>
-                <button onclick="toggleAvisos()" class="hover:bg-white/20 p-2 rounded transition-all">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
+            <button onclick="toggleAvisos()" class="hover:bg-white/20 p-2 rounded transition-all">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
         
-        <div id="avisos-lista" class="overflow-y-auto max-h-[500px] p-4">
-            <!-- Avisos se cargan dinámicamente -->
+        <div id="avisos-lista" class="overflow-y-auto max-h-[500px]">
+            <!-- Secciones de alertas -->
+            <div id="alertas-retrasadas" class="border-b border-gray-200">
+                <div class="bg-red-50 px-4 py-2">
+                    <h4 class="text-sm font-bold text-red-700">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>Retrasadas (<span id="count-retrasadas">0</span>)
+                    </h4>
+                </div>
+                <div id="lista-retrasadas" class="p-2"></div>
+            </div>
+            
+            <div id="alertas-urgentes" class="border-b border-gray-200">
+                <div class="bg-orange-50 px-4 py-2">
+                    <h4 class="text-sm font-bold text-orange-700">
+                        <i class="fas fa-fire mr-2"></i>Urgentes Hoy (<span id="count-urgentes">0</span>)
+                    </h4>
+                </div>
+                <div id="lista-urgentes" class="p-2"></div>
+            </div>
+            
+            <div id="alertas-proximas" class="border-b border-gray-200">
+                <div class="bg-yellow-50 px-4 py-2">
+                    <h4 class="text-sm font-bold text-yellow-700">
+                        <i class="fas fa-clock mr-2"></i>Próximas (<span id="count-proximas">0</span>)
+                    </h4>
+                </div>
+                <div id="lista-proximas" class="p-2"></div>
+            </div>
+            
+            <div id="alertas-sin-fecha" class="border-b border-gray-200">
+                <div class="bg-gray-50 px-4 py-2">
+                    <h4 class="text-sm font-bold text-gray-700">
+                        <i class="fas fa-calendar-times mr-2"></i>Sin Fecha (<span id="count-sin-fecha">0</span>)
+                    </h4>
+                </div>
+                <div id="lista-sin-fecha" class="p-2"></div>
+            </div>
         </div>
     </div>
 
