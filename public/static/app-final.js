@@ -133,11 +133,21 @@ function showModal(content, maxWidth = 'max-w-2xl') {
 
 // Cerrar modal
 function closeModal() {
-  const overlay = document.getElementById('modal-overlay')
-  if (overlay) {
+  // Cerrar TODOS los modales con id modal-overlay
+  const overlays = document.querySelectorAll('[id="modal-overlay"]')
+  overlays.forEach(overlay => {
     overlay.remove()
-    document.body.style.overflow = 'auto'
-  }
+  })
+  
+  // También intentar cerrar modales sin ID específico
+  const allModals = document.querySelectorAll('.fixed.inset-0.bg-black.bg-opacity-50')
+  allModals.forEach(modal => {
+    if (modal.parentElement === document.body) {
+      modal.remove()
+    }
+  })
+  
+  document.body.style.overflow = 'auto'
 }
 
 // Mostrar toast notification
@@ -6751,6 +6761,16 @@ async function verDetallesTarea(tareaId) {
     `
     
     document.body.insertAdjacentHTML('beforeend', html)
+    
+    // Añadir event listener para Escape
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        closeModal()
+        document.removeEventListener('keydown', handleEscape)
+      }
+    }
+    document.addEventListener('keydown', handleEscape)
+    
   } catch (error) {
     console.error('Error cargando detalles:', error)
     showError('Error al cargar detalles de la tarea')
