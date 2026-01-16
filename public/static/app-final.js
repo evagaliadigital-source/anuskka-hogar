@@ -9455,8 +9455,11 @@ async function cargarCalendarioGlobal() {
     
     // Días del mes
     for (let dia = 1; dia <= diasMes; dia++) {
-      const fecha = new Date(calendarioGlobalAnioActual, calendarioGlobalMesActual, dia)
-      const fechaStr = fecha.toISOString().split('T')[0]
+      // Generar fechaStr sin conversión a UTC
+      const year = calendarioGlobalAnioActual
+      const month = String(calendarioGlobalMesActual + 1).padStart(2, '0')
+      const day = String(dia).padStart(2, '0')
+      const fechaStr = `${year}-${month}-${day}`
       
       // Contar eventos del día (sin conversión de timezone)
       const tareasDia = tareasMes.filter(t => {
@@ -9472,8 +9475,11 @@ async function cargarCalendarioGlobal() {
       })
       
       const totalEventos = tareasDia.length + trabajosDia.length
+      
+      // Verificar si es hoy (sin conversión de timezone)
       const hoy = new Date()
-      const esHoy = fecha.toDateString() === hoy.toDateString()
+      const hoyStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`
+      const esHoy = fechaStr === hoyStr
       
       grid.innerHTML += `
         <div data-fecha="${fechaStr}" class="calendario-dia h-24 border-2 ${esHoy ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200 bg-white'} rounded-lg p-2 cursor-pointer hover:shadow-lg hover:border-yellow-400 transition-all">
