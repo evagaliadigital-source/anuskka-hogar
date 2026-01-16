@@ -9472,13 +9472,11 @@ async function cargarCalendarioGlobal() {
       const esHoy = fecha.toDateString() === hoy.toDateString()
       
       grid.innerHTML += `
-        <div onclick="mostrarEventosDia('${fechaStr}')" 
-             class="h-24 border-2 ${esHoy ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200 bg-white'} rounded-lg p-2 cursor-pointer hover:shadow-lg hover:border-yellow-400 transition-all">
+        <div data-fecha="${fechaStr}" class="calendario-dia h-24 border-2 ${esHoy ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200 bg-white'} rounded-lg p-2 cursor-pointer hover:shadow-lg hover:border-yellow-400 transition-all">
           <div class="font-bold text-gray-800 mb-1">${dia}</div>
           ${totalEventos > 0 ? `
             <div class="space-y-1">
               ${tareasDia.slice(0, 2).map(t => {
-                // Colores según tipo de tarea
                 const tipoColor = {
                   'llamar': 'bg-blue-200 text-blue-800',
                   'instalar': 'bg-green-200 text-green-800',
@@ -9511,6 +9509,18 @@ async function cargarCalendarioGlobal() {
       `
     }
     
+    // Añadir event listeners a todos los días después de renderizar
+    setTimeout(() => {
+      document.querySelectorAll('.calendario-dia').forEach(diaElement => {
+        diaElement.addEventListener('click', function() {
+          const fechaStr = this.getAttribute('data-fecha')
+          console.log('🔥 Día clickeado:', fechaStr)
+          mostrarEventosDia(fechaStr)
+        })
+      })
+      console.log('✅ Event listeners añadidos a', document.querySelectorAll('.calendario-dia').length, 'días')
+    }, 100)
+    
   } catch (error) {
     console.error('Error cargando calendario:', error)
     showNotification('Error al cargar el calendario', 'error')
@@ -9521,6 +9531,7 @@ async function cargarCalendarioGlobal() {
 let diarioFechaActual = null
 
 async function mostrarEventosDia(fechaStr) {
+  console.log('🔥 mostrarEventosDia llamada con fecha:', fechaStr)
   diarioFechaActual = fechaStr
   await cargarDiarioDia(fechaStr)
 }
@@ -9535,10 +9546,15 @@ function cambiarDiaDiario(direccion) {
 
 // Función principal del diario
 async function cargarDiarioDia(fechaStr) {
+  console.log('📖 cargarDiarioDia iniciada con fecha:', fechaStr)
   try {
     const fecha = new Date(fechaStr)
+    console.log('📅 Fecha parseada:', fecha)
     const { data: tareas } = await axios.get(`${API}/tareas?estado=todas`)
     const { data: trabajos } = await axios.get(`${API}/trabajos`)
+    
+    console.log('📋 Tareas obtenidas:', tareas.length)
+    console.log('💼 Trabajos obtenidos:', trabajos.length)
     
     // Filtrar por día
     const tareasDia = tareas.filter(t => {
