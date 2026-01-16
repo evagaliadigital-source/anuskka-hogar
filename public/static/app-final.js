@@ -285,6 +285,9 @@ function showTab(tabName) {
       actualizarContadorTareas()
       actualizarContadoresTareasHeader()
       break
+    case 'calendario':
+      cargarCalendarioGlobal()
+      break
     case 'personal':
       loadPersonal()
       break
@@ -6728,31 +6731,38 @@ async function loadTareas() {
       }
       
       return `
-        <div class="bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 overflow-hidden ${modoSeleccionMultiple ? 'cursor-pointer' : ''}" ${modoSeleccionMultiple ? `onclick="toggleSeleccionTarea(${t.id})"` : ''}>
-          <!-- Header con Estado y Prioridad -->
-          <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              ${modoSeleccionMultiple ? `
-                <input type="checkbox" class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500" 
-                       ${tareasSeleccionadas.has(t.id) ? 'checked' : ''}
-                       onclick="event.stopPropagation(); toggleSeleccionTarea(${t.id})">
-              ` : ''}
-              <div class="w-10 h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center text-lg">
-                ${tipoIcon[t.tipo] || '<i class="fas fa-tasks text-gray-600"></i>'}
+        <div class="bg-white rounded-xl border-2 border-gray-100 hover:border-gray-300 hover:shadow-xl transition-all duration-300 overflow-hidden ${modoSeleccionMultiple ? 'cursor-pointer' : ''}" ${modoSeleccionMultiple ? `onclick="toggleSeleccionTarea(${t.id})"` : ''}>
+          <!-- Header Elegante con Gradiente -->
+          <div class="bg-gradient-to-r from-slate-50 via-gray-50 to-slate-50 px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                ${modoSeleccionMultiple ? `
+                  <input type="checkbox" class="w-5 h-5 text-gray-600 rounded focus:ring-2 focus:ring-gray-500" 
+                         ${tareasSeleccionadas.has(t.id) ? 'checked' : ''}
+                         onclick="event.stopPropagation(); toggleSeleccionTarea(${t.id})">
+                ` : ''}
+                <!-- Icono circular elegante -->
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-white shadow-sm flex items-center justify-center text-xl">
+                  ${tipoIcon[t.tipo] || '<i class="fas fa-tasks text-gray-700"></i>'}
+                </div>
+                <!-- Título y tipo -->
+                <div>
+                  <h3 class="text-lg font-bold text-gray-900 mb-1">${t.titulo}</h3>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-500 uppercase tracking-wider font-medium">${t.tipo.replace(/_/g, ' ')}</span>
+                    ${prioridadBadge[t.prioridad]}
+                  </div>
+                </div>
               </div>
+              <!-- Estado Badge Grande -->
               <div>
-                <h3 class="text-base font-bold text-gray-900">${t.titulo}</h3>
-                <span class="text-xs text-gray-500 uppercase tracking-wide">${t.tipo.replace(/_/g, ' ')}</span>
+                ${estadoBadge[t.estado]}
               </div>
-            </div>
-            <div class="flex items-center gap-2">
-              ${prioridadBadge[t.prioridad]}
-              ${estadoBadge[t.estado]}
             </div>
           </div>
           
-          <!-- Body -->
-          <div class="p-4">
+          <!-- Body Elegante -->
+          <div class="p-6">
             ${t.descripcion ? `
               <p class="text-sm text-gray-700 mb-3 leading-relaxed">${t.descripcion}</p>
             ` : ''}
@@ -6805,16 +6815,16 @@ async function loadTareas() {
             </div>
           </div>
           
-          <!-- Actions Footer -->
+          <!-- Actions Footer Elegante -->
           ${!modoSeleccionMultiple ? `
-            <div class="bg-gray-50 px-4 py-3 border-t border-gray-200 flex gap-2">
-              <button onclick="verDetallesTarea(${t.id})" class="flex-1 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-all text-sm font-medium">
-                <i class="fas fa-eye mr-2"></i>Ver
+            <div class="bg-gradient-to-r from-gray-50 to-slate-50 px-6 py-4 border-t border-gray-200 flex gap-3">
+              <button onclick="verDetallesTarea(${t.id})" class="flex-1 bg-white border-2 border-gray-200 text-gray-700 px-4 py-2.5 rounded-lg hover:border-gray-300 hover:shadow-md transition-all text-sm font-semibold">
+                <i class="fas fa-eye mr-2"></i>Ver Detalles
               </button>
-              <button onclick="editarTarea(${t.id})" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all text-sm font-medium">
+              <button onclick="editarTarea(${t.id})" class="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-4 py-2.5 rounded-lg hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg transition-all text-sm font-semibold">
                 <i class="fas fa-edit mr-2"></i>Editar
               </button>
-              <button onclick="confirmarEliminarTarea(${t.id})" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-all text-sm font-medium">
+              <button onclick="confirmarEliminarTarea(${t.id})" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2.5 rounded-lg hover:from-orange-600 hover:to-orange-700 hover:shadow-lg transition-all text-sm font-semibold">
                 <i class="fas fa-trash mr-2"></i>Borrar
               </button>
             </div>
@@ -9307,4 +9317,238 @@ window.verDetallesTarea = verDetallesTarea
 window.confirmarEliminarTarea = confirmarEliminarTarea
 
 console.log('✅ Sistema completo de tareas con 3 vistas cargado')
+
+// ============================================
+// CALENDARIO GLOBAL (Tareas + Trabajos)
+// ============================================
+
+let calendarioGlobalMesActual = new Date().getMonth()
+let calendarioGlobalAnioActual = new Date().getFullYear()
+
+async function cargarCalendarioGlobal() {
+  try {
+    // Actualizar título
+    const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+    document.getElementById('calendario-global-titulo').textContent = `${meses[calendarioGlobalMesActual]} ${calendarioGlobalAnioActual}`
+    
+    // Obtener tareas y trabajos del mes
+    const { data: tareas } = await axios.get(`${API}/tareas?estado=todas`)
+    const { data: trabajos } = await axios.get(`${API}/trabajos`)
+    
+    // Filtrar por mes actual
+    const tareasMes = tareas.filter(t => {
+      if (!t.fecha_limite) return false
+      const fecha = new Date(t.fecha_limite)
+      return fecha.getMonth() === calendarioGlobalMesActual && fecha.getFullYear() === calendarioGlobalAnioActual
+    })
+    
+    const trabajosMes = trabajos.filter(t => {
+      if (!t.fecha_programada) return false
+      const fecha = new Date(t.fecha_programada)
+      return fecha.getMonth() === calendarioGlobalMesActual && fecha.getFullYear() === calendarioGlobalAnioActual
+    })
+    
+    // Generar calendario
+    const primerDia = new Date(calendarioGlobalAnioActual, calendarioGlobalMesActual, 1)
+    const ultimoDia = new Date(calendarioGlobalAnioActual, calendarioGlobalMesActual + 1, 0)
+    const diasMes = ultimoDia.getDate()
+    let diaSemana = primerDia.getDay()
+    diaSemana = diaSemana === 0 ? 6 : diaSemana - 1 // Lunes = 0
+    
+    const grid = document.getElementById('calendario-global-grid')
+    grid.innerHTML = ''
+    
+    // Días vacíos del mes anterior
+    for (let i = 0; i < diaSemana; i++) {
+      grid.innerHTML += '<div class="h-24 bg-gray-50 rounded-lg"></div>'
+    }
+    
+    // Días del mes
+    for (let dia = 1; dia <= diasMes; dia++) {
+      const fecha = new Date(calendarioGlobalAnioActual, calendarioGlobalMesActual, dia)
+      const fechaStr = fecha.toISOString().split('T')[0]
+      
+      // Contar eventos del día
+      const tareasDia = tareasMes.filter(t => {
+        const f = new Date(t.fecha_limite)
+        return f.getDate() === dia
+      })
+      
+      const trabajosDia = trabajosMes.filter(t => {
+        const f = new Date(t.fecha_programada)
+        return f.getDate() === dia
+      })
+      
+      const totalEventos = tareasDia.length + trabajosDia.length
+      const hoy = new Date()
+      const esHoy = fecha.toDateString() === hoy.toDateString()
+      
+      grid.innerHTML += `
+        <div onclick="mostrarEventosDia('${fechaStr}')" 
+             class="h-24 border-2 ${esHoy ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 bg-white'} rounded-lg p-2 cursor-pointer hover:shadow-lg hover:border-indigo-300 transition-all">
+          <div class="font-bold text-gray-800 mb-1">${dia}</div>
+          ${totalEventos > 0 ? `
+            <div class="space-y-1">
+              ${tareasDia.slice(0, 2).map(t => `
+                <div class="text-xs px-2 py-1 rounded ${
+                  t.estado === 'pendiente' ? 'bg-orange-100 text-orange-700' : 
+                  t.estado === 'en_proceso' ? 'bg-blue-100 text-blue-700' : 
+                  'bg-gray-100 text-gray-600'
+                } truncate" title="${t.titulo}">
+                  📋 ${t.titulo.substring(0, 10)}${t.titulo.length > 10 ? '...' : ''}
+                </div>
+              `).join('')}
+              ${trabajosDia.slice(0, 2).map(t => `
+                <div class="text-xs px-2 py-1 rounded ${
+                  t.estado === 'pendiente' ? 'bg-purple-100 text-purple-700' : 
+                  t.estado === 'en_proceso' ? 'bg-indigo-100 text-indigo-700' : 
+                  'bg-gray-100 text-gray-600'
+                } truncate" title="${t.tipo_servicio}">
+                  💼 ${t.cliente_nombre}
+                </div>
+              `).join('')}
+              ${totalEventos > 4 ? `
+                <div class="text-xs text-gray-500 text-center">+${totalEventos - 4} más</div>
+              ` : ''}
+            </div>
+          ` : '<div class="text-xs text-gray-400 text-center mt-4">Sin eventos</div>'}
+        </div>
+      `
+    }
+    
+  } catch (error) {
+    console.error('Error cargando calendario:', error)
+    showNotification('Error al cargar el calendario', 'error')
+  }
+}
+
+async function mostrarEventosDia(fechaStr) {
+  try {
+    const fecha = new Date(fechaStr)
+    const { data: tareas } = await axios.get(`${API}/tareas?estado=todas`)
+    const { data: trabajos } = await axios.get(`${API}/trabajos`)
+    
+    // Filtrar por día
+    const tareasDia = tareas.filter(t => {
+      if (!t.fecha_limite) return false
+      return new Date(t.fecha_limite).toISOString().split('T')[0] === fechaStr
+    })
+    
+    const trabajosDia = trabajos.filter(t => {
+      if (!t.fecha_programada) return false
+      return new Date(t.fecha_programada).toISOString().split('T')[0] === fechaStr
+    })
+    
+    if (tareasDia.length === 0 && trabajosDia.length === 0) {
+      showNotification('No hay eventos programados para este día')
+      return
+    }
+    
+    // Mostrar modal con eventos
+    document.getElementById('calendario-global-eventos').classList.remove('hidden')
+    document.getElementById('calendario-global-fecha-titulo').textContent = 
+      `Eventos del ${fecha.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`
+    
+    const lista = document.getElementById('calendario-global-eventos-lista')
+    lista.innerHTML = ''
+    
+    // Tareas
+    if (tareasDia.length > 0) {
+      lista.innerHTML += `<h4 class="font-bold text-gray-800 mb-2 flex items-center gap-2"><i class="fas fa-clipboard-list text-orange-600"></i>Tareas (${tareasDia.length})</h4>`
+      tareasDia.forEach(t => {
+        const estadoBadge = {
+          'pendiente': '<span class="px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded-full">⏳ Pendiente</span>',
+          'en_proceso': '<span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">🔄 En Proceso</span>',
+          'completada': '<span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">✅ Completada</span>',
+          'cancelada': '<span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">❌ Cancelada</span>'
+        }
+        
+        lista.innerHTML += `
+          <div class="bg-white border-2 border-orange-200 rounded-lg p-4 hover:shadow-md transition-all">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex-1">
+                <h5 class="font-bold text-gray-900">${t.titulo}</h5>
+                <p class="text-sm text-gray-600 mt-1">${t.descripcion || 'Sin descripción'}</p>
+              </div>
+              ${estadoBadge[t.estado]}
+            </div>
+            <div class="flex items-center gap-4 text-xs text-gray-500 mt-2">
+              ${t.asignado_a ? `<span><i class="fas fa-user mr-1"></i>${t.asignado_a}</span>` : ''}
+              <span><i class="fas fa-clock mr-1"></i>${new Date(t.fecha_limite).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}</span>
+            </div>
+            <div class="mt-3">
+              <button onclick="showTab('tareas'); setTimeout(() => verDetallesTarea(${t.id}), 300)" 
+                      class="text-sm text-orange-600 hover:text-orange-700 font-medium">
+                <i class="fas fa-eye mr-1"></i>Ver Detalles
+              </button>
+            </div>
+          </div>
+        `
+      })
+    }
+    
+    // Trabajos
+    if (trabajosDia.length > 0) {
+      lista.innerHTML += `<h4 class="font-bold text-gray-800 mt-4 mb-2 flex items-center gap-2"><i class="fas fa-briefcase text-purple-600"></i>Trabajos (${trabajosDia.length})</h4>`
+      trabajosDia.forEach(t => {
+        const estadoBadge = {
+          'pendiente': '<span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">⏳ Pendiente</span>',
+          'en_proceso': '<span class="px-2 py-1 bg-indigo-100 text-indigo-700 text-xs rounded-full">🔄 En Proceso</span>',
+          'completado': '<span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">✅ Completado</span>',
+          'cancelado': '<span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">❌ Cancelado</span>'
+        }
+        
+        lista.innerHTML += `
+          <div class="bg-white border-2 border-purple-200 rounded-lg p-4 hover:shadow-md transition-all">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex-1">
+                <h5 class="font-bold text-gray-900">${t.cliente_nombre} ${t.cliente_apellidos}</h5>
+                <p class="text-sm text-gray-600 mt-1">${t.tipo_servicio.replace(/_/g, ' ')}</p>
+                ${t.descripcion ? `<p class="text-sm text-gray-500 mt-1">${t.descripcion}</p>` : ''}
+              </div>
+              ${estadoBadge[t.estado]}
+            </div>
+            <div class="flex items-center gap-4 text-xs text-gray-500 mt-2">
+              ${t.nombre_empleada ? `<span><i class="fas fa-user mr-1"></i>${t.nombre_empleada}</span>` : ''}
+              <span><i class="fas fa-clock mr-1"></i>${new Date(t.fecha_programada).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}</span>
+              ${t.precio_cliente ? `<span><i class="fas fa-euro-sign mr-1"></i>${t.precio_cliente.toFixed(2)}</span>` : ''}
+            </div>
+            <div class="mt-3">
+              <button onclick="showTab('trabajos'); setTimeout(() => viewTrabajo(${t.id}), 300)" 
+                      class="text-sm text-purple-600 hover:text-purple-700 font-medium">
+                <i class="fas fa-eye mr-1"></i>Ver Detalles
+              </button>
+            </div>
+          </div>
+        `
+      })
+    }
+    
+  } catch (error) {
+    console.error('Error mostrando eventos:', error)
+    showNotification('Error al cargar eventos del día', 'error')
+  }
+}
+
+function cambiarMesGlobal(direccion) {
+  calendarioGlobalMesActual += direccion
+  
+  if (calendarioGlobalMesActual > 11) {
+    calendarioGlobalMesActual = 0
+    calendarioGlobalAnioActual++
+  } else if (calendarioGlobalMesActual < 0) {
+    calendarioGlobalMesActual = 11
+    calendarioGlobalAnioActual--
+  }
+  
+  cargarCalendarioGlobal()
+  document.getElementById('calendario-global-eventos').classList.add('hidden')
+}
+
+// Exponer funciones globalmente
+window.cargarCalendarioGlobal = cargarCalendarioGlobal
+window.mostrarEventosDia = mostrarEventosDia
+window.cambiarMesGlobal = cambiarMesGlobal
+
+console.log('✅ Calendario global cargado')
 

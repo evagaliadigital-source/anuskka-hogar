@@ -2154,6 +2154,9 @@ app.get('/', (c) => {
                 <i class="fas fa-clipboard-list mr-2"></i>Tareas
                 <span id="tareas-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">0</span>
             </button>
+            <button onclick="showTab('calendario')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-calendar-alt mr-2"></i>Calendario
+            </button>
             <button onclick="showTab('stock')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-boxes mr-2"></i>Stock
             </button>
@@ -2731,9 +2734,6 @@ app.get('/', (c) => {
                             <button onclick="cambiarVistaTareas('kanban')" id="vista-kanban-btn" class="vista-tareas-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-all" title="Ver tareas por columnas de estado">
                                 <i class="fas fa-columns mr-2"></i>Kanban
                             </button>
-                            <button onclick="cambiarVistaTareas('calendario')" id="vista-calendario-btn" class="vista-tareas-btn bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-all" title="Ver tareas en calendario mensual">
-                                <i class="fas fa-calendar-alt mr-2"></i>Calendario
-                            </button>
                         </div>
                         
                         <!-- Barra de búsqueda -->
@@ -2982,6 +2982,95 @@ app.get('/', (c) => {
                         <div id="calendario-tareas-lista" class="space-y-3">
                             <!-- Tareas del día -->
                         </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- CALENDARIO TAB (Nueva Sección Global) -->
+        <div id="calendario-tab" class="tab-content">
+            <div class="space-y-6">
+                
+                <!-- Header -->
+                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 bg-white rounded-full flex items-center justify-center">
+                                <i class="fas fa-calendar-alt text-indigo-600 text-2xl"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-3xl font-bold">Calendario Global</h1>
+                                <p class="text-indigo-100 text-sm mt-1">Visualiza todas las tareas y trabajos programados</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendario -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <!-- Navegación del mes -->
+                    <div class="flex items-center justify-between mb-6">
+                        <button onclick="cambiarMesGlobal(-1)" class="p-2 hover:bg-gray-100 rounded-lg transition-all">
+                            <i class="fas fa-chevron-left text-gray-600"></i>
+                        </button>
+                        <h2 class="text-2xl font-bold text-gray-800" id="calendario-global-titulo">
+                            <!-- Mes y año -->
+                        </h2>
+                        <button onclick="cambiarMesGlobal(1)" class="p-2 hover:bg-gray-100 rounded-lg transition-all">
+                            <i class="fas fa-chevron-right text-gray-600"></i>
+                        </button>
+                    </div>
+
+                    <!-- Días de la semana -->
+                    <div class="grid grid-cols-7 gap-2 mb-2">
+                        <div class="text-center text-sm font-bold text-gray-600 py-2">Lun</div>
+                        <div class="text-center text-sm font-bold text-gray-600 py-2">Mar</div>
+                        <div class="text-center text-sm font-bold text-gray-600 py-2">Mié</div>
+                        <div class="text-center text-sm font-bold text-gray-600 py-2">Jue</div>
+                        <div class="text-center text-sm font-bold text-gray-600 py-2">Vie</div>
+                        <div class="text-center text-sm font-bold text-gray-600 py-2">Sáb</div>
+                        <div class="text-center text-sm font-bold text-gray-600 py-2">Dom</div>
+                    </div>
+
+                    <!-- Grid del calendario -->
+                    <div id="calendario-global-grid" class="grid grid-cols-7 gap-2">
+                        <!-- Se llena dinámicamente con JS -->
+                    </div>
+                </div>
+
+                <!-- Leyenda -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">
+                        <i class="fas fa-info-circle mr-2 text-blue-600"></i>Leyenda
+                    </h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 bg-orange-500 rounded"></div>
+                            <span class="text-sm text-gray-700">Tareas Pendientes</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 bg-blue-500 rounded"></div>
+                            <span class="text-sm text-gray-700">Tareas En Proceso</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 bg-purple-500 rounded"></div>
+                            <span class="text-sm text-gray-700">Trabajos Pendientes</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-4 h-4 bg-indigo-500 rounded"></div>
+                            <span class="text-sm text-gray-700">Trabajos En Proceso</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de eventos del día seleccionado -->
+                <div id="calendario-global-eventos" class="hidden bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4" id="calendario-global-fecha-titulo">
+                        <!-- Fecha seleccionada -->
+                    </h3>
+                    <div id="calendario-global-eventos-lista" class="space-y-4">
+                        <!-- Eventos del día -->
                     </div>
                 </div>
 
