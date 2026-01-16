@@ -8915,11 +8915,12 @@ async function dropTareaEnColumna(event, nuevoEstado) {
   if (estadoAnterior === nuevoEstado) return
   
   try {
-    const res = await fetch(`${API}/tareas/${tareaId}`, {
+    const res = await fetch(`${API}/tareas/${tareaId}/estado`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
-        estado: nuevoEstado
+        estado: nuevoEstado,
+        completada_por: getUserInfo()?.nombre || 'Usuario'
       })
     })
     
