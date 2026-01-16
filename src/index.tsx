@@ -2004,7 +2004,7 @@ app.post('/api/conversaciones/:id/guardar-nota', async (c) => {
     
     // Crear nota con la conversación
     const titulo = conversacion.mensaje.substring(0, 50) + '...'
-    const contenido = `TÚ: ${conversacion.mensaje}\n\nGAL IA: ${conversacion.respuesta}`
+    const contenido = `TÚ: ${conversacion.mensaje}\n\nGaliA: ${conversacion.respuesta}`
     
     const result = await c.env.DB.prepare(`
       INSERT INTO notas (titulo, contenido, color)
@@ -2077,7 +2077,7 @@ app.get('/', (c) => {
         .hover\:bg-brand-orange-dark:hover { background-color: #a07512; }
         .bg-brand-orange-light { background-color: #f0dbb5; }
         
-        /* GAL IA Float Button Animation */
+        /* GaliA Float Button Animation */
         @keyframes float-pulse {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
@@ -2104,11 +2104,11 @@ app.get('/', (c) => {
                         <i class="fas fa-sticky-note text-lg"></i>
                     </button>
                     
-                    <!-- Botón de GAL IA -->
-                    <button onclick="openGalIA()" class="relative bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300 px-3 py-2 rounded-lg transition-all shadow-md hover:shadow-lg group" title="¡Hola! Soy GAL IA, tu asistente virtual">
+                    <!-- Botón de GaliA -->
+                    <button onclick="openGalIA()" class="relative bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-gray-300 px-3 py-2 rounded-lg transition-all shadow-md hover:shadow-lg group" title="¡Hola! Soy GaliA, tu asistente virtual">
                         <div class="flex items-center gap-2">
-                            <img src="/static/galia-pulpo.png" alt="GAL IA" class="w-6 h-6 object-contain group-hover:scale-110 transition-transform">
-                            <span class="text-sm font-semibold text-gray-700">GAL IA</span>
+                            <img src="/static/galia-pulpo.png" alt="GaliA" class="w-6 h-6 object-contain group-hover:scale-110 transition-transform">
+                            <span class="text-sm font-semibold text-gray-700">GaliA</span>
                         </div>
                         <span id="galia-badge" class="hidden absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg">!</span>
                     </button>
@@ -2189,7 +2189,7 @@ app.get('/', (c) => {
             <button onclick="showTab('historial')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100" data-tab="historial">
                 <i class="fas fa-history mr-2"></i>Historial
             </button>
-            <!-- Consultor IA ahora disponible vía botón flotante GAL IA 🐙 -->
+            <!-- Consultor IA ahora disponible vía botón flotante GaliA 🐙 -->
             <button onclick="showTab('disenador')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-magic mr-2"></i>Diseñador Virtual
             </button>
@@ -2616,10 +2616,10 @@ app.get('/', (c) => {
                 <div class="bg-gradient-to-r from-teal-700 via-blue-900 to-purple-800 p-8">
                     <div class="flex items-center gap-4">
                         <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg p-2">
-                            <img src="/static/galia-pulpo.png" alt="GAL IA" class="w-full h-full object-contain">
+                            <img src="/static/galia-pulpo.png" alt="GaliA" class="w-full h-full object-contain">
                         </div>
                         <div class="text-white">
-                            <h2 class="text-3xl font-bold tracking-tight">GAL IA - Tu Consultora</h2>
+                            <h2 class="text-3xl font-bold tracking-tight">GaliA - Tu Consultora</h2>
                             <p class="text-teal-200 text-sm font-medium mt-1">Experta en Cortinas • Gestión • Innovación</p>
                         </div>
                     </div>
@@ -2645,11 +2645,11 @@ app.get('/', (c) => {
                     <div class="mb-4">
                         <div class="flex items-start gap-3">
                             <div class="w-12 h-12 bg-gradient-to-br from-teal-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-md p-1">
-                                <img src="/static/galia-pulpo.png" alt="GAL IA" class="w-full h-full object-contain">
+                                <img src="/static/galia-pulpo.png" alt="GaliA" class="w-full h-full object-contain">
                             </div>
                             <div class="bg-white rounded-2xl p-6 shadow-lg max-w-3xl border-l-4 border-teal-500">
                                 <p class="text-gray-800 mb-3 text-lg">
-                                    ¡Hola! Soy <strong class="text-teal-700">GAL IA</strong> 🐙, tu consultora especializada en cortinas y gestión administrativa. 👋
+                                    ¡Hola! Soy <strong class="text-teal-700">GaliA</strong> 🐙, tu consultora especializada en cortinas y gestión administrativa. 👋
                                 </p>
                                 <p class="text-gray-700 mb-3">
                                     Puedo ayudarte con:

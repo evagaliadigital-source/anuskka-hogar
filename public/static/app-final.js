@@ -3198,10 +3198,10 @@ window.editPersonal = (id) => showPersonalForm(id)
 window.editStock = (id) => showStockForm(id)
 
 // ============================================
-// GAL IA - ASISTENTE FLOTANTE
+// GaliA - ASISTENTE FLOTANTE
 // ============================================
 
-// Abrir GAL IA (Consultor IA)
+// Abrir GaliA (Consultor IA)
 function openGalIA() {
   // Crear modal flotante GRANDE si no existe
   if (document.getElementById('galia-modal-flotante')) {
@@ -3219,10 +3219,10 @@ function openGalIA() {
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
             <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg p-2">
-              <img src="/static/galia-pulpo.png" alt="GAL IA" class="w-full h-full object-contain">
+              <img src="/static/galia-pulpo.png" alt="GaliA" class="w-full h-full object-contain">
             </div>
             <div class="text-white">
-              <h2 class="text-2xl font-bold">GAL IA - Tu Consultora</h2>
+              <h2 class="text-2xl font-bold">GaliA - Tu Consultora</h2>
               <p class="text-teal-200 text-sm">Experta en Cortinas • Gestión • Innovación</p>
             </div>
           </div>
@@ -3249,11 +3249,11 @@ function openGalIA() {
         <div class="mb-4">
           <div class="flex items-start gap-3">
             <div class="w-10 h-10 bg-gradient-to-br from-teal-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 p-1">
-              <img src="/static/galia-pulpo.png" alt="GAL IA" class="w-full h-full object-contain">
+              <img src="/static/galia-pulpo.png" alt="GaliA" class="w-full h-full object-contain">
             </div>
             <div class="bg-white rounded-xl p-5 shadow-md max-w-3xl border-l-4 border-teal-500">
               <p class="text-gray-800 mb-3 text-base">
-                ¡Hola! Soy <strong class="text-teal-700">GAL IA</strong> 🐙, tu consultora especializada. 👋
+                ¡Hola! Soy <strong class="text-teal-700">GaliA</strong> 🐙, tu consultora especializada. 👋
               </p>
               <p class="text-gray-700 mb-2 text-sm">Puedo ayudarte con:</p>
               <ul class="list-disc list-inside text-gray-700 space-y-1 text-sm mb-3">
@@ -3337,7 +3337,7 @@ async function sendMessageModal() {
     <div id="typing-indicator" class="mb-4">
       <div class="flex items-start gap-3">
         <div class="w-10 h-10 bg-gradient-to-br from-teal-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 p-1">
-          <img src="/static/galia-pulpo.png" alt="GAL IA" class="w-full h-full object-contain">
+          <img src="/static/galia-pulpo.png" alt="GaliA" class="w-full h-full object-contain">
         </div>
         <div class="bg-white rounded-xl p-4 shadow-md">
           <i class="fas fa-circle-notch fa-spin text-teal-600"></i>
@@ -3355,12 +3355,12 @@ async function sendMessageModal() {
     // Quitar indicador
     document.getElementById('typing-indicator')?.remove()
     
-    // Añadir respuesta de GAL IA
+    // Añadir respuesta de GaliA
     chatContainer.innerHTML += `
       <div class="mb-4">
         <div class="flex items-start gap-3">
           <div class="w-10 h-10 bg-gradient-to-br from-teal-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 p-1">
-            <img src="/static/galia-pulpo.png" alt="GAL IA" class="w-full h-full object-contain">
+            <img src="/static/galia-pulpo.png" alt="GaliA" class="w-full h-full object-contain">
           </div>
           <div class="bg-white rounded-xl p-5 shadow-md max-w-3xl border-l-4 border-teal-500">
             <div class="prose prose-sm max-w-none text-gray-800">
@@ -8743,7 +8743,7 @@ window.eliminarNotaYRecargar = eliminarNotaYRecargar
 // MEJORAR CHAT IA - VENTANA GRANDE
 // ============================================
 
-// Esta función se llama desde el HTML del botón GAL IA
+// Esta función se llama desde el HTML del botón GaliA
 // Vamos a sobreescribir para hacer la ventana más grande
 
 // ============================================
