@@ -9423,17 +9423,19 @@ async function cargarCalendarioGlobal() {
     const { data: tareas } = await axios.get(`${API}/tareas?estado=todas`)
     const { data: trabajos } = await axios.get(`${API}/trabajos`)
     
-    // Filtrar por mes actual
+    // Filtrar por mes actual (sin conversión de timezone)
     const tareasMes = tareas.filter(t => {
       if (!t.fecha_limite) return false
-      const fecha = new Date(t.fecha_limite)
-      return fecha.getMonth() === calendarioGlobalMesActual && fecha.getFullYear() === calendarioGlobalAnioActual
+      const fechaStr = t.fecha_limite.split('T')[0]
+      const [year, month] = fechaStr.split('-').map(Number)
+      return month - 1 === calendarioGlobalMesActual && year === calendarioGlobalAnioActual
     })
     
     const trabajosMes = trabajos.filter(t => {
       if (!t.fecha_programada) return false
-      const fecha = new Date(t.fecha_programada)
-      return fecha.getMonth() === calendarioGlobalMesActual && fecha.getFullYear() === calendarioGlobalAnioActual
+      const fechaStr = t.fecha_programada.split('T')[0]
+      const [year, month] = fechaStr.split('-').map(Number)
+      return month - 1 === calendarioGlobalMesActual && year === calendarioGlobalAnioActual
     })
     
     // Generar calendario
@@ -9456,15 +9458,17 @@ async function cargarCalendarioGlobal() {
       const fecha = new Date(calendarioGlobalAnioActual, calendarioGlobalMesActual, dia)
       const fechaStr = fecha.toISOString().split('T')[0]
       
-      // Contar eventos del día
+      // Contar eventos del día (sin conversión de timezone)
       const tareasDia = tareasMes.filter(t => {
-        const f = new Date(t.fecha_limite)
-        return f.getDate() === dia
+        const fechaStr = t.fecha_limite.split('T')[0]
+        const [, , day] = fechaStr.split('-').map(Number)
+        return day === dia
       })
       
       const trabajosDia = trabajosMes.filter(t => {
-        const f = new Date(t.fecha_programada)
-        return f.getDate() === dia
+        const fechaStr = t.fecha_programada.split('T')[0]
+        const [, , day] = fechaStr.split('-').map(Number)
+        return day === dia
       })
       
       const totalEventos = tareasDia.length + trabajosDia.length
@@ -9558,15 +9562,19 @@ async function cargarDiarioDia(fechaStr) {
     console.log('📋 Tareas obtenidas:', tareas.length)
     console.log('💼 Trabajos obtenidos:', trabajos.length)
     
-    // Filtrar por día
+    // Filtrar por día (sin conversión de timezone)
     const tareasDia = tareas.filter(t => {
       if (!t.fecha_limite) return false
-      return new Date(t.fecha_limite).toISOString().split('T')[0] === fechaStr
+      // Extraer solo la parte de fecha YYYY-MM-DD
+      const fechaTarea = t.fecha_limite.split('T')[0]
+      return fechaTarea === fechaStr
     })
     
     const trabajosDia = trabajos.filter(t => {
       if (!t.fecha_programada) return false
-      return new Date(t.fecha_programada).toISOString().split('T')[0] === fechaStr
+      // Extraer solo la parte de fecha YYYY-MM-DD
+      const fechaTrabajo = t.fecha_programada.split('T')[0]
+      return fechaTrabajo === fechaStr
     })
     
     // Mostrar modal estilo diario
