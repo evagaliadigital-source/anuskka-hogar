@@ -1340,7 +1340,6 @@ async function viewTrabajo(id) {
                         <div class="flex flex-wrap gap-2 text-xs text-gray-500">
                           ${tarea.asignado_a ? `<span><i class="fas fa-user mr-1"></i>${tarea.asignado_a}</span>` : ''}
                           ${tarea.fecha_limite ? `<span><i class="far fa-calendar mr-1"></i>${new Date(tarea.fecha_limite).toLocaleDateString('es-ES')} ${new Date(tarea.fecha_limite).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}</span>` : ''}
-                          ${tarea.recordatorio_minutos ? `<span class="text-orange-600"><i class="fas fa-bell mr-1"></i>${tarea.recordatorio_minutos} min antes</span>` : ''}
                           <span><i class="far fa-clock mr-1"></i>${new Date(tarea.created_at).toLocaleDateString('es-ES')}</span>
                         </div>
                       </div>
@@ -7027,13 +7026,6 @@ async function verDetallesTarea(tareaId) {
                   <p class="text-lg font-bold text-gray-900">${tarea.nombre_proyecto}</p>
                 </div>
               ` : ''}
-              
-              ${tarea.recordatorio_minutos ? `
-                <div class="p-4 bg-yellow-50 rounded-lg">
-                  <p class="text-xs text-yellow-600 font-semibold mb-1">RECORDATORIO</p>
-                  <p class="text-lg font-bold text-gray-900">${tarea.recordatorio_minutos} minutos antes</p>
-                </div>
-              ` : ''}
             </div>
             
             <!-- Notas -->
@@ -7256,20 +7248,6 @@ async function showNuevaTarea() {
               </p>
             </div>
             
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                Recordatorio (minutos antes)
-              </label>
-              <select name="recordatorio_minutos" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
-                <option value="">Sin recordatorio</option>
-                <option value="15">15 minutos antes</option>
-                <option value="30">30 minutos antes</option>
-                <option value="60" selected>1 hora antes</option>
-                <option value="120">2 horas antes</option>
-                <option value="1440">1 día antes</option>
-              </select>
-            </div>
-            
             <div class="col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
               <textarea name="notas" rows="2"
@@ -7316,8 +7294,9 @@ async function showNuevaTarea() {
           asignado_a: formData.get('asignado_a') || null,
           trabajo_id: formData.get('trabajo_id') ? parseInt(formData.get('trabajo_id')) : null,
           cliente_id: formData.get('cliente_id') ? parseInt(formData.get('cliente_id')) : null,
+          fecha_inicio: formData.get('fecha_inicio') || null,
           fecha_limite: formData.get('fecha_limite') || null,
-          recordatorio_minutos: formData.get('recordatorio_minutos') ? parseInt(formData.get('recordatorio_minutos')) : null,
+          fecha_recordatorio: formData.get('fecha_recordatorio') || null,
           notas: formData.get('notas') || null
         })
       })
@@ -7461,23 +7440,30 @@ async function editarTarea(tareaId) {
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Límite</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <i class="fas fa-play mr-1 text-green-500"></i>Fecha Inicio
+                </label>
+                <input type="date" name="fecha_inicio" value="${tarea.fecha_inicio ? tarea.fecha_inicio.split('T')[0] : ''}"
+                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  <i class="fas fa-calendar-alt mr-1 text-red-500"></i>Fecha Límite
+                </label>
                 <input type="datetime-local" name="fecha_limite" value="${tarea.fecha_limite ? new Date(tarea.fecha_limite).toISOString().slice(0, 16) : ''}"
                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
               </div>
               
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">
-                  Recordatorio (minutos antes)
+                  <i class="fas fa-bell mr-1 text-yellow-500"></i>Fecha Recordatorio
                 </label>
-                <select name="recordatorio_minutos" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
-                  <option value="" ${!tarea.recordatorio_minutos ? 'selected' : ''}>Sin recordatorio</option>
-                  <option value="15" ${tarea.recordatorio_minutos === 15 ? 'selected' : ''}>15 minutos antes</option>
-                  <option value="30" ${tarea.recordatorio_minutos === 30 ? 'selected' : ''}>30 minutos antes</option>
-                  <option value="60" ${tarea.recordatorio_minutos === 60 ? 'selected' : ''}>1 hora antes</option>
-                  <option value="120" ${tarea.recordatorio_minutos === 120 ? 'selected' : ''}>2 horas antes</option>
-                  <option value="1440" ${tarea.recordatorio_minutos === 1440 ? 'selected' : ''}>1 día antes</option>
-                </select>
+                <input type="datetime-local" name="fecha_recordatorio" value="${tarea.fecha_recordatorio ? new Date(tarea.fecha_recordatorio).toISOString().slice(0, 16) : ''}"
+                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
+                <p class="text-xs text-gray-500 mt-1">
+                  <i class="fas fa-info-circle mr-1"></i>Se te avisará en esta fecha y hora
+                </p>
               </div>
               
               <div class="col-span-2">
@@ -7972,20 +7958,6 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
               <p class="text-xs text-gray-500 mt-1">
                 <i class="fas fa-info-circle mr-1"></i>Se te avisará en esta fecha y hora
               </p>
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                Recordatorio (minutos antes)
-              </label>
-              <select name="recordatorio_minutos" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
-                <option value="">Sin recordatorio</option>
-                <option value="15">15 minutos antes</option>
-                <option value="30">30 minutos antes</option>
-                <option value="60" selected>1 hora antes</option>
-                <option value="120">2 horas antes</option>
-                <option value="1440">1 día antes</option>
-              </select>
             </div>
             
             <div class="col-span-2">
