@@ -768,12 +768,12 @@ async function loadTrabajos() {
       <table class="min-w-full">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Inicio</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Empleada</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Precio</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Entrega</th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
           </tr>
         </thead>
@@ -799,7 +799,12 @@ async function loadTrabajos() {
                   <option value="cancelado" ${t.estado === 'cancelado' ? 'selected' : ''}>Cancelado</option>
                 </select>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">€${t.precio_cliente.toFixed(2)}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                ${t.fecha_finalizacion ? 
+                  `<div class="font-medium">${new Date(t.fecha_finalizacion).toLocaleDateString('es-ES')}</div>
+                   <div class="text-xs text-gray-500">${new Date(t.fecha_finalizacion).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</div>` 
+                  : '<span class="text-gray-400 italic">Sin fecha de entrega</span>'}
+              </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
                 <button onclick="viewTrabajo(${t.id})" class="text-blue-600 hover:text-blue-800" title="Ver detalles">
                   <i class="fas fa-eye"></i>
@@ -877,8 +882,8 @@ async function viewTrabajo(id) {
     }
     
     const html = `
-      <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) closeModal()">
-        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onclick="if(event.target===this) closeModal()">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-5xl w-full max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-start mb-6">
             <h3 class="text-2xl font-bold text-gray-800">
               <i class="fas fa-briefcase text-gray-700 mr-2"></i>
@@ -901,6 +906,257 @@ async function viewTrabajo(id) {
               </p>
             </div>
           ` : ''}
+          
+          <!-- INFORMACIÓN GENERAL DEL TRABAJO -->
+          <div class="mb-6 bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-lg border border-gray-200">
+            <h4 class="font-bold text-gray-800 mb-4 flex items-center">
+              <i class="fas fa-info-circle mr-2 text-blue-600"></i>Información General
+            </h4>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <!-- Cliente -->
+              <div class="bg-white p-4 rounded-lg border border-gray-200">
+                <div class="text-xs text-gray-500 mb-1">
+                  <i class="fas fa-user mr-1"></i>CLIENTE
+                </div>
+                <div class="font-semibold text-gray-800">
+                  ${trabajo.cliente_nombre} ${trabajo.cliente_apellidos}
+                </div>
+              </div>
+              
+              <!-- Tipo de Servicio -->
+              <div class="bg-white p-4 rounded-lg border border-gray-200">
+                <div class="text-xs text-gray-500 mb-1">
+                  <i class="fas fa-tag mr-1"></i>TIPO DE SERVICIO
+                </div>
+                <div class="font-semibold text-gray-800">
+                  ${trabajo.tipo_servicio.replace(/_/g, ' ').toUpperCase()}
+                </div>
+              </div>
+              
+              <!-- Estado -->
+              <div class="bg-white p-4 rounded-lg border border-gray-200">
+                <div class="text-xs text-gray-500 mb-1">
+                  <i class="fas fa-circle-notch mr-1"></i>ESTADO
+                </div>
+                <div>
+                  ${getEstadoBadge(trabajo.estado)}
+                </div>
+              </div>
+              
+              <!-- Empleada Asignada -->
+              <div class="bg-white p-4 rounded-lg border border-gray-200">
+                <div class="text-xs text-gray-500 mb-1">
+                  <i class="fas fa-user-tie mr-1"></i>EMPLEADA ASIGNADA
+                </div>
+                <div class="font-semibold text-gray-800">
+                  ${trabajo.nombre_empleada || '<span class="text-gray-400 italic">Sin asignar</span>'}
+                </div>
+              </div>
+              
+              <!-- Dirección -->
+              <div class="bg-white p-4 rounded-lg border border-gray-200 md:col-span-2">
+                <div class="text-xs text-gray-500 mb-1">
+                  <i class="fas fa-map-marker-alt mr-1"></i>DIRECCIÓN
+                </div>
+                <div class="font-semibold text-gray-800">
+                  ${trabajo.direccion || '<span class="text-gray-400 italic">Sin dirección</span>'}
+                </div>
+              </div>
+              
+              <!-- Descripción -->
+              ${trabajo.descripcion ? `
+                <div class="bg-white p-4 rounded-lg border border-gray-200 md:col-span-2">
+                  <div class="text-xs text-gray-500 mb-1">
+                    <i class="fas fa-file-alt mr-1"></i>DESCRIPCIÓN
+                  </div>
+                  <div class="text-sm text-gray-700">
+                    ${trabajo.descripcion}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+            
+            <!-- Fechas y Duración -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div class="bg-white p-4 rounded-lg border border-gray-200">
+                <div class="text-xs text-gray-500 mb-1">
+                  <i class="fas fa-calendar-alt mr-1"></i>FECHA PROGRAMADA
+                </div>
+                <div class="font-semibold text-gray-800">
+                  ${new Date(trabajo.fecha_programada).toLocaleDateString('es-ES', { 
+                    year: 'numeric', month: 'long', day: 'numeric' 
+                  })}
+                </div>
+                <div class="text-xs text-gray-500 mt-1">
+                  ${new Date(trabajo.fecha_programada).toLocaleTimeString('es-ES', { 
+                    hour: '2-digit', minute: '2-digit' 
+                  })}
+                </div>
+              </div>
+              
+              ${trabajo.fecha_inicio ? `
+                <div class="bg-white p-4 rounded-lg border border-gray-200">
+                  <div class="text-xs text-gray-500 mb-1">
+                    <i class="fas fa-play-circle mr-1"></i>FECHA INICIO
+                  </div>
+                  <div class="font-semibold text-gray-800">
+                    ${new Date(trabajo.fecha_inicio).toLocaleDateString('es-ES', { 
+                      year: 'numeric', month: 'long', day: 'numeric' 
+                    })}
+                  </div>
+                  <div class="text-xs text-gray-500 mt-1">
+                    ${new Date(trabajo.fecha_inicio).toLocaleTimeString('es-ES', { 
+                      hour: '2-digit', minute: '2-digit' 
+                    })}
+                  </div>
+                </div>
+              ` : '<div class="bg-white p-4 rounded-lg border border-gray-200"><div class="text-xs text-gray-500 mb-1"><i class="fas fa-play-circle mr-1"></i>FECHA INICIO</div><div class="text-gray-400 italic text-sm">Sin iniciar</div></div>'}
+              
+              ${trabajo.fecha_finalizacion ? `
+                <div class="bg-white p-4 rounded-lg border border-green-200 bg-green-50">
+                  <div class="text-xs text-green-600 mb-1">
+                    <i class="fas fa-check-circle mr-1"></i>FECHA ENTREGA
+                  </div>
+                  <div class="font-semibold text-green-800">
+                    ${new Date(trabajo.fecha_finalizacion).toLocaleDateString('es-ES', { 
+                      year: 'numeric', month: 'long', day: 'numeric' 
+                    })}
+                  </div>
+                  <div class="text-xs text-green-600 mt-1">
+                    ${new Date(trabajo.fecha_finalizacion).toLocaleTimeString('es-ES', { 
+                      hour: '2-digit', minute: '2-digit' 
+                    })}
+                  </div>
+                </div>
+              ` : '<div class="bg-white p-4 rounded-lg border border-gray-200"><div class="text-xs text-gray-500 mb-1"><i class="fas fa-check-circle mr-1"></i>FECHA ENTREGA</div><div class="text-gray-400 italic text-sm">Pendiente</div></div>'}
+            </div>
+            
+            <!-- Costes y Precios -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="bg-white p-4 rounded-lg border border-gray-200">
+                <div class="text-xs text-gray-500 mb-1">
+                  <i class="fas fa-euro-sign mr-1"></i>PRECIO CLIENTE
+                </div>
+                <div class="font-bold text-green-600 text-xl">
+                  €${trabajo.precio_cliente ? trabajo.precio_cliente.toFixed(2) : '0.00'}
+                </div>
+              </div>
+              
+              <div class="bg-white p-4 rounded-lg border border-gray-200">
+                <div class="text-xs text-gray-500 mb-1">
+                  <i class="fas fa-tools mr-1"></i>COSTE MATERIALES
+                </div>
+                <div class="font-semibold text-gray-800">
+                  €${trabajo.coste_materiales ? trabajo.coste_materiales.toFixed(2) : '0.00'}
+                </div>
+              </div>
+              
+              <div class="bg-white p-4 rounded-lg border border-gray-200">
+                <div class="text-xs text-gray-500 mb-1">
+                  <i class="fas fa-user-clock mr-1"></i>COSTE MANO DE OBRA
+                </div>
+                <div class="font-semibold text-gray-800">
+                  €${trabajo.coste_mano_obra ? trabajo.coste_mano_obra.toFixed(2) : '0.00'}
+                </div>
+              </div>
+            </div>
+            
+            ${trabajo.notas ? `
+              <div class="mt-4 bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                <div class="text-xs text-yellow-700 mb-2 font-semibold">
+                  <i class="fas fa-sticky-note mr-1"></i>NOTAS
+                </div>
+                <div class="text-sm text-gray-700">
+                  ${trabajo.notas}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+          
+          <!-- TAREAS ASOCIADAS -->
+          ${tareasDelTrabajo.length > 0 ? `
+            <div class="mb-6 bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
+              <h4 class="font-bold text-gray-800 mb-4 flex items-center justify-between">
+                <span><i class="fas fa-clipboard-list mr-2 text-blue-600"></i>Tareas Asociadas</span>
+                <span class="text-sm font-normal text-gray-600">${tareasDelTrabajo.length} tarea${tareasDelTrabajo.length !== 1 ? 's' : ''}</span>
+              </h4>
+              
+              <div class="space-y-3">
+                ${tareasDelTrabajo.map(tarea => {
+                  const estadoBadges = {
+                    'pendiente': '<span class="px-3 py-1 text-xs font-bold rounded-full bg-orange-100 text-orange-700">⏳ Pendiente</span>',
+                    'en_proceso': '<span class="px-3 py-1 text-xs font-bold rounded-full bg-blue-100 text-blue-700">🔄 En Proceso</span>',
+                    'completada': '<span class="px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-700">✅ Finalizada</span>',
+                    'cancelada': '<span class="px-3 py-1 text-xs font-bold rounded-full bg-gray-100 text-gray-700">❌ Cancelada</span>'
+                  }
+                  
+                  const prioridadBadges = {
+                    1: '<span class="px-2 py-1 text-xs font-semibold rounded bg-red-100 text-red-700">🔴 Alta</span>',
+                    2: '<span class="px-2 py-1 text-xs font-semibold rounded bg-yellow-100 text-yellow-700">🟡 Media</span>',
+                    3: '<span class="px-2 py-1 text-xs font-semibold rounded bg-green-100 text-green-700">🟢 Baja</span>'
+                  }
+                  
+                  return `
+                    <div class="bg-white border-2 rounded-lg p-4 transition-all hover:shadow-md ${tarea.estado === 'completada' ? 'border-green-300' : 'border-gray-200'}">
+                      <div class="flex items-start justify-between mb-2">
+                        <div class="flex-1">
+                          <h5 class="font-bold text-gray-800 mb-1">${tarea.titulo}</h5>
+                          <div class="flex flex-wrap gap-2 mb-2">
+                            ${estadoBadges[tarea.estado] || ''}
+                            ${prioridadBadges[tarea.prioridad] || ''}
+                          </div>
+                        </div>
+                        <button onclick="event.stopPropagation(); verDetallesTarea(${tarea.id})" 
+                                class="ml-2 text-blue-600 hover:text-blue-800" 
+                                title="Ver detalles">
+                          <i class="fas fa-eye"></i>
+                        </button>
+                      </div>
+                      
+                      ${tarea.descripcion ? `
+                        <p class="text-sm text-gray-600 mb-2">${tarea.descripcion}</p>
+                      ` : ''}
+                      
+                      <div class="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                        ${tarea.asignado_a ? `
+                          <div>
+                            <i class="fas fa-user mr-1"></i>
+                            <span class="font-medium">${tarea.asignado_a}</span>
+                          </div>
+                        ` : '<div class="text-gray-400 italic">Sin asignar</div>'}
+                        
+                        ${tarea.fecha_limite ? `
+                          <div>
+                            <i class="fas fa-calendar mr-1"></i>
+                            <span class="font-medium">${new Date(tarea.fecha_limite).toLocaleDateString('es-ES', {
+                              day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+                            })}</span>
+                          </div>
+                        ` : '<div class="text-gray-400 italic">Sin fecha límite</div>'}
+                      </div>
+                    </div>
+                  `
+                }).join('')}
+              </div>
+              
+              <button onclick="closeModal(); showTab('tareas'); setTimeout(() => showNuevaTarea(${id}), 300)" 
+                      class="mt-4 w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium">
+                <i class="fas fa-plus mr-2"></i>Crear Nueva Tarea para este Trabajo
+              </button>
+            </div>
+          ` : `
+            <div class="mb-6 bg-gray-50 p-6 rounded-lg border border-gray-200 text-center">
+              <p class="text-gray-500 mb-3">
+                <i class="fas fa-clipboard-list text-3xl text-gray-300 mb-2"></i>
+                <br>No hay tareas asociadas a este trabajo
+              </p>
+              <button onclick="closeModal(); showTab('tareas'); setTimeout(() => showNuevaTarea(${id}), 300)" 
+                      class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium">
+                <i class="fas fa-plus mr-2"></i>Crear Tarea
+              </button>
+            </div>
+          `}
           
           <!-- TIMELINE DE FASES -->
           <div class="mb-6 bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-lg border border-gray-300">
