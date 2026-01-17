@@ -4,6 +4,7 @@ import { serveStatic } from 'hono/cloudflare-workers'
 import presupuestos from './routes/presupuestos'
 import disenador from './routes/disenador'
 import tareas from './routes/tareas'
+import tickets from './routes/tickets'
 import uploads from './routes/uploads'
 
 type Bindings = {
@@ -2058,6 +2059,7 @@ app.post('/api/conversaciones/:id/guardar-nota', async (c) => {
 app.route('/api/presupuestos', presupuestos)
 app.route('/api/disenador', disenador)
 app.route('/api/tareas', tareas)
+app.route('/api/tickets', tickets)
 app.route('/api/uploads', uploads)
 
 // ============================================
@@ -2150,6 +2152,11 @@ app.get('/', (c) => {
                         <span id="avisos-badge" class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center">0</span>
                     </button>
                     
+                    <!-- Botón de Soporte/Tickets -->
+                    <button onclick="abrirModalSoporte()" class="relative bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-all shadow-md hover:shadow-lg" title="Reportar problema o solicitar ayuda">
+                        <i class="fas fa-life-ring text-lg"></i>
+                    </button>
+                    
                     <div class="text-right">
                         <p class="text-sm text-gray-600">Bienvenida</p>
                         <p class="font-semibold text-gray-800">Admin</p>
@@ -2210,6 +2217,108 @@ app.get('/', (c) => {
                 </div>
                 <div id="lista-sin-fecha" class="p-2"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal de Soporte/Tickets -->
+    <div id="modal-soporte" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 flex items-center justify-between rounded-t-xl">
+                <h3 class="text-xl font-bold flex items-center">
+                    <i class="fas fa-life-ring mr-3"></i>Soporte Técnico
+                </h3>
+                <button onclick="cerrarModalSoporte()" class="hover:bg-white/20 p-2 rounded-lg transition-all">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Content -->
+            <form id="form-soporte" class="p-6 space-y-4">
+                <p class="text-gray-600 mb-4">
+                    <i class="fas fa-info-circle mr-2 text-blue-500"></i>
+                    ¿Tienes algún problema o necesitas ayuda? Envíanos un ticket y te responderemos lo antes posible por email.
+                </p>
+                
+                <!-- Categoría -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-tag mr-2"></i>Categoría
+                    </label>
+                    <select name="categoria" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="bug">🐛 Reportar un error</option>
+                        <option value="pregunta">❓ Tengo una pregunta</option>
+                        <option value="mejora">💡 Sugerencia de mejora</option>
+                        <option value="urgente">🔥 Problema urgente</option>
+                        <option value="otro">📋 Otro</option>
+                    </select>
+                </div>
+                
+                <!-- Prioridad -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-exclamation-circle mr-2"></i>Prioridad
+                    </label>
+                    <select name="prioridad" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="baja">🟢 Baja - Puede esperar</option>
+                        <option value="media" selected>🟡 Media - Normal</option>
+                        <option value="alta">🔴 Alta - Importante</option>
+                        <option value="urgente">🔥 Urgente - Necesito ayuda YA</option>
+                    </select>
+                </div>
+                
+                <!-- Asunto -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-heading mr-2"></i>Asunto *
+                    </label>
+                    <input type="text" name="asunto" required 
+                           placeholder="Ej: No puedo editar una tarea"
+                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <!-- Descripción -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-align-left mr-2"></i>Descripción del problema *
+                    </label>
+                    <textarea name="descripcion" required rows="5"
+                              placeholder="Describe el problema con el mayor detalle posible. Si es un error, dinos qué estabas haciendo cuando ocurrió."
+                              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                
+                <!-- Datos de contacto -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-envelope mr-2"></i>Email *
+                        </label>
+                        <input type="email" name="email_contacto" required 
+                               placeholder="tu@email.com"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-user mr-2"></i>Nombre (opcional)
+                        </label>
+                        <input type="text" name="nombre_contacto"
+                               placeholder="Tu nombre"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                
+                <!-- Botones -->
+                <div class="flex gap-3 pt-4 border-t">
+                    <button type="button" onclick="cerrarModalSoporte()" 
+                            class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium transition-all">
+                        <i class="fas fa-times mr-2"></i>Cancelar
+                    </button>
+                    <button type="submit" 
+                            class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-all shadow-md">
+                        <i class="fas fa-paper-plane mr-2"></i>Enviar Ticket
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 

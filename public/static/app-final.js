@@ -1435,12 +1435,15 @@ async function showTrabajoForm(id = null) {
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Servicio *</label>
               <select name="tipo_servicio" required class="w-full px-4 py-2 border rounded-lg">
-                <option value="">Seleccionar</option>
-                <option value="limpieza_basica" ${trabajo.tipo_servicio === 'limpieza_basica' ? 'selected' : ''}>Limpieza Básica</option>
-                <option value="limpieza_completa" ${trabajo.tipo_servicio === 'limpieza_completa' ? 'selected' : ''}>Limpieza Completa</option>
-                <option value="plancha" ${trabajo.tipo_servicio === 'plancha' ? 'selected' : ''}>Plancha</option>
-                <option value="mantenimiento" ${trabajo.tipo_servicio === 'mantenimiento' ? 'selected' : ''}>Mantenimiento</option>
-                <option value="organizacion" ${trabajo.tipo_servicio === 'organizacion' ? 'selected' : ''}>Organización</option>
+                <option value="">Seleccionar tipo</option>
+                <option value="confeccion" ${trabajo.tipo_servicio === 'confeccion' ? 'selected' : ''}>Confección</option>
+                <option value="screen" ${trabajo.tipo_servicio === 'screen' ? 'selected' : ''}>Screen</option>
+                <option value="onda_perfecta" ${trabajo.tipo_servicio === 'onda_perfecta' ? 'selected' : ''}>Onda Perfecta</option>
+                <option value="estor" ${trabajo.tipo_servicio === 'estor' ? 'selected' : ''}>Estor</option>
+                <option value="veneciana" ${trabajo.tipo_servicio === 'veneciana' ? 'selected' : ''}>Veneciana</option>
+                <option value="vertical" ${trabajo.tipo_servicio === 'vertical' ? 'selected' : ''}>Vertical</option>
+                <option value="plisada" ${trabajo.tipo_servicio === 'plisada' ? 'selected' : ''}>Plisada</option>
+                <option value="mosquitera" ${trabajo.tipo_servicio === 'mosquitera' ? 'selected' : ''}>Mosquitera</option>
               </select>
             </div>
             <div>
@@ -8747,6 +8750,65 @@ async function probarResumenDiario() {
 
 // Exponer función de prueba
 window.probarResumenDiario = probarResumenDiario
+
+// ============================================
+// SISTEMA DE TICKETS/SOPORTE
+// ============================================
+
+function abrirModalSoporte() {
+  document.getElementById('modal-soporte').classList.remove('hidden')
+  // Limpiar formulario
+  document.getElementById('form-soporte').reset()
+}
+
+function cerrarModalSoporte() {
+  document.getElementById('modal-soporte').classList.add('hidden')
+}
+
+// Manejar envío del formulario
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('form-soporte')
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      
+      const formData = new FormData(e.target)
+      const data = {
+        categoria: formData.get('categoria'),
+        prioridad: formData.get('prioridad'),
+        asunto: formData.get('asunto'),
+        descripcion: formData.get('descripcion'),
+        email_contacto: formData.get('email_contacto'),
+        nombre_contacto: formData.get('nombre_contacto') || null
+      }
+      
+      try {
+        console.log('📧 Enviando ticket de soporte...', data)
+        
+        const res = await axios.post(`${API}/tickets`, data)
+        
+        if (res.data.success) {
+          showNotification('✅ Ticket enviado correctamente. Recibirás un email de confirmación.', 'success')
+          cerrarModalSoporte()
+          
+          // Mostrar mensaje adicional
+          setTimeout(() => {
+            showNotification(`📧 Te hemos enviado un email a ${data.email_contacto}`, 'info')
+          }, 2000)
+        } else {
+          throw new Error(res.data.error || 'Error al enviar ticket')
+        }
+      } catch (error) {
+        console.error('Error enviando ticket:', error)
+        showNotification('❌ Error al enviar el ticket. Por favor, intenta de nuevo.', 'error')
+      }
+    })
+  }
+})
+
+// Exponer funciones globalmente
+window.abrirModalSoporte = abrirModalSoporte
+window.cerrarModalSoporte = cerrarModalSoporte
 
 // ============================================
 // SISTEMA DE NOTAS - LIBRETA DE APUNTES
