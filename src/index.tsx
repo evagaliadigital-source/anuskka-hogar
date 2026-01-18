@@ -6,6 +6,7 @@ import disenador from './routes/disenador'
 import tareas from './routes/tareas'
 import tickets from './routes/tickets'
 import uploads from './routes/uploads'
+import galia from './routes/galia'
 
 type Bindings = {
   DB: D1Database;
@@ -2099,6 +2100,7 @@ app.route('/api/disenador', disenador)
 app.route('/api/tareas', tareas)
 app.route('/api/tickets', tickets)
 app.route('/api/uploads', uploads)
+app.route('/api/galia', galia)
 
 // ============================================
 // FRONTEND - HTML

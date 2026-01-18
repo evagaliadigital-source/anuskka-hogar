@@ -3364,7 +3364,7 @@ async function sendMessageModal() {
   
   try {
     // Enviar a la API
-    const { data } = await axios.post(`${API}/chat`, { message })
+    const { data } = await axios.post(`${API}/galia/chat`, { mensaje: message, contexto: 'general' })
     
     // Quitar indicador
     document.getElementById('typing-indicator')?.remove()
@@ -3378,7 +3378,7 @@ async function sendMessageModal() {
           </div>
           <div class="bg-white rounded-xl p-5 shadow-md max-w-3xl border-l-4 border-teal-500">
             <div class="prose prose-sm max-w-none text-gray-800">
-              ${data.response.replace(/\n/g, '<br>')}
+              ${data.respuesta.replace(/\n/g, '<br>')}
             </div>
           </div>
         </div>
