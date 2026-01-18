@@ -8751,22 +8751,100 @@ window.probarResumenDiario = probarResumenDiario
 // ============================================
 
 function abrirModalSoporte() {
-  document.getElementById('modal-soporte').classList.remove('hidden')
-  // Limpiar formulario
-  document.getElementById('form-soporte').reset()
-}
+  const modalContent = `
+    <form id="form-soporte-optimizado" class="space-y-2">
+      <!-- Info -->
+      <div class="bg-blue-50 border-l-2 border-blue-500 p-2 rounded text-xs">
+        <i class="fas fa-info-circle mr-1"></i>
+        <strong>¿Necesitas ayuda?</strong> Envíanos un ticket
+      </div>
 
-function cerrarModalSoporte() {
-  document.getElementById('modal-soporte').classList.add('hidden')
-}
+      <!-- Categoría -->
+      <div>
+        <label class="block text-xs font-medium text-gray-700 mb-0.5">
+          <i class="fas fa-tag mr-1 text-gray-400"></i>Categoría *
+        </label>
+        <select name="categoria" required class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+          <option value="">Selecciona</option>
+          <option value="consulta">❓ Consulta</option>
+          <option value="soporte">🛟 Soporte</option>
+          <option value="reclamo">⚠️ Reclamo</option>
+          <option value="sugerencia">💡 Sugerencia</option>
+          <option value="otro">📋 Otro</option>
+        </select>
+      </div>
 
-// Manejar envío del formulario
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('form-soporte')
-  if (form) {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault()
-      
+      <!-- Prioridad -->
+      <div>
+        <label class="block text-xs font-medium text-gray-700 mb-0.5">
+          <i class="fas fa-flag mr-1 text-gray-400"></i>Prioridad *
+        </label>
+        <select name="prioridad" required class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+          <option value="baja">🟢 Baja</option>
+          <option value="media" selected>🟡 Media</option>
+          <option value="alta">🔴 Alta</option>
+          <option value="urgente">🚨 Urgente</option>
+        </select>
+      </div>
+
+      <!-- Asunto -->
+      <div>
+        <label class="block text-xs font-medium text-gray-700 mb-0.5">
+          <i class="fas fa-heading mr-1 text-gray-400"></i>Asunto *
+        </label>
+        <input type="text" name="asunto" required maxlength="100" placeholder="Ej: No puedo editar tarea"
+               class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+      </div>
+
+      <!-- Descripción -->
+      <div>
+        <label class="block text-xs font-medium text-gray-700 mb-0.5">
+          <i class="fas fa-align-left mr-1 text-gray-400"></i>Descripción *
+        </label>
+        <textarea name="descripcion" required rows="3" maxlength="500" placeholder="Describe el problema..."
+                  class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 resize-none"></textarea>
+      </div>
+
+      <!-- Email y Nombre en 2 columnas -->
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-0.5">Email *</label>
+          <input type="email" name="email_contacto" required placeholder="tu@email.com"
+                 class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-0.5">Nombre</label>
+          <input type="text" name="nombre_contacto" placeholder="Tu nombre"
+                 class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+        </div>
+      </div>
+
+      <!-- Botones -->
+      <div class="flex gap-2 pt-1">
+        <button type="button" onclick="closeModal()" 
+                class="flex-1 px-3 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition-all">
+          <i class="fas fa-times mr-1"></i>Cancelar
+        </button>
+        <button type="submit" 
+                class="flex-1 px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-all font-medium">
+          <i class="fas fa-paper-plane mr-1"></i>Enviar
+        </button>
+      </div>
+    </form>
+  `
+
+  showModal(modalContent, 'max-w-md')
+
+  // Submit del formulario optimizado
+  document.getElementById('form-soporte-optimizado').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    
+    const btn = e.target.querySelector('button[type="submit"]')
+    const originalText = btn.innerHTML
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Enviando...'
+    btn.disabled = true
+
+    try {
       const formData = new FormData(e.target)
       const data = {
         categoria: formData.get('categoria'),
@@ -8777,33 +8855,30 @@ document.addEventListener('DOMContentLoaded', () => {
         nombre_contacto: formData.get('nombre_contacto') || null
       }
       
-      try {
-        console.log('📧 Enviando ticket de soporte...', data)
-        
-        const res = await axios.post(`${API}/tickets`, data)
-        
-        if (res.data.success) {
-          showNotification('✅ Ticket enviado correctamente. Recibirás un email de confirmación.', 'success')
-          cerrarModalSoporte()
-          
-          // Mostrar mensaje adicional
-          setTimeout(() => {
-            showNotification(`📧 Te hemos enviado un email a ${data.email_contacto}`, 'info')
-          }, 2000)
-        } else {
-          throw new Error(res.data.error || 'Error al enviar ticket')
-        }
-      } catch (error) {
-        console.error('Error enviando ticket:', error)
-        showNotification('❌ Error al enviar el ticket. Por favor, intenta de nuevo.', 'error')
+      console.log('📧 Enviando ticket de soporte...', data)
+      
+      const res = await axios.post(`${API}/tickets`, data)
+      
+      if (res.data.success) {
+        closeModal()
+        showToast('✅ Ticket #' + res.data.id + ' enviado correctamente', 'success')
+        setTimeout(() => {
+          showToast(`📧 Email enviado a ${data.email_contacto}`, 'info')
+        }, 2000)
+      } else {
+        throw new Error(res.data.error || 'Error al enviar ticket')
       }
-    })
-  }
-})
+    } catch (error) {
+      console.error('Error enviando ticket:', error)
+      showToast('❌ Error al enviar el ticket. Intenta de nuevo.', 'error')
+      btn.innerHTML = originalText
+      btn.disabled = false
+    }
+  })
+}
 
 // Exponer funciones globalmente
 window.abrirModalSoporte = abrirModalSoporte
-window.cerrarModalSoporte = cerrarModalSoporte
 
 // ============================================
 // SISTEMA DE NOTAS - LIBRETA DE APUNTES
