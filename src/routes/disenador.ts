@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 
 type Bindings = {
   DB: D1Database;
-  GEMINI_API_KEY: string;
+  OPENAI_API_KEY: string;
   FAL_API_KEY: string;
   IMAGES: R2Bucket;
 }
@@ -372,7 +372,7 @@ disenador.delete('/proyectos/:id', async (c) => {
 // ANÁLISIS CON IA
 // ============================================
 
-// POST - Analizar imagen con Gemini Vision
+// POST - Analizar imagen con OpenAI GPT-4 Vision
 disenador.post('/analizar', async (c) => {
   try {
     const { imagen_base64, proyecto_id } = await c.req.json()
@@ -381,10 +381,10 @@ disenador.post('/analizar', async (c) => {
       return c.json({ error: 'Imagen no proporcionada' }, 400)
     }
     
-    const apiKey = c.env.GEMINI_API_KEY
+    const apiKey = c.env.OPENAI_API_KEY
     if (!apiKey || apiKey === 'your-api-key-here') {
       // Modo desarrollo sin API key - usar análisis simulado
-      console.warn('⚠️ GEMINI_API_KEY no configurada, usando análisis simulado')
+      console.warn('⚠️ OPENAI_API_KEY no configurada, usando análisis simulado')
       return usarAnalisisSimulado(c, proyecto_id)
     }
     
@@ -393,7 +393,7 @@ disenador.post('/analizar', async (c) => {
       ? imagen_base64.split('base64,')[1] 
       : imagen_base64
     
-    // Llamar a Gemini Vision API
+    // Llamar a OpenAI GPT-4 Vision API
     const prompt = `Analiza esta imagen de una habitación para diseñar cortinas. Proporciona:
 
 1. **Ventanas detectadas**: Para cada ventana, indica:
@@ -422,47 +422,55 @@ Responde SOLO en formato JSON válido siguiendo esta estructura:
 }`
     
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      'https://api.openai.com/v1/chat/completions',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
         body: JSON.stringify({
-          contents: [{
-            parts: [
-              { text: prompt },
-              {
-                inline_data: {
-                  mime_type: 'image/jpeg',
-                  data: base64Data
+          model: 'gpt-4o',
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { type: 'text', text: prompt },
+                {
+                  type: 'image_url',
+                  image_url: {
+                    url: `data:image/jpeg;base64,${base64Data}`
+                  }
                 }
-              }
-            ]
-          }]
+              ]
+            }
+          ],
+          max_tokens: 1000
         })
       }
     )
     
     if (!response.ok) {
       const errorData = await response.text()
-      console.error('Error de Gemini API:', errorData)
+      console.error('Error de OpenAI API:', errorData)
       return c.json({ error: 'Error al analizar imagen con IA' }, 500)
     }
     
     const result = await response.json()
-    const textoRespuesta = result.candidates?.[0]?.content?.parts?.[0]?.text
+    const textoRespuesta = result.choices?.[0]?.message?.content
     
     if (!textoRespuesta) {
-      console.error('Respuesta vacía de Gemini')
+      console.error('Respuesta vacía de OpenAI')
       return usarAnalisisSimulado(c, proyecto_id)
     }
     
-    // Extraer JSON de la respuesta (Gemini a veces envuelve el JSON en markdown)
+    // Extraer JSON de la respuesta
     let analisis
     try {
       const jsonMatch = textoRespuesta.match(/\{[\s\S]*\}/)
       analisis = JSON.parse(jsonMatch ? jsonMatch[0] : textoRespuesta)
     } catch (parseError) {
-      console.error('Error parseando respuesta de Gemini:', parseError)
+      console.error('Error parseando respuesta de OpenAI:', parseError)
       console.log('Respuesta recibida:', textoRespuesta)
       return usarAnalisisSimulado(c, proyecto_id)
     }
@@ -502,7 +510,7 @@ Responde SOLO en formato JSON válido siguiendo esta estructura:
     return c.json({
       success: true,
       analisis: analisis,
-      mensaje: 'Análisis completado con Gemini Vision'
+      mensaje: 'Análisis completado con OpenAI GPT-4 Vision'
     })
   } catch (error) {
     console.error('Error analizando imagen:', error)
@@ -548,7 +556,7 @@ function usarAnalisisSimulado(c: any, proyecto_id: any) {
   return c.json({
     success: true,
     analisis: analisisSimulado,
-    mensaje: '⚠️ Análisis simulado (configura GEMINI_API_KEY para análisis real)'
+    mensaje: '⚠️ Análisis simulado (configura OPENAI_API_KEY para análisis real)'
   })
 }
 

@@ -9,7 +9,7 @@ import uploads from './routes/uploads'
 
 type Bindings = {
   DB: D1Database;
-  GEMINI_API_KEY: string;
+  OPENAI_API_KEY: string;
   FAL_API_KEY: string;
   IMAGES: R2Bucket;
   RESEND_API_KEY: string;
