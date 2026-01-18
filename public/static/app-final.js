@@ -10416,3 +10416,152 @@ window.cargarDiarioDia = cargarDiarioDia
 
 console.log('✅ Calendario global cargado')
 
+
+// ============================================
+// SISTEMA DE SOPORTE / TICKETS
+// ============================================
+
+function abrirSoporteModal() {
+  const modalContent = `
+    <div class="space-y-3">
+      <div class="bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
+        <p class="text-sm text-blue-800">
+          <i class="fas fa-info-circle mr-2"></i>
+          <strong>¿Necesitas ayuda?</strong> Reporta cualquier problema o sugerencia.
+        </p>
+      </div>
+
+      <form id="form-soporte" class="space-y-3">
+        <!-- Categoría -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">
+            <i class="fas fa-tag mr-1"></i>Categoría *
+          </label>
+          <select id="soporte-categoria" required 
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <option value="">Selecciona una categoría</option>
+            <option value="consulta">❓ Consulta</option>
+            <option value="soporte">🛟 Soporte Técnico</option>
+            <option value="reclamo">⚠️ Reclamo</option>
+            <option value="sugerencia">💡 Sugerencia</option>
+            <option value="otro">📋 Otro</option>
+          </select>
+        </div>
+
+        <!-- Prioridad -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">
+            <i class="fas fa-flag mr-1"></i>Prioridad *
+          </label>
+          <select id="soporte-prioridad" required 
+                  class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <option value="baja">🟢 Baja</option>
+            <option value="media" selected>🟡 Media</option>
+            <option value="alta">🔴 Alta</option>
+            <option value="urgente">🚨 Urgente</option>
+          </select>
+        </div>
+
+        <!-- Asunto -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">
+            <i class="fas fa-heading mr-1"></i>Asunto *
+          </label>
+          <input type="text" id="soporte-asunto" required maxlength="100" placeholder="Ej: No puedo editar una tarea"
+                 class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+
+        <!-- Descripción -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">
+            <i class="fas fa-align-left mr-1"></i>Descripción del problema *
+          </label>
+          <textarea id="soporte-descripcion" required rows="4" maxlength="500" placeholder="Describe el problema con el mayor detalle posible. Si es un error, dinos qué estabas haciendo cuando ocurrió."
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"></textarea>
+          <p class="text-xs text-gray-500 mt-1">
+            <span id="char-count">0</span>/500 caracteres
+          </p>
+        </div>
+
+        <!-- Datos de contacto (opcional) -->
+        <details class="bg-gray-50 rounded-lg">
+          <summary class="cursor-pointer px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-100 rounded-lg">
+            <i class="fas fa-address-card mr-1"></i>Datos de contacto (opcional)
+          </summary>
+          <div class="p-3 space-y-2 border-t border-gray-200">
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">Email</label>
+              <input type="email" id="soporte-email" placeholder="tu@email.com"
+                     class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">Nombre</label>
+              <input type="text" id="soporte-nombre" placeholder="Tu nombre"
+                     class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">Teléfono</label>
+              <input type="tel" id="soporte-telefono" placeholder="666 123 456"
+                     class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+            </div>
+          </div>
+        </details>
+
+        <!-- Botones -->
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closeModal()" 
+                  class="flex-1 px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all">
+            <i class="fas fa-times mr-1"></i>Cancelar
+          </button>
+          <button type="submit" 
+                  class="flex-1 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all font-medium">
+            <i class="fas fa-paper-plane mr-1"></i>Enviar Ticket
+          </button>
+        </div>
+      </form>
+    </div>
+  `
+
+  showModal(modalContent, 'max-w-lg')
+
+  // Contador de caracteres
+  document.getElementById('soporte-descripcion').addEventListener('input', (e) => {
+    document.getElementById('char-count').textContent = e.target.value.length
+  })
+
+  // Submit del formulario
+  document.getElementById('form-soporte').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    
+    const btn = e.target.querySelector('button[type="submit"]')
+    const originalText = btn.innerHTML
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Enviando...'
+    btn.disabled = true
+
+    try {
+      const data = {
+        categoria: document.getElementById('soporte-categoria').value,
+        prioridad: document.getElementById('soporte-prioridad').value,
+        asunto: document.getElementById('soporte-asunto').value,
+        descripcion: document.getElementById('soporte-descripcion').value,
+        email_contacto: document.getElementById('soporte-email').value || 'anuskkahogar@gmail.com',
+        nombre_contacto: document.getElementById('soporte-nombre').value || 'Admin',
+        telefono_contacto: document.getElementById('soporte-telefono').value || ''
+      }
+
+      const response = await axios.post(`${API}/tickets`, data)
+      
+      if (response.data.success) {
+        closeModal()
+        showToast('✅ Ticket enviado correctamente. Número: #' + response.data.id, 'success')
+      } else {
+        throw new Error('Error al crear ticket')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      showToast('❌ Error al enviar el ticket. Intenta de nuevo.', 'error')
+      btn.innerHTML = originalText
+      btn.disabled = false
+    }
+  })
+}
