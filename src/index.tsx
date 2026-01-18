@@ -12,6 +12,7 @@ type Bindings = {
   GEMINI_API_KEY: string;
   FAL_API_KEY: string;
   IMAGES: R2Bucket;
+  RESEND_API_KEY: string;
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -2050,6 +2051,43 @@ app.post('/api/conversaciones/:id/guardar-nota', async (c) => {
   } catch (error) {
     console.error('Error guardando conversación como nota:', error)
     return c.json({ error: 'Error al guardar como nota' }, 500)
+  }
+})
+
+// ============================================
+// API ENDPOINTS - TEST EMAIL
+// ============================================
+
+// Endpoint de prueba para enviar email
+app.post('/api/test-email', async (c) => {
+  try {
+    const { enviarEmailNuevoPresupuesto } = await import('./utils/email')
+    
+    await enviarEmailNuevoPresupuesto(
+      'anuskkahogar@gmail.com',
+      {
+        numero: 'TEST-001',
+        cliente: 'Cliente de Prueba',
+        total: 500.00,
+        lineas: [
+          { descripcion: 'Cortina de prueba', cantidad: 2, precio_unitario: 150, subtotal: 300 },
+          { descripcion: 'Instalación', cantidad: 1, precio_unitario: 200, subtotal: 200 }
+        ]
+      },
+      c.env.RESEND_API_KEY
+    )
+    
+    return c.json({ 
+      success: true, 
+      message: 'Email enviado correctamente a anuskkahogar@gmail.com' 
+    })
+  } catch (error) {
+    console.error('Error enviando email de prueba:', error)
+    return c.json({ 
+      success: false, 
+      message: 'Error al enviar email',
+      error: String(error)
+    }, 500)
   }
 })
 

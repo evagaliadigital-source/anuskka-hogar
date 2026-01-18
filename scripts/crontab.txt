@@ -1,0 +1,12 @@
+# ================================================
+# CRON JOBS - ANUSHKA HOGAR
+# ================================================
+
+# Backup diario de la base de datos a las 3:00 AM
+0 3 * * * cd /home/user/anushka-hogar && bash /home/user/anushka-hogar/scripts/backup.sh >> /home/user/anushka-hogar/backups/backup-cron.log 2>&1
+
+# Notificación: El cron job se ejecutará todos los días a las 3:00 AM
+# Los backups se guardarán en:
+#   - AI Drive: /mnt/aidrive/backups/
+#   - Local: /home/user/anushka-hogar/backups/
+# Los logs del cron se guardarán en: /home/user/anushka-hogar/backups/backup-cron.log
