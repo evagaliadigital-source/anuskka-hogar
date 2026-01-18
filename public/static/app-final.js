@@ -99,7 +99,7 @@ function showModal(content, maxWidth = 'max-w-2xl') {
   // Crear overlay
   const overlay = document.createElement('div')
   overlay.id = 'modal-overlay'
-  overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'
+  overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 overflow-y-auto'
   overlay.onclick = (e) => {
     if (e.target === overlay) {
       closeModal()
@@ -108,7 +108,7 @@ function showModal(content, maxWidth = 'max-w-2xl') {
   
   // Crear modal
   const modal = document.createElement('div')
-  modal.className = `bg-white rounded-xl shadow-2xl ${maxWidth} w-full max-h-[90vh] overflow-y-auto`
+  modal.className = `bg-white rounded-xl shadow-2xl ${maxWidth} w-full max-h-[85vh] overflow-y-auto my-4`
   modal.innerHTML = `
     <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
       <h3 class="text-xl font-bold text-gray-800">Detalles</h3>
