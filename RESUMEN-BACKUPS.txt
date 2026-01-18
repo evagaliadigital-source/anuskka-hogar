@@ -1,7 +1,7 @@
 ╔═══════════════════════════════════════════════════════════════╗
 ║                                                               ║
 ║   💾 BACKUPS COMPLETOS - ANUSHKA HOGAR                        ║
-║   Fecha: 18 Enero 2026 - 20:40                                ║
+║   Fecha: 18 Enero 2026 - 22:27                                ║
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
 
@@ -10,14 +10,14 @@
 └─────────────────────────────────────────────────────────────┘
 
 🔗 DESCARGAR (COMPRIMIDO - RECOMENDADO):
-   https://1c1034ca.anushka-hogar.pages.dev/static/backup-latest.sql.gz
+   https://b3f55202.anushka-hogar.pages.dev/static/backup-latest.sql.gz
    
    📦 Tamaño: 394 KB
    📋 Contenido: 26 tablas + datos completos
    📈 Líneas SQL: 799
 
 🔗 DESCARGAR (SIN COMPRIMIR):
-   https://1c1034ca.anushka-hogar.pages.dev/static/backup-latest.sql
+   https://b3f55202.anushka-hogar.pages.dev/static/backup-latest.sql
    
    📦 Tamaño: 549 KB
 
@@ -27,9 +27,9 @@
 └─────────────────────────────────────────────────────────────┘
 
 🔗 DESCARGAR:
-   https://1c1034ca.anushka-hogar.pages.dev/static/codigo-backup-latest.tar.gz
+   https://b3f55202.anushka-hogar.pages.dev/static/codigo-backup-latest.tar.gz
    
-   📦 Tamaño: 1.4 MB
+   📦 Tamaño: 579 KB
    📂 Archivos: ~200
    ✅ Incluye: src/, public/, migrations/, scripts/, docs/
 
@@ -62,12 +62,12 @@ OPCIÓN 1 - Navegador:
    → Click derecho → "Guardar como..."
 
 OPCIÓN 2 - Terminal (curl):
-   curl -O https://1c1034ca.anushka-hogar.pages.dev/static/backup-latest.sql.gz
-   curl -O https://1c1034ca.anushka-hogar.pages.dev/static/codigo-backup-latest.tar.gz
+   curl -O https://b3f55202.anushka-hogar.pages.dev/static/backup-latest.sql.gz
+   curl -O https://b3f55202.anushka-hogar.pages.dev/static/codigo-backup-latest.tar.gz
 
 OPCIÓN 3 - Terminal (wget):
-   wget https://1c1034ca.anushka-hogar.pages.dev/static/backup-latest.sql.gz
-   wget https://1c1034ca.anushka-hogar.pages.dev/static/codigo-backup-latest.tar.gz
+   wget https://b3f55202.anushka-hogar.pages.dev/static/backup-latest.sql.gz
+   wget https://b3f55202.anushka-hogar.pages.dev/static/codigo-backup-latest.tar.gz
 
 
 ┌─────────────────────────────────────────────────────────────┐
@@ -91,11 +91,11 @@ CÓDIGO FUENTE:
 └─────────────────────────────────────────────────────────────┘
 
 ✅ Backup BD creado:        394 KB (26 tablas)
-✅ Backup código creado:    1.4 MB (~200 archivos)
+✅ Backup código creado:    579 KB (~200 archivos)
 ✅ Script automatizado:     scripts/backup-db-completo.sh
 ✅ Enlaces públicos:        Funcionando ✓
 ✅ Documentación:           BACKUPS-COMPLETOS.md
-✅ Commit realizado:        656c2c7
+✅ Commit realizado:        ca7747d
 
 
 ┌─────────────────────────────────────────────────────────────┐
@@ -112,7 +112,7 @@ CÓDIGO FUENTE:
 ╔═══════════════════════════════════════════════════════════════╗
 ║                                                               ║
 ║   🚀 WEB PRODUCCIÓN:                                          ║
-║   https://1c1034ca.anushka-hogar.pages.dev                    ║
+║   https://b3f55202.anushka-hogar.pages.dev                    ║
 ║                                                               ║
 ║   🔐 LOGIN:                                                    ║
 ║   Email: anuskkahogar@gmail.com                               ║
