@@ -1,0 +1,122 @@
+╔═══════════════════════════════════════════════════════════════╗
+║                                                               ║
+║   💾 BACKUPS COMPLETOS - ANUSHKA HOGAR                        ║
+║   Fecha: 18 Enero 2026 - 20:40                                ║
+║                                                               ║
+╚═══════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────┐
+│ 📊 BACKUP DE BASE DE DATOS                                  │
+└─────────────────────────────────────────────────────────────┘
+
+🔗 DESCARGAR (COMPRIMIDO - RECOMENDADO):
+   https://1c1034ca.anushka-hogar.pages.dev/static/backup-latest.sql.gz
+   
+   📦 Tamaño: 394 KB
+   📋 Contenido: 26 tablas + datos completos
+   📈 Líneas SQL: 799
+
+🔗 DESCARGAR (SIN COMPRIMIR):
+   https://1c1034ca.anushka-hogar.pages.dev/static/backup-latest.sql
+   
+   📦 Tamaño: 549 KB
+
+
+┌─────────────────────────────────────────────────────────────┐
+│ 💻 BACKUP DE CÓDIGO FUENTE                                  │
+└─────────────────────────────────────────────────────────────┘
+
+🔗 DESCARGAR:
+   https://1c1034ca.anushka-hogar.pages.dev/static/codigo-backup-latest.tar.gz
+   
+   📦 Tamaño: 1.4 MB
+   📂 Archivos: ~200
+   ✅ Incluye: src/, public/, migrations/, scripts/, docs/
+
+
+┌─────────────────────────────────────────────────────────────┐
+│ ✅ TABLAS RESPALDADAS (26)                                  │
+└─────────────────────────────────────────────────────────────┘
+
+✓ clientes                  ✓ trabajo_materiales
+✓ empleadas                 ✓ facturas
+✓ trabajos                  ✓ factura_lineas
+✓ incidencias_clientes      ✓ registro_horas
+✓ evaluaciones              ✓ presupuestos
+✓ presupuesto_lineas        ✓ configuracion_empresa
+✓ trabajo_fases             ✓ categorias
+✓ proyectos_diseno          ✓ catalogo_telas
+✓ tareas_pendientes         ✓ tareas_alertas
+✓ historial_movimientos     ✓ usuarios
+✓ stock_categorias          ✓ stock_movimientos
+✓ stock                     ✓ avisos
+✓ conversaciones_ia         ✓ notas
+
+
+┌─────────────────────────────────────────────────────────────┐
+│ 📥 CÓMO DESCARGAR                                           │
+└─────────────────────────────────────────────────────────────┘
+
+OPCIÓN 1 - Navegador:
+   → Abre el enlace
+   → Click derecho → "Guardar como..."
+
+OPCIÓN 2 - Terminal (curl):
+   curl -O https://1c1034ca.anushka-hogar.pages.dev/static/backup-latest.sql.gz
+   curl -O https://1c1034ca.anushka-hogar.pages.dev/static/codigo-backup-latest.tar.gz
+
+OPCIÓN 3 - Terminal (wget):
+   wget https://1c1034ca.anushka-hogar.pages.dev/static/backup-latest.sql.gz
+   wget https://1c1034ca.anushka-hogar.pages.dev/static/codigo-backup-latest.tar.gz
+
+
+┌─────────────────────────────────────────────────────────────┐
+│ 🔄 CÓMO RESTAURAR                                           │
+└─────────────────────────────────────────────────────────────┘
+
+BASE DE DATOS:
+   1. gunzip backup-latest.sql.gz
+   2. npx wrangler d1 execute anushka-hogar-production --remote --file=backup-latest.sql
+
+CÓDIGO FUENTE:
+   1. tar -xzf codigo-backup-latest.tar.gz -C proyecto-restaurado/
+   2. cd proyecto-restaurado/
+   3. npm install
+   4. npm run build
+   5. npx wrangler pages deploy dist --project-name anushka-hogar
+
+
+┌─────────────────────────────────────────────────────────────┐
+│ 🎯 ESTADO FINAL                                             │
+└─────────────────────────────────────────────────────────────┘
+
+✅ Backup BD creado:        394 KB (26 tablas)
+✅ Backup código creado:    1.4 MB (~200 archivos)
+✅ Script automatizado:     scripts/backup-db-completo.sh
+✅ Enlaces públicos:        Funcionando ✓
+✅ Documentación:           BACKUPS-COMPLETOS.md
+✅ Commit realizado:        656c2c7
+
+
+┌─────────────────────────────────────────────────────────────┐
+│ 🔐 SEGURIDAD                                                │
+└─────────────────────────────────────────────────────────────┘
+
+✅ Passwords hasheados con bcrypt
+✅ API Keys NO incluidas (se configuran aparte)
+✅ Encryption keys NO incluidas
+❌ NO compartas los backups públicamente
+💡 Guarda en lugar seguro (Drive, Dropbox, etc.)
+
+
+╔═══════════════════════════════════════════════════════════════╗
+║                                                               ║
+║   🚀 WEB PRODUCCIÓN:                                          ║
+║   https://1c1034ca.anushka-hogar.pages.dev                    ║
+║                                                               ║
+║   🔐 LOGIN:                                                    ║
+║   Email: anuskkahogar@gmail.com                               ║
+║   Password: 881917176                                         ║
+║                                                               ║
+╚═══════════════════════════════════════════════════════════════╝
+
