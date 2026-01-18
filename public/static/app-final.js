@@ -108,15 +108,15 @@ function showModal(content, maxWidth = 'max-w-2xl') {
   
   // Crear modal
   const modal = document.createElement('div')
-  modal.className = `bg-white rounded-xl shadow-2xl ${maxWidth} w-full max-h-[90vh] overflow-y-auto my-2`
+  modal.className = `bg-white rounded-xl shadow-2xl ${maxWidth} w-full max-h-[95vh] overflow-y-auto my-1`
   modal.innerHTML = `
-    <div class="sticky top-0 bg-white border-b px-4 py-2 flex justify-between items-center z-10">
-      <h3 class="text-lg font-bold text-gray-800">Detalles</h3>
-      <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 p-1">
-        <i class="fas fa-times text-lg"></i>
+    <div class="sticky top-0 bg-white border-b px-3 py-1.5 flex justify-between items-center z-10 shadow-sm">
+      <h3 class="text-sm font-semibold text-gray-700">Detalles</h3>
+      <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 p-0.5 -mr-1">
+        <i class="fas fa-times text-sm"></i>
       </button>
     </div>
-    <div class="p-4">
+    <div class="p-3">
       ${content}
     </div>
   `
