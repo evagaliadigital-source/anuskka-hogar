@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 
 type Bindings = {
   DB: D1Database
+  RESEND_API_KEY: string
 }
 
 const tickets = new Hono<{ Bindings: Bindings }>()
@@ -85,19 +86,47 @@ tickets.post('/', async (c) => {
       data.categoria || 'otro'
     ).run()
     
-    // TODO: Aquí se enviaría el email
-    // Por ahora solo registramos en consola
-    console.log('📧 Nuevo ticket creado:', {
-      id: result.meta.last_row_id,
-      asunto: data.asunto,
-      email: data.email_contacto,
-      prioridad: data.prioridad
-    })
+    // Enviar emails
+    try {
+      const { enviarEmailNuevoTicket, enviarEmailConfirmacionTicket } = await import('../utils/email')
+      
+      // Email a Ana María
+      await enviarEmailNuevoTicket(
+        'anuskkahogar@gmail.com',
+        {
+          id: result.meta.last_row_id,
+          asunto: data.asunto,
+          descripcion: data.descripcion,
+          prioridad: data.prioridad || 'media',
+          categoria: data.categoria || 'otro',
+          email_contacto: data.email_contacto,
+          nombre_contacto: data.nombre_contacto,
+          telefono_contacto: data.telefono_contacto
+        },
+        c.env.RESEND_API_KEY
+      )
+      
+      // Email de confirmación al cliente
+      await enviarEmailConfirmacionTicket(
+        {
+          id: result.meta.last_row_id,
+          asunto: data.asunto,
+          email_contacto: data.email_contacto,
+          nombre_contacto: data.nombre_contacto
+        },
+        c.env.RESEND_API_KEY
+      )
+      
+      console.log('✅ Emails enviados correctamente para ticket #', result.meta.last_row_id)
+    } catch (emailError) {
+      console.error('⚠️ Error enviando emails:', emailError)
+      // No fallar el ticket si falla el email
+    }
     
     return c.json({
       success: true,
       id: result.meta.last_row_id,
-      message: 'Ticket creado correctamente. Te enviaremos un email de confirmación.'
+      message: 'Ticket creado correctamente. Te hemos enviado un email de confirmación.'
     })
   } catch (error) {
     console.error('Error creando ticket:', error)

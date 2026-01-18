@@ -368,3 +368,182 @@ export async function enviarEmailFacturaGenerada(
     }
   }
 }
+
+/**
+ * Enviar email de nuevo ticket a Ana María
+ */
+export async function enviarEmailNuevoTicket(
+  destinatario: string,
+  ticket: {
+    id: number
+    asunto: string
+    descripcion: string
+    prioridad: string
+    categoria: string
+    email_contacto: string
+    nombre_contacto?: string
+    telefono_contacto?: string
+  },
+  resendApiKey: string
+): Promise<void> {
+  const resend = new Resend(resendApiKey)
+
+  const prioridadColor = {
+    'baja': '#10b981',
+    'media': '#f59e0b',
+    'alta': '#ef4444',
+    'urgente': '#dc2626'
+  }[ticket.prioridad] || '#6b7280'
+
+  const prioridadEmoji = {
+    'baja': '🟢',
+    'media': '🟡',
+    'alta': '🔴',
+    'urgente': '🚨'
+  }[ticket.prioridad] || '⚪'
+
+  const categoriaEmoji = {
+    'consulta': '❓',
+    'soporte': '🛟',
+    'reclamo': '⚠️',
+    'sugerencia': '💡',
+    'otro': '📋'
+  }[ticket.categoria] || '📋'
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Nuevo Ticket - #${ticket.id}</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 24px;">🎫 Nuevo Ticket de Soporte</h1>
+        <p style="color: #e0e7ff; margin: 10px 0 0 0; font-size: 14px;">Ticket #${ticket.id}</p>
+      </div>
+      
+      <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
+        <div style="margin-bottom: 20px;">
+          <span style="display: inline-block; background: ${prioridadColor}; color: white; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; margin-right: 10px;">
+            ${prioridadEmoji} ${ticket.prioridad.toUpperCase()}
+          </span>
+          <span style="display: inline-block; background: #6b7280; color: white; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 14px;">
+            ${categoriaEmoji} ${ticket.categoria}
+          </span>
+        </div>
+
+        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid ${prioridadColor};">
+          <h2 style="color: #667eea; margin: 0 0 10px 0; font-size: 18px;">📋 Asunto</h2>
+          <p style="margin: 0; font-size: 16px; font-weight: bold; color: #1f2937;">${ticket.asunto}</p>
+        </div>
+
+        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h3 style="color: #667eea; margin: 0 0 10px 0; font-size: 16px;">💬 Descripción</h3>
+          <p style="margin: 0; white-space: pre-wrap; color: #374151;">${ticket.descripcion}</p>
+        </div>
+
+        <div style="background: white; padding: 20px; border-radius: 8px;">
+          <h3 style="color: #667eea; margin: 0 0 15px 0; font-size: 16px;">👤 Datos de Contacto</h3>
+          ${ticket.nombre_contacto ? `<p style="margin: 0 0 8px 0;"><strong>Nombre:</strong> ${ticket.nombre_contacto}</p>` : ''}
+          <p style="margin: 0 0 8px 0;">
+            <strong>📧 Email:</strong> <a href="mailto:${ticket.email_contacto}" style="color: #667eea;">${ticket.email_contacto}</a>
+          </p>
+          ${ticket.telefono_contacto ? `<p style="margin: 0;"><strong>📱 Teléfono:</strong> <a href="tel:${ticket.telefono_contacto}" style="color: #667eea;">${ticket.telefono_contacto}</a></p>` : ''}
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+          <a href="https://anushka-hogar.pages.dev/" 
+             style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                    color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; 
+                    font-weight: bold; font-size: 16px;">
+            🎯 Ver Ticket en Dashboard
+          </a>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 20px; color: #6b7280; font-size: 12px;">
+        <p>Anushka Hogar</p>
+        <p>Email: anuskkahogar@gmail.com | Tel: 666 308 290</p>
+      </div>
+    </body>
+    </html>
+  `
+
+  await resend.emails.send({
+    from: 'Anushka Hogar <onboarding@resend.dev>',
+    to: destinatario,
+    subject: `🎫 Nuevo Ticket #${ticket.id}: ${ticket.asunto}`,
+    html,
+  })
+}
+
+/**
+ * Enviar email de confirmación al cliente que creó el ticket
+ */
+export async function enviarEmailConfirmacionTicket(
+  ticket: {
+    id: number
+    asunto: string
+    email_contacto: string
+    nombre_contacto?: string
+  },
+  resendApiKey: string
+): Promise<void> {
+  const resend = new Resend(resendApiKey)
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Ticket Recibido - #${ticket.id}</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 24px;">✅ Ticket Recibido</h1>
+        <p style="color: #d1fae5; margin: 10px 0 0 0; font-size: 14px;">Ticket #${ticket.id}</p>
+      </div>
+      
+      <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
+        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <p style="margin: 0 0 15px 0; font-size: 16px;">
+            ${ticket.nombre_contacto ? `Hola <strong>${ticket.nombre_contacto}</strong>,` : 'Hola,'}
+          </p>
+          <p style="margin: 0 0 15px 0; color: #374151;">
+            Hemos recibido tu ticket de soporte correctamente. Nuestro equipo lo revisará y te responderá lo antes posible.
+          </p>
+        </div>
+
+        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #10b981;">
+          <h3 style="color: #059669; margin: 0 0 10px 0; font-size: 16px;">📋 Detalles de tu Ticket</h3>
+          <p style="margin: 0 0 8px 0;">
+            <strong>Número de Ticket:</strong> #${ticket.id}
+          </p>
+          <p style="margin: 0;">
+            <strong>Asunto:</strong> ${ticket.asunto}
+          </p>
+        </div>
+
+        <div style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 8px;">
+          <p style="margin: 0; color: #1e3a8a;">
+            <strong>⏱️ Tiempo de respuesta estimado:</strong> Responderemos en un máximo de 24-48 horas.
+          </p>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 20px; color: #6b7280; font-size: 12px;">
+        <p>Anushka Hogar</p>
+        <p>Email: anuskkahogar@gmail.com | Tel: 666 308 290</p>
+      </div>
+    </body>
+    </html>
+  `
+
+  await resend.emails.send({
+    from: 'Anushka Hogar <onboarding@resend.dev>',
+    to: ticket.email_contacto,
+    subject: `✅ Ticket Recibido #${ticket.id}: ${ticket.asunto}`,
+    html,
+  })
+}
