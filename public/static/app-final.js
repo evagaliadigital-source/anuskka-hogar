@@ -8805,18 +8805,15 @@ function abrirModalSoporte() {
                   class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 resize-none"></textarea>
       </div>
 
-      <!-- Email y Nombre en 2 columnas -->
-      <div class="grid grid-cols-2 gap-2">
-        <div>
-          <label class="block text-xs font-medium text-gray-700 mb-0.5">Email *</label>
-          <input type="email" name="email_contacto" required placeholder="tu@email.com"
-                 class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
+      <!-- Email automático desde sesión -->
+      <div class="bg-blue-50 border border-blue-200 rounded p-2">
+        <div class="flex items-center gap-2 text-xs">
+          <i class="fas fa-envelope text-blue-600"></i>
+          <span class="font-medium text-blue-900">Respuesta por email:</span>
+          <span id="ticket-email-display" class="text-blue-700"></span>
         </div>
-        <div>
-          <label class="block text-xs font-medium text-gray-700 mb-0.5">Nombre</label>
-          <input type="text" name="nombre_contacto" placeholder="Tu nombre"
-                 class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
-        </div>
+        <input type="hidden" name="email_contacto" id="ticket-email-input">
+        <input type="hidden" name="nombre_contacto" id="ticket-nombre-input">
       </div>
 
       <!-- Botones -->
@@ -8834,6 +8831,15 @@ function abrirModalSoporte() {
   `
 
   showModal(modalContent, 'max-w-md')
+
+  // Obtener datos del usuario logueado y pre-rellenar
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
+  const emailUsuario = usuario.email || 'anuskkahogar@gmail.com'
+  const nombreUsuario = usuario.nombre || 'Admin'
+  
+  document.getElementById('ticket-email-input').value = emailUsuario
+  document.getElementById('ticket-nombre-input').value = nombreUsuario
+  document.getElementById('ticket-email-display').textContent = emailUsuario
 
   // Submit del formulario optimizado
   document.getElementById('form-soporte-optimizado').addEventListener('submit', async (e) => {
