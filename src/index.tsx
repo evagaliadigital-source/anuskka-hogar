@@ -33,14 +33,31 @@ app.post('/api/login', async (c) => {
   try {
     const { email, password } = await c.req.json()
     
-    // Buscar usuario por email Y password (permite mismo email, diferentes roles)
+    console.log('🔐 Intento de login:', email)
+    
+    // Buscar usuario por email
     const usuario = await c.env.DB.prepare(`
-      SELECT * FROM usuarios WHERE email = ? AND password_hash = ? AND activo = 1
-    `).bind(email, password).first()
+      SELECT * FROM usuarios WHERE email = ? AND activo = 1
+    `).bind(email).first()
     
     if (!usuario) {
+      console.log('❌ Usuario no encontrado:', email)
       return c.json({ success: false, message: 'Credenciales inválidas' }, 401)
     }
+    
+    console.log('👤 Usuario encontrado:', usuario.email, 'Rol:', usuario.rol)
+    
+    // Verificar password
+    // Importar bcrypt dinámicamente para compatibilidad con Cloudflare Workers
+    const bcrypt = await import('bcryptjs')
+    const passwordValido = await bcrypt.compare(password, usuario.password_hash)
+    
+    if (!passwordValido) {
+      console.log('❌ Password incorrecto para:', email)
+      return c.json({ success: false, message: 'Credenciales inválidas' }, 401)
+    }
+    
+    console.log('✅ Login exitoso:', email)
     
     // Actualizar último acceso
     await c.env.DB.prepare(`
@@ -57,7 +74,7 @@ app.post('/api/login', async (c) => {
       }
     })
   } catch (error) {
-    console.error('Error en login:', error)
+    console.error('❌ Error en login:', error)
     return c.json({ success: false, message: 'Error en el servidor' }, 500)
   }
 })
