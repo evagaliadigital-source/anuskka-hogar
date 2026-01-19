@@ -3,7 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema de gestión integral para Anushka Hogar - Tapicería y decoración">
+    <meta name="theme-color" content="#8b5cf6">
     <title>Anushka Hogar - Dashboard</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Iconos para diferentes dispositivos -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/static/icon-512.png">
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
+    
+    <!-- iOS específico -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Anushka Hogar">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -279,6 +295,13 @@
     <!-- Modal Container -->
     <div id="modal-container"></div>
 
+    <!-- Botón de instalación PWA (flotante) -->
+    <button id="install-button" style="display: none;" 
+            class="fixed bottom-6 right-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-full shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:scale-105 z-50 flex items-center gap-2">
+        <i class="fas fa-download"></i>
+        <span class="font-medium">Instalar App</span>
+    </button>
+
     <!-- Footer Legal -->
     <footer class="bg-gray-100 border-t border-gray-200 mt-8 py-4">
         <div class="container mx-auto px-4 text-center text-sm text-gray-600">
@@ -293,5 +316,72 @@
 
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script src="/static/app-final.js"></script>
+    
+    <!-- PWA: Service Worker y botón de instalación -->
+    <script>
+        // Registrar Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registrado:', registration.scope)
+                    })
+                    .catch(error => {
+                        console.error('❌ Error al registrar Service Worker:', error)
+                    })
+            })
+        }
+
+        // Botón de instalación PWA
+        let deferredPrompt
+        const installButton = document.getElementById('install-button')
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevenir que Chrome 67 y anteriores muestren el prompt automáticamente
+            e.preventDefault()
+            // Guardar el evento para usarlo después
+            deferredPrompt = e
+            // Mostrar el botón de instalación
+            installButton.style.display = 'flex'
+            
+            console.log('💡 PWA: App puede ser instalada')
+        })
+
+        installButton.addEventListener('click', async () => {
+            if (!deferredPrompt) {
+                return
+            }
+            
+            // Mostrar el prompt de instalación
+            deferredPrompt.prompt()
+            
+            // Esperar la respuesta del usuario
+            const { outcome } = await deferredPrompt.userChoice
+            
+            console.log(`👤 Usuario ${outcome === 'accepted' ? 'aceptó' : 'rechazó'} instalar la app`)
+            
+            if (outcome === 'accepted') {
+                // Mostrar notificación de éxito
+                showToast('✅ App instalada correctamente', 'success')
+            }
+            
+            // Limpiar el prompt
+            deferredPrompt = null
+            installButton.style.display = 'none'
+        })
+
+        // Detectar cuando la app ya está instalada
+        window.addEventListener('appinstalled', () => {
+            console.log('✅ PWA: App instalada correctamente')
+            installButton.style.display = 'none'
+            showToast('🎉 ¡App instalada! Ahora puedes acceder desde tu pantalla de inicio', 'success')
+        })
+
+        // Ocultar botón si ya está en modo standalone (app instalada)
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            console.log('📱 PWA: Ejecutando en modo standalone')
+            installButton.style.display = 'none'
+        }
+    </script>
 </body>
 </html>
