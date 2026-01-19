@@ -111,29 +111,21 @@ app.post('/api/clientes', async (c) => {
   try {
     const data = await c.req.json()
     
-    // Obtener el último número de cliente
-    const lastCliente = await c.env.DB.prepare(`
-      SELECT numero_cliente FROM clientes 
-      WHERE numero_cliente IS NOT NULL 
-      ORDER BY id DESC LIMIT 1
-    `).first()
-    
-    // Generar nuevo número (C-0001, C-0002, etc.)
-    let numeroCliente = 'C-0001'
-    if (lastCliente && lastCliente.numero_cliente) {
-      const lastNum = parseInt(lastCliente.numero_cliente.split('-')[1])
-      numeroCliente = `C-${String(lastNum + 1).padStart(4, '0')}`
-    }
-    
     const result = await c.env.DB.prepare(`
-      INSERT INTO clientes (nombre, apellidos, telefono, email, direccion, ciudad, codigo_postal, notas, numero_cliente)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO clientes (nombre, apellidos, telefono, email, direccion, ciudad, codigo_postal, notas)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
-      data.nombre, data.apellidos, data.telefono, data.email || null,
-      data.direccion, data.ciudad, data.codigo_postal || null, data.notas || null, numeroCliente
+      data.nombre, 
+      data.apellidos, 
+      data.telefono, 
+      data.email || null,
+      data.direccion, 
+      data.ciudad, 
+      data.codigo_postal || null, 
+      data.notas || null
     ).run()
     
-    return c.json({ success: true, id: result.meta.last_row_id, numero_cliente: numeroCliente, ...data })
+    return c.json({ success: true, id: result.meta.last_row_id, ...data })
   } catch (error) {
     console.error('Error creando cliente:', error)
     return c.json({ success: false, error: error.message }, 500)
