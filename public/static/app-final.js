@@ -10558,22 +10558,25 @@ function abrirSoporteModal() {
           </p>
         </div>
 
-        <!-- Datos de contacto (opcional) -->
+        <!-- Email pre-rellenado (auto desde sesión) -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <div class="flex items-center gap-2 mb-2">
+            <i class="fas fa-info-circle text-blue-600"></i>
+            <span class="text-xs font-medium text-blue-900">Recibirás la respuesta en tu email</span>
+          </div>
+          <div class="flex items-center gap-2 text-sm text-blue-800">
+            <i class="fas fa-envelope text-blue-600"></i>
+            <span id="email-display" class="font-medium"></span>
+          </div>
+          <input type="hidden" id="soporte-email">
+        </div>
+
+        <!-- Datos adicionales (opcional) -->
         <details class="bg-gray-50 rounded-lg">
           <summary class="cursor-pointer px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-100 rounded-lg">
-            <i class="fas fa-address-card mr-1"></i>Datos de contacto (opcional)
+            <i class="fas fa-phone mr-1"></i>Teléfono de contacto (opcional)
           </summary>
           <div class="p-3 space-y-2 border-t border-gray-200">
-            <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1">Email</label>
-              <input type="email" id="soporte-email" placeholder="tu@email.com"
-                     class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1">Nombre</label>
-              <input type="text" id="soporte-nombre" placeholder="Tu nombre"
-                     class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
-            </div>
             <div>
               <label class="block text-xs font-medium text-gray-600 mb-1">Teléfono</label>
               <input type="tel" id="soporte-telefono" placeholder="666 123 456"
@@ -10599,6 +10602,15 @@ function abrirSoporteModal() {
 
   showModal(modalContent, 'max-w-lg')
 
+  // Obtener email del usuario logueado
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
+  const emailUsuario = usuario.email || 'anuskkahogar@gmail.com'
+  const nombreUsuario = usuario.nombre || 'Admin'
+  
+  // Pre-rellenar email
+  document.getElementById('soporte-email').value = emailUsuario
+  document.getElementById('email-display').textContent = emailUsuario
+
   // Contador de caracteres
   document.getElementById('soporte-descripcion').addEventListener('input', (e) => {
     document.getElementById('char-count').textContent = e.target.value.length
@@ -10614,13 +10626,16 @@ function abrirSoporteModal() {
     btn.disabled = true
 
     try {
+      // Obtener datos del usuario logueado
+      const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
+      
       const data = {
         categoria: document.getElementById('soporte-categoria').value,
         prioridad: document.getElementById('soporte-prioridad').value,
         asunto: document.getElementById('soporte-asunto').value,
         descripcion: document.getElementById('soporte-descripcion').value,
-        email_contacto: document.getElementById('soporte-email').value || 'anuskkahogar@gmail.com',
-        nombre_contacto: document.getElementById('soporte-nombre').value || 'Admin',
+        email_contacto: document.getElementById('soporte-email').value,
+        nombre_contacto: usuario.nombre || 'Admin',
         telefono_contacto: document.getElementById('soporte-telefono').value || ''
       }
 
