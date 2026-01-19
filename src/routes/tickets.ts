@@ -93,10 +93,10 @@ tickets.post('/', async (c) => {
       
       const { enviarEmailNuevoTicket, enviarEmailConfirmacionTicket } = await import('../utils/email')
       
-      // Email a Ana María
-      console.log('📨 Enviando email a Ana María...')
+      // Email a Eva (Galia Digital)
+      console.log('📨 Enviando email a Eva...')
       await enviarEmailNuevoTicket(
-        'anuskkahogar@gmail.com',
+        'eva.galiadigital@gmail.com',
         {
           id: result.meta.last_row_id,
           asunto: data.asunto,
@@ -109,7 +109,7 @@ tickets.post('/', async (c) => {
         },
         c.env.RESEND_API_KEY
       )
-      console.log('✅ Email a Ana María enviado')
+      console.log('✅ Email a Eva enviado')
       
       // Email de confirmación al cliente
       console.log('📨 Enviando email de confirmación al cliente...')
