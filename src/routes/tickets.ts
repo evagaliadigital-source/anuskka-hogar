@@ -88,9 +88,13 @@ tickets.post('/', async (c) => {
     
     // Enviar emails
     try {
+      console.log('📧 Intentando enviar emails para ticket #', result.meta.last_row_id)
+      console.log('🔑 RESEND_API_KEY presente:', !!c.env.RESEND_API_KEY)
+      
       const { enviarEmailNuevoTicket, enviarEmailConfirmacionTicket } = await import('../utils/email')
       
       // Email a Ana María
+      console.log('📨 Enviando email a Ana María...')
       await enviarEmailNuevoTicket(
         'anuskkahogar@gmail.com',
         {
@@ -105,8 +109,10 @@ tickets.post('/', async (c) => {
         },
         c.env.RESEND_API_KEY
       )
+      console.log('✅ Email a Ana María enviado')
       
       // Email de confirmación al cliente
+      console.log('📨 Enviando email de confirmación al cliente...')
       await enviarEmailConfirmacionTicket(
         {
           id: result.meta.last_row_id,
@@ -116,10 +122,13 @@ tickets.post('/', async (c) => {
         },
         c.env.RESEND_API_KEY
       )
+      console.log('✅ Email de confirmación enviado')
       
       console.log('✅ Emails enviados correctamente para ticket #', result.meta.last_row_id)
-    } catch (emailError) {
+    } catch (emailError: any) {
       console.error('⚠️ Error enviando emails:', emailError)
+      console.error('⚠️ Error message:', emailError?.message)
+      console.error('⚠️ Error stack:', emailError?.stack)
       // No fallar el ticket si falla el email
     }
     
