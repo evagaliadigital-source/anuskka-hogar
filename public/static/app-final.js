@@ -312,6 +312,114 @@ function showTab(tabName) {
 // El sistema de permisos se maneja en tienePermiso() y ocultarPestanasSegunRol()
 
 // ============================================
+// PWA - BOTÓN DE INSTALACIÓN
+// ============================================
+
+// Crear botón de instalación PWA SIEMPRE VISIBLE
+function crearBotonInstalacion() {
+  // Verificar si ya existe
+  if (document.getElementById('pwa-install-button')) {
+    return
+  }
+  
+  // Crear botón
+  const boton = document.createElement('button')
+  boton.id = 'pwa-install-button'
+  boton.className = 'fixed bottom-6 right-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-full shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:scale-105 z-50 flex items-center gap-2 font-medium'
+  boton.innerHTML = `
+    <i class="fas fa-download"></i>
+    <span>Instalar App</span>
+  `
+  
+  // Agregar al body
+  document.body.appendChild(boton)
+  
+  console.log('✅ Botón de instalación creado')
+  
+  // Lógica de instalación
+  let deferredPrompt = null
+  
+  // Detectar si ya está instalada
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    console.log('📱 PWA: Ya instalada - ocultando botón')
+    boton.style.display = 'none'
+    return
+  }
+  
+  // Evento cuando se puede instalar
+  window.addEventListener('beforeinstallprompt', (e) => {
+    console.log('💡 PWA: App puede instalarse')
+    e.preventDefault()
+    deferredPrompt = e
+    boton.style.display = 'flex'
+    
+    // Efecto bounce
+    boton.classList.add('animate-bounce')
+    setTimeout(() => {
+      boton.classList.remove('animate-bounce')
+    }, 2000)
+  })
+  
+  // Click en el botón
+  boton.addEventListener('click', async () => {
+    console.log('👆 Click en botón instalar')
+    
+    if (!deferredPrompt) {
+      console.log('⚠️ No hay prompt disponible - mostrando instrucciones')
+      
+      // Instrucciones manuales
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+      const isAndroid = /Android/.test(navigator.userAgent)
+      
+      let mensaje = '📱 Para instalar esta app:\n\n'
+      
+      if (isIOS) {
+        mensaje += '1. Toca el botón Compartir (□↑)\n2. Selecciona "Añadir a pantalla de inicio"'
+      } else if (isAndroid) {
+        mensaje += '1. Abre el menú (⋮)\n2. Selecciona "Instalar app"'
+      } else {
+        mensaje += '1. Busca el icono ⊕ en la barra\n2. O menú → "Instalar Anushka Hogar"'
+      }
+      
+      alert(mensaje)
+      return
+    }
+    
+    // Mostrar prompt
+    deferredPrompt.prompt()
+    const { outcome } = await deferredPrompt.userChoice
+    
+    console.log(`👤 Usuario ${outcome === 'accepted' ? 'aceptó' : 'rechazó'}`)
+    
+    if (outcome === 'accepted') {
+      showToast('✅ App instalada correctamente', 'success')
+      boton.style.display = 'none'
+    }
+    
+    deferredPrompt = null
+  })
+  
+  // Cuando se instala
+  window.addEventListener('appinstalled', () => {
+    console.log('✅ PWA: Instalada')
+    boton.style.display = 'none'
+    showToast('🎉 ¡App instalada!', 'success')
+  })
+  
+  console.log('🔍 PWA Estado:', {
+    'Mode': window.matchMedia('(display-mode: standalone)').matches ? 'standalone' : 'browser',
+    'UA': navigator.userAgent.substring(0, 50)
+  })
+}
+
+// Crear botón cuando carga el DOM
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', crearBotonInstalacion)
+} else {
+  crearBotonInstalacion()
+}
+
+// ============================================
 // DASHBOARD
 // ============================================
 
