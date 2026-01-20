@@ -794,11 +794,11 @@ async function showClienteForm(id = null) {
 // TRABAJOS
 // ============================================
 
-// Agregar checkbox de filtro en Trabajos EN SEGUNDA FILA
+// Agregar segunda fila completa con checkbox y controles en Trabajos
 function agregarCheckboxTrabajos() {
   // Verificar si ya existe para no duplicar
-  if (document.getElementById('excluir-finalizados-trabajos')) {
-    console.log('✅ Checkbox en trabajos: ya existe (no se duplica)')
+  if (document.getElementById('segunda-fila-trabajos')) {
+    console.log('✅ Segunda fila en trabajos: ya existe (no se duplica)')
     return
   }
   
@@ -817,28 +817,68 @@ function agregarCheckboxTrabajos() {
     return
   }
   
-  // Crear segunda fila para el checkbox
+  // Crear segunda fila completa
   const segundaFila = document.createElement('div')
-  segundaFila.className = 'flex items-center gap-4 mt-4'
+  segundaFila.id = 'segunda-fila-trabajos'
+  segundaFila.className = 'flex items-center justify-between gap-4 mt-4 p-4 bg-white rounded-lg border border-gray-200'
   segundaFila.innerHTML = `
-    <label class="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors">
-      <input 
-        type="checkbox" 
-        id="excluir-finalizados-trabajos" 
-        onchange="loadTrabajos()"
-        class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+    <!-- Lado IZQUIERDO: Checkbox -->
+    <div class="flex items-center gap-2">
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input 
+          type="checkbox" 
+          id="excluir-finalizados-trabajos" 
+          onchange="loadTrabajos()"
+          class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+        >
+        <span class="text-sm font-medium text-gray-700">
+          <i class="fas fa-filter mr-1 text-blue-600"></i>
+          Excluir cancelados y completados
+        </span>
+      </label>
+    </div>
+    
+    <!-- Lado DERECHO: Ordenar + Selección múltiple + Exportar -->
+    <div class="flex items-center gap-3">
+      <!-- Ordenar -->
+      <div class="flex items-center gap-2">
+        <label class="text-sm font-medium text-gray-700">Ordenar:</label>
+        <select 
+          id="ordenar-trabajos" 
+          onchange="ordenarTrabajos()"
+          class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="fecha">Fecha programada</option>
+          <option value="cliente">Cliente</option>
+          <option value="estado">Estado</option>
+          <option value="tipo">Tipo de servicio</option>
+        </select>
+      </div>
+      
+      <!-- Selección múltiple -->
+      <button 
+        onclick="toggleSeleccionMultipleTrabajo()"
+        class="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
       >
-      <span class="text-sm font-medium text-blue-700">
-        <i class="fas fa-filter mr-1"></i>
-        Excluir cancelados y completados
-      </span>
-    </label>
+        <i class="fas fa-check-square mr-1"></i>
+        Selección múltiple
+      </button>
+      
+      <!-- Exportar -->
+      <button 
+        onclick="exportarTrabajos()"
+        class="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+      >
+        <i class="fas fa-file-export mr-1"></i>
+        Exportar
+      </button>
+    </div>
   `
   
   // Insertar después del contenedor de filtros
   contenedorFiltros.parentElement.insertBefore(segundaFila, contenedorFiltros.nextSibling)
   
-  console.log('✅ Checkbox agregado en segunda fila de Trabajos')
+  console.log('✅ Segunda fila completa agregada en Trabajos')
   
   if (filtroEstado && filtroEstado.parentElement) {
     console.log('✅ parentElement encontrado:', !!filtroEstado.parentElement)
@@ -1599,6 +1639,10 @@ async function showTrabajoForm(id = null) {
   })
 }
 
+// Variables globales para selección múltiple
+let seleccionMultipleTrabajo = false
+let trabajosSeleccionados = new Set()
+
 // Función para ordenar trabajos
 function ordenarTrabajos() {
   const ordenSelect = document.getElementById('ordenar-trabajos')
@@ -1627,6 +1671,58 @@ function ordenarTrabajos() {
   
   currentData.trabajos = trabajosOrdenados
   renderizarTrabajosTabla(trabajosOrdenados)
+  showToast(`Ordenado por ${orden}`, 'success')
+}
+
+// Función para alternar selección múltiple
+function toggleSeleccionMultipleTrabajo() {
+  seleccionMultipleTrabajo = !seleccionMultipleTrabajo
+  trabajosSeleccionados.clear()
+  
+  if (seleccionMultipleTrabajo) {
+    showToast('Modo selección múltiple activado', 'info')
+  } else {
+    showToast('Modo selección múltiple desactivado', 'info')
+  }
+  
+  // Re-renderizar para mostrar checkboxes
+  if (currentData.trabajos) {
+    renderizarTrabajosTabla(currentData.trabajos)
+  }
+}
+
+// Función para exportar trabajos a CSV
+function exportarTrabajos() {
+  if (!currentData.trabajos || currentData.trabajos.length === 0) {
+    showToast('No hay trabajos para exportar', 'warning')
+    return
+  }
+  
+  // Crear CSV
+  const headers = ['Número', 'Fecha Inicio', 'Cliente', 'Tipo', 'Empleada', 'Estado', 'Fecha Entrega']
+  const rows = currentData.trabajos.map(t => [
+    t.numero_trabajo || 'Sin número',
+    new Date(t.fecha_programada).toLocaleDateString('es-ES'),
+    `${t.cliente_nombre} ${t.cliente_apellidos}`,
+    t.tipo_servicio.replace('_', ' '),
+    t.empleada_nombre ? `${t.empleada_nombre} ${t.empleada_apellidos}` : 'Sin asignar',
+    t.estado,
+    t.fecha_finalizacion ? new Date(t.fecha_finalizacion).toLocaleDateString('es-ES') : 'Sin fecha'
+  ])
+  
+  const csvContent = [
+    headers.join(','),
+    ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+  ].join('\n')
+  
+  // Descargar
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(blob)
+  link.download = `trabajos_${new Date().toISOString().split('T')[0]}.csv`
+  link.click()
+  
+  showToast(`${currentData.trabajos.length} trabajos exportados`, 'success')
 }
 
 // Función para aplicar filtros de trabajos
@@ -1639,10 +1735,12 @@ function limpiarFiltrosTrabajos() {
   const filtroEstado = document.getElementById('filter-estado')
   const filtroFecha = document.getElementById('filter-fecha')
   const checkboxExcluir = document.getElementById('excluir-finalizados-trabajos')
+  const ordenSelect = document.getElementById('ordenar-trabajos')
   
   if (filtroEstado) filtroEstado.value = ''
   if (filtroFecha) filtroFecha.value = ''
   if (checkboxExcluir) checkboxExcluir.checked = false
+  if (ordenSelect) ordenSelect.value = 'fecha'
   
   loadTrabajos()
   showToast('Filtros limpiados', 'success')
@@ -1657,6 +1755,7 @@ function renderizarTrabajosTabla(trabajos) {
     <table class="min-w-full">
       <thead class="bg-gray-50">
         <tr>
+          ${seleccionMultipleTrabajo ? '<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><input type="checkbox" onchange="seleccionarTodosTrabajo(this)"></th>' : ''}
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Número</th>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Inicio</th>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
@@ -1670,6 +1769,7 @@ function renderizarTrabajosTabla(trabajos) {
       <tbody class="bg-white divide-y divide-gray-200">
         ${trabajos.map(t => `
           <tr class="hover:bg-gray-50">
+            ${seleccionMultipleTrabajo ? `<td class="px-6 py-4"><input type="checkbox" onchange="toggleTrabajoSeleccion(${t.id})" ${trabajosSeleccionados.has(t.id) ? 'checked' : ''}></td>` : ''}
             <td class="px-6 py-4 whitespace-nowrap">
               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                 ${t.numero_trabajo || 'Sin número'}
@@ -1718,10 +1818,33 @@ function renderizarTrabajosTabla(trabajos) {
   `
 }
 
+// Funciones auxiliares para selección múltiple
+function toggleTrabajoSeleccion(id) {
+  if (trabajosSeleccionados.has(id)) {
+    trabajosSeleccionados.delete(id)
+  } else {
+    trabajosSeleccionados.add(id)
+  }
+  console.log('Trabajos seleccionados:', trabajosSeleccionados.size)
+}
+
+function seleccionarTodosTrabajo(checkbox) {
+  if (checkbox.checked) {
+    currentData.trabajos.forEach(t => trabajosSeleccionados.add(t.id))
+  } else {
+    trabajosSeleccionados.clear()
+  }
+  renderizarTrabajosTabla(currentData.trabajos)
+}
+
 // Exponer funciones globalmente
 window.ordenarTrabajos = ordenarTrabajos
 window.aplicarFiltrosTrabajos = aplicarFiltrosTrabajos
 window.limpiarFiltrosTrabajos = limpiarFiltrosTrabajos
+window.toggleSeleccionMultipleTrabajo = toggleSeleccionMultipleTrabajo
+window.exportarTrabajos = exportarTrabajos
+window.toggleTrabajoSeleccion = toggleTrabajoSeleccion
+window.seleccionarTodosTrabajo = seleccionarTodosTrabajo
 
 // ============================================
 // PERSONAL
