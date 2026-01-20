@@ -3641,10 +3641,7 @@ async function loadReporte() {
 // ============================================
 
 // Funciones stub para botones específicos
-window.viewCliente = async (id) => {
-  const { data } = await axios.get(`${API}/clientes/${id}`)
-  alert(`Cliente: ${data.cliente.nombre} ${data.cliente.apellidos}\n\nTrabajo realizados: ${data.trabajos.length}\nFacturas: ${data.facturas.length}\nIncidencias: ${data.incidencias.length}`)
-}
+// viewCliente está definida más abajo con toda la funcionalidad completa
 
 window.editCliente = (id) => showClienteForm(id)
 window.editTrabajo = (id) => showTrabajoForm(id)
