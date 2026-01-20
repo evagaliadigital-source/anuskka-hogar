@@ -760,13 +760,19 @@ async function showClienteForm(id = null) {
 
 // Agregar checkbox de filtro en Trabajos
 function agregarCheckboxTrabajos() {
+  console.log('🔧 Intentando agregar checkbox en Trabajos...')
+  
   // Verificar si ya existe para no duplicar
   if (document.getElementById('excluir-finalizados-trabajos')) {
+    console.log('⚠️ Checkbox ya existe, no se duplica')
     return
   }
   
   const filtroEstado = document.getElementById('filter-estado')
+  console.log('🔍 filtroEstado encontrado:', !!filtroEstado)
+  
   if (filtroEstado && filtroEstado.parentElement) {
+    console.log('✅ parentElement encontrado:', !!filtroEstado.parentElement)
     const checkboxContainer = document.createElement('div')
     checkboxContainer.className = 'flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200'
     checkboxContainer.innerHTML = `
@@ -780,6 +786,8 @@ function agregarCheckboxTrabajos() {
     `
     filtroEstado.parentElement.appendChild(checkboxContainer)
     console.log('✅ Checkbox agregado en Trabajos')
+  } else {
+    console.log('❌ No se pudo agregar checkbox: filtroEstado o parentElement no encontrado')
   }
 }
 
