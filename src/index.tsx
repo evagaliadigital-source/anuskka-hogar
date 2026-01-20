@@ -86,9 +86,16 @@ app.post('/api/login', async (c) => {
 // Obtener todos los clientes
 app.get('/api/clientes', async (c) => {
   const { results } = await c.env.DB.prepare(`
-    SELECT * FROM clientes WHERE activo = 1 ORDER BY nombre
+    SELECT * FROM clientes WHERE activo = 1 ORDER BY id
   `).all()
-  return c.json(results)
+  
+  // Agregar número de cliente automáticamente (formato: C-0001, C-0002, etc.)
+  const clientesConNumero = results.map((cliente: any) => ({
+    ...cliente,
+    numero_cliente: `C-${String(cliente.id).padStart(4, '0')}`
+  }))
+  
+  return c.json(clientesConNumero)
 })
 
 // Obtener cliente por ID con historial
@@ -99,6 +106,12 @@ app.get('/api/clientes/:id', async (c) => {
     SELECT * FROM clientes WHERE id = ?
   `).bind(id).first()
   
+  // Agregar número de cliente
+  const clienteConNumero = cliente ? {
+    ...cliente,
+    numero_cliente: `C-${String(cliente.id).padStart(4, '0')}`
+  } : null
+  
   const trabajos = await c.env.DB.prepare(`
     SELECT t.*, e.nombre as empleada_nombre, e.apellidos as empleada_apellidos
     FROM trabajos t
@@ -106,6 +119,12 @@ app.get('/api/clientes/:id', async (c) => {
     WHERE t.cliente_id = ?
     ORDER BY t.fecha_programada DESC
   `).bind(id).all()
+  
+  // Agregar números a trabajos
+  const trabajosConNumero = trabajos.results.map((trabajo: any) => ({
+    ...trabajo,
+    numero_trabajo: `T-${String(trabajo.id).padStart(4, '0')}`
+  }))
   
   const facturas = await c.env.DB.prepare(`
     SELECT * FROM facturas WHERE cliente_id = ? ORDER BY fecha_emision DESC
@@ -116,14 +135,14 @@ app.get('/api/clientes/:id', async (c) => {
   `).bind(id).all()
   
   return c.json({
-    cliente,
-    trabajos: trabajos.results,
+    cliente: clienteConNumero,
+    trabajos: trabajosConNumero,
     facturas: facturas.results,
     incidencias: incidencias.results
   })
 })
 
-// Crear cliente
+// Crear cliente// Crear cliente
 app.post('/api/clientes', async (c) => {
   try {
     const data = await c.req.json()
@@ -283,7 +302,14 @@ app.get('/api/trabajos', async (c) => {
   query += ' ORDER BY t.fecha_programada DESC'
   
   const { results } = await c.env.DB.prepare(query).bind(...bindings).all()
-  return c.json(results)
+  
+  // Agregar números a trabajos
+  const trabajosConNumero = results.map((trabajo: any) => ({
+    ...trabajo,
+    numero_trabajo: `T-${String(trabajo.id).padStart(4, '0')}`
+  }))
+  
+  return c.json(trabajosConNumero)
 })
 
 // Obtener un trabajo específico
