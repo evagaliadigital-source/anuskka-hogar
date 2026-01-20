@@ -328,35 +328,73 @@ function crearBannerInstalacion() {
     return
   }
   
-  // Crear banner GRANDE
+  // Crear banner GRANDE con z-index BRUTAL
   const banner = document.createElement('div')
   banner.id = 'pwa-install-banner'
-  banner.className = 'fixed top-0 left-0 right-0 bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-4 shadow-2xl z-[9999] flex items-center justify-between'
-  banner.innerHTML = `
-    <div class="flex items-center gap-3">
-      <i class="fas fa-mobile-alt text-3xl"></i>
-      <div>
-        <div class="font-bold text-lg">📱 Instalar Anushka Hogar</div>
-        <div class="text-sm opacity-90">Accede más rápido desde tu pantalla de inicio</div>
-      </div>
-    </div>
-    <button id="btn-instalar-pwa" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-bold hover:bg-gray-100 transition-all">
-      <i class="fas fa-download mr-2"></i>
-      INSTALAR
-    </button>
-    <button id="btn-cerrar-banner" class="ml-3 text-white hover:text-gray-200">
-      <i class="fas fa-times text-2xl"></i>
-    </button>
+  banner.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to right, #9333ea, #4f46e5);
+    color: white;
+    padding: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: system-ui, -apple-system, sans-serif;
   `
   
-  // Agregar al body
+  banner.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <i class="fas fa-mobile-alt" style="font-size: 32px;"></i>
+      <div>
+        <div style="font-weight: bold; font-size: 18px;">📱 Instalar Anushka Hogar</div>
+        <div style="font-size: 14px; opacity: 0.9;">Accede más rápido desde tu pantalla de inicio</div>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <button id="btn-instalar-pwa" style="
+        background: white;
+        color: #9333ea;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 16px;
+        cursor: pointer;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      ">
+        <i class="fas fa-download" style="margin-right: 8px;"></i>
+        INSTALAR
+      </button>
+      <button id="btn-cerrar-banner" style="
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 8px;
+      ">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  `
+  
+  // Agregar al body AL PRINCIPIO
   document.body.insertBefore(banner, document.body.firstChild)
   
-  console.log('✅ BANNER DE INSTALACIÓN CREADO')
+  // Ajustar body para que no tape el banner
+  document.body.style.paddingTop = '80px'
+  
+  console.log('✅ BANNER DE INSTALACIÓN CREADO CON Z-INDEX 999999')
   
   // Botón cerrar
   document.getElementById('btn-cerrar-banner').addEventListener('click', () => {
     banner.remove()
+    document.body.style.paddingTop = '0'
     console.log('❌ Banner cerrado')
   })
   
@@ -413,6 +451,7 @@ function crearBannerInstalacion() {
     if (outcome === 'accepted') {
       showToast('✅ ¡App instalada correctamente!', 'success')
       banner.remove()
+      document.body.style.paddingTop = '0'
     } else {
       showToast('ℹ️ Puedes instalarla cuando quieras', 'info')
     }
@@ -424,6 +463,7 @@ function crearBannerInstalacion() {
   window.addEventListener('appinstalled', () => {
     console.log('✅ PWA: App instalada')
     banner.remove()
+    document.body.style.paddingTop = '0'
     showToast('🎉 ¡App instalada exitosamente!', 'success')
   })
   
@@ -443,6 +483,9 @@ if (document.readyState === 'loading') {
 
 // También crear después de 1 segundo (por si acaso)
 setTimeout(crearBannerInstalacion, 1000)
+
+// Y después de 3 segundos (triple garantía)
+setTimeout(crearBannerInstalacion, 3000)
 
 // ============================================
 // DASHBOARD
