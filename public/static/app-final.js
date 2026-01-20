@@ -354,11 +354,11 @@ async function limpiarTodosLosDatos() {
 window.limpiarTodosLosDatos = limpiarTodosLosDatos
 
 // ============================================
-// PWA - BANNER DE INSTALACIÓN GRANDE Y VISIBLE
+// PWA - BANNER DE INSTALACIÓN (DESHABILITADO)
 // ============================================
 
-// Crear banner de instalación ULTRA VISIBLE
-function crearBannerInstalacion() {
+// Banner deshabilitado por solicitud del usuario
+// function crearBannerInstalacion() { ... }
   // Verificar si ya existe
   if (document.getElementById('pwa-install-banner')) {
     return
@@ -517,17 +517,18 @@ function crearBannerInstalacion() {
 }
 
 // Crear banner cuando carga el DOM
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', crearBannerInstalacion)
-} else {
-  crearBannerInstalacion()
-}
+// Banner deshabilitado
+// if (document.readyState === 'loading') {
+//   document.addEventListener('DOMContentLoaded', crearBannerInstalacion)
+// } else {
+//   crearBannerInstalacion()
+// }
 
 // También crear después de 1 segundo (por si acaso)
-setTimeout(crearBannerInstalacion, 1000)
+// setTimeout(crearBannerInstalacion, 1000)
 
 // Y después de 3 segundos (triple garantía)
-setTimeout(crearBannerInstalacion, 3000)
+// setTimeout(crearBannerInstalacion, 3000)
 
 // ============================================
 // DASHBOARD
@@ -11418,20 +11419,53 @@ async function subirArchivoCliente(clienteId) {
   const html = `
     <div id="modal-archivo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
       <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full">
-        <h3 class="text-xl font-bold mb-4">Subir Archivo</h3>
+        <h3 class="text-xl font-bold mb-4">
+          <i class="fas fa-paperclip mr-2"></i>Subir Archivo o Foto
+        </h3>
         
         <form id="upload-form">
+          <!-- Opciones de subida -->
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Seleccionar archivo (PDF, JPG, PNG, etc.)
+            <label class="block text-sm font-medium text-gray-700 mb-3">
+              Selecciona una opción:
             </label>
-            <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" 
-                   class="w-full px-3 py-2 border rounded-lg">
-            <p class="text-xs text-gray-500 mt-1">Tamaño máximo: 10MB</p>
+            
+            <!-- Botón para tomar foto -->
+            <button type="button" id="btn-camera" 
+                    class="w-full mb-3 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+              <i class="fas fa-camera text-xl"></i>
+              <span>Tomar Foto con Cámara</span>
+            </button>
+            
+            <!-- Botón para seleccionar archivo -->
+            <label for="file-input" 
+                   class="w-full bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 cursor-pointer">
+              <i class="fas fa-folder-open text-xl"></i>
+              <span>Seleccionar Archivo</span>
+            </label>
+            <input type="file" id="file-input" accept="image/*,.pdf,.doc,.docx" 
+                   capture="environment"
+                   class="hidden">
+            
+            <p class="text-xs text-gray-500 mt-2 text-center">
+              📷 Foto desde cámara | 📁 PDF, JPG, PNG, DOC<br>
+              Tamaño máximo: 10MB
+            </p>
+          </div>
+          
+          <!-- Preview -->
+          <div id="preview-container" class="mb-4 hidden">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Vista previa:
+            </label>
+            <div class="border rounded-lg p-3 bg-gray-50">
+              <img id="preview-image" class="max-w-full max-h-48 mx-auto rounded" />
+              <p id="preview-filename" class="text-sm text-gray-600 text-center mt-2"></p>
+            </div>
           </div>
           
           <div class="flex gap-3">
-            <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+            <button type="submit" id="btn-upload" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
               <i class="fas fa-upload mr-2"></i>Subir
             </button>
             <button type="button" onclick="document.getElementById('modal-archivo').remove()" 
@@ -11453,19 +11487,131 @@ async function subirArchivoCliente(clienteId) {
   
   document.body.insertAdjacentHTML('beforeend', html)
   
+  // Variables para manejar la foto
+  let capturedFile = null
+  
+  // Botón de cámara
+  document.getElementById('btn-camera').addEventListener('click', async () => {
+    try {
+      // Verificar si el navegador soporta getUserMedia
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showToast('❌ Tu navegador no soporta acceso a la cámara', 'error')
+        return
+      }
+      
+      // Abrir modal de cámara
+      const cameraModal = document.createElement('div')
+      cameraModal.id = 'camera-modal'
+      cameraModal.className = 'fixed inset-0 bg-black z-[70] flex flex-col'
+      cameraModal.innerHTML = `
+        <div class="flex-1 relative">
+          <video id="camera-video" autoplay playsinline class="w-full h-full object-cover"></video>
+          <canvas id="camera-canvas" class="hidden"></canvas>
+        </div>
+        <div class="p-4 bg-gray-900 flex justify-center gap-4">
+          <button id="btn-capture" class="bg-blue-600 text-white px-8 py-4 rounded-full hover:bg-blue-700 transition-colors">
+            <i class="fas fa-camera text-2xl"></i>
+          </button>
+          <button id="btn-cancel-camera" class="bg-red-600 text-white px-8 py-4 rounded-full hover:bg-red-700 transition-colors">
+            <i class="fas fa-times text-2xl"></i>
+          </button>
+        </div>
+      `
+      document.body.appendChild(cameraModal)
+      
+      // Iniciar cámara
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' } // Usar cámara trasera en móviles
+      })
+      const video = document.getElementById('camera-video')
+      video.srcObject = stream
+      
+      // Capturar foto
+      document.getElementById('btn-capture').addEventListener('click', () => {
+        const canvas = document.getElementById('camera-canvas')
+        const context = canvas.getContext('2d')
+        
+        canvas.width = video.videoWidth
+        canvas.height = video.videoHeight
+        context.drawImage(video, 0, 0, canvas.width, canvas.height)
+        
+        // Convertir a Blob
+        canvas.toBlob((blob) => {
+          const filename = `foto-${Date.now()}.jpg`
+          capturedFile = new File([blob], filename, { type: 'image/jpeg' })
+          
+          // Mostrar preview
+          const previewContainer = document.getElementById('preview-container')
+          const previewImage = document.getElementById('preview-image')
+          const previewFilename = document.getElementById('preview-filename')
+          
+          previewImage.src = canvas.toDataURL('image/jpeg')
+          previewFilename.textContent = filename
+          previewContainer.classList.remove('hidden')
+          
+          // Habilitar botón de subir
+          document.getElementById('btn-upload').disabled = false
+          
+          // Cerrar cámara
+          stream.getTracks().forEach(track => track.stop())
+          cameraModal.remove()
+          
+          showToast('📸 Foto capturada correctamente', 'success')
+        }, 'image/jpeg', 0.9)
+      })
+      
+      // Cancelar
+      document.getElementById('btn-cancel-camera').addEventListener('click', () => {
+        stream.getTracks().forEach(track => track.stop())
+        cameraModal.remove()
+      })
+      
+    } catch (error) {
+      console.error('Error accediendo a la cámara:', error)
+      showToast('❌ No se pudo acceder a la cámara', 'error')
+    }
+  })
+  
+  // Input de archivo
+  document.getElementById('file-input').addEventListener('change', (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      capturedFile = file
+      
+      // Mostrar preview
+      const previewContainer = document.getElementById('preview-container')
+      const previewImage = document.getElementById('preview-image')
+      const previewFilename = document.getElementById('preview-filename')
+      
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          previewImage.src = e.target.result
+          previewFilename.textContent = file.name
+          previewContainer.classList.remove('hidden')
+        }
+        reader.readAsDataURL(file)
+      } else {
+        previewImage.src = ''
+        previewFilename.textContent = file.name
+        previewContainer.classList.remove('hidden')
+      }
+      
+      // Habilitar botón de subir
+      document.getElementById('btn-upload').disabled = false
+    }
+  })
+  
   document.getElementById('upload-form').addEventListener('submit', async (e) => {
     e.preventDefault()
     
-    const fileInput = document.getElementById('file-input')
-    const file = fileInput.files[0]
-    
-    if (!file) {
-      showToast('❌ Selecciona un archivo', 'error')
+    if (!capturedFile) {
+      showToast('❌ Selecciona un archivo o toma una foto', 'error')
       return
     }
     
     // Validar tamaño
-    if (file.size > 10 * 1024 * 1024) {
+    if (capturedFile.size > 10 * 1024 * 1024) {
       showToast('❌ Archivo muy grande (máximo 10MB)', 'error')
       return
     }
@@ -11475,7 +11621,7 @@ async function subirArchivoCliente(clienteId) {
       document.getElementById('upload-progress').classList.remove('hidden')
       
       const formData = new FormData()
-      formData.append('file', file)
+      formData.append('file', capturedFile)
       formData.append('subido_por', JSON.parse(localStorage.getItem('usuario') || '{}').email || 'admin')
       
       const response = await axios.post(`${API}/clientes/${clienteId}/archivos`, formData, {
