@@ -11186,6 +11186,8 @@ async function viewCliente(id) {
   try {
     const { data } = await axios.get(`${API}/clientes/${id}`)
     const cliente = data.cliente
+    const trabajos = data.trabajos || []
+    const facturas = data.facturas || []
     
     // Obtener archivos del cliente
     const archivosResponse = await axios.get(`${API}/clientes/${id}/archivos`)
@@ -11195,17 +11197,24 @@ async function viewCliente(id) {
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
     const esAdmin = usuario.rol === 'duena'
     
+    // Formatear fechas
+    const formatFecha = (fecha) => fecha ? new Date(fecha).toLocaleDateString('es-ES') : '-'
+    const formatMoneda = (valor) => valor ? `${parseFloat(valor).toFixed(2)}€` : '-'
+    
     const html = `
       <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
           <!-- Header -->
-          <div class="sticky top-0 bg-gradient-to-r from-gray-800 to-gray-900 text-white p-6 rounded-t-xl">
+          <div class="sticky top-0 bg-gradient-to-r from-gray-800 to-gray-900 text-white p-6 rounded-t-xl z-10">
             <div class="flex justify-between items-center">
               <div>
                 <h3 class="text-2xl font-bold">${cliente.nombre} ${cliente.apellidos}</h3>
-                <p class="text-gray-300 text-sm mt-1">
-                  <i class="fas fa-tag mr-2"></i>${cliente.numero_cliente || 'Sin número'}
-                </p>
+                <div class="flex gap-4 mt-2 text-sm text-gray-300">
+                  <span><i class="fas fa-tag mr-2"></i>${cliente.numero_cliente}</span>
+                  <span><i class="fas fa-calendar mr-2"></i>Desde ${formatFecha(cliente.fecha_registro)}</span>
+                  <span class="px-2 py-1 bg-blue-600 rounded">${cliente.tipo_cliente}</span>
+                  <span class="px-2 py-1 bg-purple-600 rounded">${cliente.estado_negocio}</span>
+                </div>
               </div>
               <button onclick="closeModal()" class="text-white hover:text-gray-300">
                 <i class="fas fa-times text-2xl"></i>
@@ -11215,28 +11224,111 @@ async function viewCliente(id) {
           
           <!-- Contenido -->
           <div class="p-6">
-            <!-- Información del cliente -->
-            <div class="grid grid-cols-2 gap-6 mb-8">
-              <div>
-                <h4 class="font-semibold text-gray-700 mb-3 flex items-center">
-                  <i class="fas fa-user text-gray-500 mr-2"></i>Información Personal
+            <!-- Información Personal y de Contacto -->
+            <div class="grid grid-cols-3 gap-6 mb-6">
+              <!-- Información Personal -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-gray-700 mb-3 flex items-center border-b pb-2">
+                  <i class="fas fa-user text-blue-500 mr-2"></i>Información Personal
                 </h4>
-                <div class="space-y-2">
-                  <p class="text-sm"><span class="font-medium">Teléfono:</span> ${cliente.telefono}</p>
-                  ${cliente.email ? `<p class="text-sm"><span class="font-medium">Email:</span> ${cliente.email}</p>` : ''}
-                  <p class="text-sm"><span class="font-medium">Dirección:</span> ${cliente.direccion}</p>
-                  <p class="text-sm"><span class="font-medium">Ciudad:</span> ${cliente.ciudad}</p>
-                  ${cliente.codigo_postal ? `<p class="text-sm"><span class="font-medium">CP:</span> ${cliente.codigo_postal}</p>` : ''}
+                <div class="space-y-2 text-sm">
+                  <p><span class="font-medium text-gray-600">Nombre:</span> ${cliente.nombre} ${cliente.apellidos}</p>
+                  <p><span class="font-medium text-gray-600">Teléfono:</span> ${cliente.telefono}</p>
+                  <p><span class="font-medium text-gray-600">Email:</span> ${cliente.email || 'No especificado'}</p>
+                  <p><span class="font-medium text-gray-600">Dirección:</span> ${cliente.direccion}</p>
+                  <p><span class="font-medium text-gray-600">Ciudad:</span> ${cliente.ciudad}</p>
+                  <p><span class="font-medium text-gray-600">CP:</span> ${cliente.codigo_postal || '-'}</p>
                 </div>
               </div>
               
-              <div>
-                <h4 class="font-semibold text-gray-700 mb-3 flex items-center">
-                  <i class="fas fa-sticky-note text-gray-500 mr-2"></i>Notas
+              <!-- Información Comercial -->
+              <div class="bg-blue-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-gray-700 mb-3 flex items-center border-b pb-2">
+                  <i class="fas fa-briefcase text-blue-500 mr-2"></i>Info Comercial
                 </h4>
-                <p class="text-sm text-gray-600">${cliente.notas || 'Sin notas'}</p>
+                <div class="space-y-2 text-sm">
+                  <p><span class="font-medium text-gray-600">Estado:</span> <span class="px-2 py-1 bg-blue-200 rounded text-xs">${cliente.estado_negocio}</span></p>
+                  <p><span class="font-medium text-gray-600">Tipo:</span> ${cliente.tipo_cliente}</p>
+                  <p><span class="font-medium text-gray-600">Prioridad:</span> <span class="px-2 py-1 ${cliente.prioridad === 'alta' ? 'bg-red-200' : cliente.prioridad === 'media' ? 'bg-yellow-200' : 'bg-green-200'} rounded text-xs">${cliente.prioridad}</span></p>
+                  <p><span class="font-medium text-gray-600">Probabilidad cierre:</span> ${cliente.probabilidad_cierre}%</p>
+                  <p><span class="font-medium text-gray-600">Valor estimado:</span> ${formatMoneda(cliente.valor_estimado)}</p>
+                  <p><span class="font-medium text-gray-600">Origen lead:</span> ${cliente.origen_lead || '-'}</p>
+                  <p><span class="font-medium text-gray-600">Referido por:</span> ${cliente.referido_por || '-'}</p>
+                </div>
+              </div>
+              
+              <!-- Información de Seguimiento -->
+              <div class="bg-purple-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-gray-700 mb-3 flex items-center border-b pb-2">
+                  <i class="fas fa-tasks text-purple-500 mr-2"></i>Seguimiento
+                </h4>
+                <div class="space-y-2 text-sm">
+                  <p><span class="font-medium text-gray-600">Último contacto:</span> ${formatFecha(cliente.fecha_ultimo_contacto)}</p>
+                  <p><span class="font-medium text-gray-600">Medio:</span> ${cliente.medio_ultimo_contacto || '-'}</p>
+                  <p><span class="font-medium text-gray-600">Próxima acción:</span> ${cliente.proxima_accion || '-'}</p>
+                  <p><span class="font-medium text-gray-600">Fecha próxima acción:</span> ${formatFecha(cliente.fecha_proxima_accion)}</p>
+                  <p><span class="font-medium text-gray-600">Responsable:</span> ${cliente.responsable_seguimiento || '-'}</p>
+                  <p><span class="font-medium text-gray-600">Servicios contratados:</span> ${cliente.servicios_contratados}</p>
+                </div>
               </div>
             </div>
+            
+            <!-- Presupuesto y Servicios -->
+            <div class="grid grid-cols-2 gap-6 mb-6">
+              <div class="bg-green-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-gray-700 mb-3 flex items-center border-b pb-2">
+                  <i class="fas fa-file-invoice-dollar text-green-500 mr-2"></i>Presupuesto
+                </h4>
+                <div class="space-y-2 text-sm">
+                  <p><span class="font-medium text-gray-600">Presupuesto pendiente:</span> ${cliente.presupuesto_pendiente ? 'Sí' : 'No'}</p>
+                  <p><span class="font-medium text-gray-600">Monto:</span> ${formatMoneda(cliente.monto_presupuesto)}</p>
+                  <p><span class="font-medium text-gray-600">Fecha presupuesto:</span> ${formatFecha(cliente.fecha_presupuesto)}</p>
+                  <p><span class="font-medium text-gray-600">Respuesta esperada:</span> ${formatFecha(cliente.fecha_respuesta_esperada)}</p>
+                </div>
+              </div>
+              
+              <div class="bg-yellow-50 p-4 rounded-lg">
+                <h4 class="font-semibold text-gray-700 mb-3 flex items-center border-b pb-2">
+                  <i class="fas fa-star text-yellow-500 mr-2"></i>Preferencias y Servicios
+                </h4>
+                <div class="space-y-2 text-sm">
+                  <p><span class="font-medium text-gray-600">Servicios de interés:</span> ${cliente.servicios_interes || '-'}</p>
+                  <p><span class="font-medium text-gray-600">Frecuencia preferida:</span> ${cliente.frecuencia_preferida || '-'}</p>
+                  <p><span class="font-medium text-gray-600">Horario preferido:</span> ${cliente.horario_preferido || '-'}</p>
+                  <p><span class="font-medium text-gray-600">Último servicio:</span> ${formatFecha(cliente.fecha_ultimo_servicio)}</p>
+                  <p><span class="font-medium text-gray-600">Satisfacción:</span> ${cliente.satisfaccion_general ? cliente.satisfaccion_general + '/10' : '-'}</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Notas -->
+            <div class="bg-gray-50 p-4 rounded-lg mb-6">
+              <h4 class="font-semibold text-gray-700 mb-3 flex items-center border-b pb-2">
+                <i class="fas fa-sticky-note text-gray-500 mr-2"></i>Notas
+              </h4>
+              <p class="text-sm text-gray-600">${cliente.notas || 'Sin notas'}</p>
+              ${cliente.notas_comerciales ? `<p class="text-sm text-gray-600 mt-2"><span class="font-medium">Notas comerciales:</span> ${cliente.notas_comerciales}</p>` : ''}
+            </div>
+            
+            <!-- Trabajos -->
+            ${trabajos.length > 0 ? `
+              <div class="border-t pt-6 mb-6">
+                <h4 class="font-semibold text-gray-700 mb-3 flex items-center">
+                  <i class="fas fa-hammer text-orange-500 mr-2"></i>Trabajos (${trabajos.length})
+                </h4>
+                <div class="space-y-2">
+                  ${trabajos.map(t => `
+                    <div class="bg-orange-50 p-3 rounded-lg flex justify-between items-center">
+                      <div class="text-sm">
+                        <span class="font-medium">${t.numero_trabajo}</span> - ${t.tipo_trabajo || 'Sin tipo'}
+                        <span class="text-gray-600 ml-2">${formatFecha(t.fecha_programada)}</span>
+                      </div>
+                      <span class="px-2 py-1 bg-orange-200 rounded text-xs">${t.estado}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
             
             <!-- Sección de Archivos -->
             <div class="border-t pt-6">
@@ -11258,7 +11350,7 @@ async function viewCliente(id) {
                       <!-- Miniatura -->
                       <div class="h-24 flex items-center justify-center bg-gray-100 rounded mb-2">
                         ${archivo.tipo_archivo === 'image' ? 
-                          `<img src="${API}/clientes/${id}/archivos/${archivo.id}/url" 
+                          `<img src="${API}/clientes/${id}/archivos/${archivo.id}/preview" 
                                 class="max-h-full max-w-full object-contain rounded cursor-pointer"
                                 onclick="verArchivoCompleto(${id}, ${archivo.id}, '${archivo.tipo_archivo}', '${archivo.nombre_archivo}')"
                                 alt="${archivo.nombre_archivo}">` :
