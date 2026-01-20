@@ -274,7 +274,29 @@ function showTab(tabName) {
       break
     case 'trabajos':
       loadTrabajos()
-      // El checkbox se agrega dentro de loadTrabajos()
+      // Agregar checkbox con múltiples intentos
+      setTimeout(() => {
+        for (let i = 0; i < 5; i++) {
+          setTimeout(() => {
+            if (!document.getElementById('excluir-finalizados-trabajos')) {
+              const selects = document.querySelectorAll('#trabajos-tab select')
+              if (selects.length > 0) {
+                const contenedor = selects[0].parentElement
+                const checkbox = document.createElement('div')
+                checkbox.className = 'flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-300'
+                checkbox.innerHTML = `
+                  <input type="checkbox" id="excluir-finalizados-trabajos" onchange="loadTrabajos()" class="w-4 h-4 text-blue-600 cursor-pointer">
+                  <label for="excluir-finalizados-trabajos" class="text-sm font-medium text-gray-700 cursor-pointer whitespace-nowrap">
+                    <i class="fas fa-ban mr-1"></i>Excluir cancelados/completados
+                  </label>
+                `
+                contenedor.appendChild(checkbox)
+                console.log('✅ Checkbox agregado (intento ' + (i+1) + ')')
+              }
+            }
+          }, 500 * (i + 1))
+        }
+      }, 100)
       break
     case 'tareas':
       // Cargar vista miniatura por defecto
