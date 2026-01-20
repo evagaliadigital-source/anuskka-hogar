@@ -1917,6 +1917,25 @@ function renderizarTrabajosTabla(trabajos) {
   const container = document.getElementById('trabajos-lista')
   if (!container) return
   
+  // Si no hay trabajos, mostrar mensaje vacío
+  if (!trabajos || trabajos.length === 0) {
+    container.innerHTML = `
+      <div class="flex flex-col items-center justify-center py-16 px-4">
+        <div class="text-gray-400 mb-6">
+          <i class="fas fa-briefcase text-6xl"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-gray-700 mb-2">No hay trabajos</h3>
+        <p class="text-gray-500 mb-6 text-center">
+          Crea tu primer trabajo para comenzar
+        </p>
+        <button onclick="showTrabajoForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all">
+          <i class="fas fa-plus mr-2"></i>Crear Trabajo
+        </button>
+      </div>
+    `
+    return
+  }
+  
   container.innerHTML = `
     <table class="min-w-full">
       <thead class="bg-gray-50">
