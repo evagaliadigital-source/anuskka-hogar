@@ -274,14 +274,14 @@ function showTab(tabName) {
       break
     case 'trabajos':
       loadTrabajos()
-      agregarCheckboxTrabajos()
+      // El checkbox se agrega dentro de loadTrabajos()
       break
     case 'tareas':
       // Cargar vista miniatura por defecto
       cambiarVistaTareas('miniatura')
       actualizarContadorTareas()
       actualizarContadoresTareasHeader()
-      agregarCheckboxTareas()
+      // El checkbox se agrega en la vista correspondiente
       break
     case 'calendario':
       cargarCalendarioGlobal()
@@ -867,6 +867,9 @@ async function loadTrabajos() {
         </tbody>
       </table>
     `
+    
+    // Agregar checkbox de filtro (después de renderizar)
+    agregarCheckboxTrabajos()
   } catch (error) {
     console.error('Error cargando trabajos:', error)
     showError('Error al cargar trabajos')
@@ -9653,6 +9656,8 @@ async function loadTareasMiniatura() {
       `
     }).join('')
     
+    // Agregar checkbox de filtro (después de renderizar)
+    agregarCheckboxTareas()
   } catch (error) {
     console.error('Error cargando vista miniatura:', error)
     showNotification('Error al cargar tareas', 'error')
