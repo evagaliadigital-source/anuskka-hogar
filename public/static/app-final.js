@@ -761,12 +761,18 @@ async function loadTrabajos() {
     const estado = document.getElementById('filter-estado')?.value || ''
     const fecha = document.getElementById('filter-fecha')?.value || ''
     
+    console.log('🔍 Filtros trabajos:', { estado, fecha })
+    
     const params = new URLSearchParams()
     if (estado) params.append('estado', estado)
     if (fecha) params.append('fecha', fecha)
     
+    console.log('📡 Fetching trabajos con params:', params.toString())
+    
     const { data } = await axios.get(`${API}/trabajos?${params}`)
     currentData.trabajos = data
+    
+    console.log('✅ Trabajos recibidos:', data.length)
     
     const container = document.getElementById('trabajos-lista')
     container.innerHTML = `
