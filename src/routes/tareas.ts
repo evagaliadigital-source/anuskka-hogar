@@ -17,6 +17,7 @@ tareas.get('/', async (c) => {
     const tipo = c.req.query('tipo')
     const prioridad = c.req.query('prioridad')
     const asignado_a = c.req.query('asignado_a')
+    const excluir_finalizadas = c.req.query('excluir_finalizadas') === 'true'
     
     let query = `
       SELECT t.*,
@@ -33,6 +34,11 @@ tareas.get('/', async (c) => {
     `
     
     const params: any[] = []
+    
+    // Excluir cancelados y finalizados si se solicita
+    if (excluir_finalizadas) {
+      query += ` AND t.estado NOT IN ('cancelado', 'finalizado', 'completada')`
+    }
     
     if (estado && estado !== 'todas') {
       query += ` AND t.estado = ?`

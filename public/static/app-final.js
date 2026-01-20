@@ -6632,11 +6632,13 @@ async function loadTareas() {
     const asignado = document.getElementById('filtro-asignado-tareas')?.value || ''
     const estado = document.getElementById('filtro-estado-tareas')?.value || 'todas'
     const busqueda = document.getElementById('buscar-tareas')?.value || ''
+    const excluirFinalizadas = document.getElementById('excluir-finalizadas-tareas')?.checked || false
     
     // Construir URL con filtros
     let url = `${API}/tareas?estado=${estado}`
     if (prioridad) url += `&prioridad=${prioridad}`
     if (asignado) url += `&asignado_a=${encodeURIComponent(asignado)}`
+    if (excluirFinalizadas) url += `&excluir_finalizadas=true`
     
     const { data } = await axios.get(url)
     
@@ -9339,10 +9341,12 @@ async function loadTareasKanban() {
   try {
     const prioridad = document.getElementById('filtro-prioridad-tareas')?.value || ''
     const asignado = document.getElementById('filtro-asignado-tareas')?.value || ''
+    const excluirFinalizadas = document.getElementById('excluir-finalizadas-tareas')?.checked || false
     
     let url = '/api/tareas?estado=todas'
     if (prioridad) url += `&prioridad=${prioridad}`
     if (asignado) url += `&asignado_a=${encodeURIComponent(asignado)}`
+    if (excluirFinalizadas) url += `&excluir_finalizadas=true`
     
     const res = await fetch(url)
     const tareas = await res.json()
@@ -9485,10 +9489,12 @@ async function loadTareasMiniatura() {
     const asignado = document.getElementById('filtro-asignado-tareas')?.value || ''
     const estado = document.getElementById('filtro-estado-tareas')?.value || 'todas'
     const busqueda = document.getElementById('buscar-tareas')?.value || ''
+    const excluirFinalizadas = document.getElementById('excluir-finalizadas-tareas')?.checked || false
     
     let url = `${API}/tareas?estado=${estado}`
     if (prioridad) url += `&prioridad=${prioridad}`
     if (asignado) url += `&asignado_a=${encodeURIComponent(asignado)}`
+    if (excluirFinalizadas) url += `&excluir_finalizadas=true`
     
     const { data } = await axios.get(url)
     
@@ -9884,6 +9890,8 @@ function limpiarFiltros() {
   document.getElementById('filtro-asignado-tareas').value = ''
   document.getElementById('filtro-estado-tareas').value = 'todas'
   document.getElementById('filtro-fecha-tareas').value = ''
+  const excluirCheckbox = document.getElementById('excluir-finalizadas-tareas')
+  if (excluirCheckbox) excluirCheckbox.checked = false
   aplicarFiltros()
   showNotification('Filtros limpiados', 'info')
 }
@@ -10679,3 +10687,33 @@ function abrirSoporteModal() {
     }
   })
 }
+
+// ============================================
+// AGREGAR CHECKBOX "EXCLUIR CANCELADOS Y FINALIZADOS"
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+  // Esperar a que se cargue la interfaz
+  setTimeout(() => {
+    // Buscar el contenedor de filtros de tareas
+    const filtroEstadoTareas = document.getElementById('filtro-estado-tareas')
+    if (filtroEstadoTareas && filtroEstadoTareas.parentElement) {
+      // Crear el checkbox container
+      const checkboxContainer = document.createElement('div')
+      checkboxContainer.className = 'flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200'
+      checkboxContainer.innerHTML = `
+        <input type="checkbox" 
+               id="excluir-finalizadas-tareas" 
+               onchange="aplicarFiltros()"
+               class="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 cursor-pointer">
+        <label for="excluir-finalizadas-tareas" class="text-sm font-medium text-gray-700 cursor-pointer select-none">
+          <i class="fas fa-filter mr-1"></i>Excluir cancelados y finalizados
+        </label>
+      `
+      
+      // Insertar después del filtro de estado
+      filtroEstadoTareas.parentElement.insertAdjacentElement('afterend', checkboxContainer)
+      
+      console.log('✅ Checkbox "Excluir finalizadas" agregado correctamente')
+    }
+  }, 1000)
+})
