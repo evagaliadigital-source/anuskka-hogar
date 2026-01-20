@@ -760,12 +760,14 @@ async function loadTrabajos() {
   try {
     const estado = document.getElementById('filter-estado')?.value || ''
     const fecha = document.getElementById('filter-fecha')?.value || ''
+    const excluirFinalizados = document.getElementById('excluir-finalizados-trabajos')?.checked || false
     
-    console.log('🔍 Filtros trabajos:', { estado, fecha })
+    console.log('🔍 Filtros trabajos:', { estado, fecha, excluirFinalizados })
     
     const params = new URLSearchParams()
     if (estado) params.append('estado', estado)
     if (fecha) params.append('fecha', fecha)
+    if (excluirFinalizados) params.append('excluir_finalizados', 'true')
     
     console.log('📡 Fetching trabajos con params:', params.toString())
     
@@ -10694,10 +10696,9 @@ function abrirSoporteModal() {
 document.addEventListener('DOMContentLoaded', () => {
   // Esperar a que se cargue la interfaz
   setTimeout(() => {
-    // Buscar el contenedor de filtros de tareas
+    // CHECKBOX PARA TAREAS
     const filtroEstadoTareas = document.getElementById('filtro-estado-tareas')
     if (filtroEstadoTareas && filtroEstadoTareas.parentElement) {
-      // Crear el checkbox container
       const checkboxContainer = document.createElement('div')
       checkboxContainer.className = 'flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200'
       checkboxContainer.innerHTML = `
@@ -10709,11 +10710,26 @@ document.addEventListener('DOMContentLoaded', () => {
           <i class="fas fa-filter mr-1"></i>Excluir cancelados y finalizados
         </label>
       `
-      
-      // Insertar después del filtro de estado
       filtroEstadoTareas.parentElement.insertAdjacentElement('afterend', checkboxContainer)
-      
-      console.log('✅ Checkbox "Excluir finalizadas" agregado correctamente')
+      console.log('✅ Checkbox "Excluir finalizadas" agregado en TAREAS')
+    }
+    
+    // CHECKBOX PARA TRABAJOS
+    const filtroEstadoTrabajos = document.getElementById('filter-estado')
+    if (filtroEstadoTrabajos && filtroEstadoTrabajos.parentElement) {
+      const checkboxContainer = document.createElement('div')
+      checkboxContainer.className = 'flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200'
+      checkboxContainer.innerHTML = `
+        <input type="checkbox" 
+               id="excluir-finalizados-trabajos" 
+               onchange="loadTrabajos()"
+               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer">
+        <label for="excluir-finalizados-trabajos" class="text-sm font-medium text-gray-700 cursor-pointer select-none">
+          <i class="fas fa-filter mr-1"></i>Excluir cancelados y completados
+        </label>
+      `
+      filtroEstadoTrabajos.parentElement.insertAdjacentElement('afterend', checkboxContainer)
+      console.log('✅ Checkbox "Excluir finalizados" agregado en TRABAJOS')
     }
   }, 1000)
 })

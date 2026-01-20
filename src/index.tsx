@@ -278,6 +278,7 @@ app.put('/api/personal/:id', async (c) => {
 app.get('/api/trabajos', async (c) => {
   const estado = c.req.query('estado')
   const fecha = c.req.query('fecha')
+  const excluir_finalizados = c.req.query('excluir_finalizados') === 'true'
   
   let query = `
     SELECT t.*, 
@@ -288,6 +289,11 @@ app.get('/api/trabajos', async (c) => {
     WHERE 1=1
   `
   const bindings: any[] = []
+  
+  // Excluir cancelados y completados si se solicita
+  if (excluir_finalizados) {
+    query += ` AND t.estado NOT IN ('cancelado', 'completado')`
+  }
   
   if (estado) {
     query += ' AND t.estado = ?'
