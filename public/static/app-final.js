@@ -11193,7 +11193,7 @@ async function viewCliente(id) {
     
     // Obtener rol del usuario logueado
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
-    const esAdmin = usuario.rol === 'admin'
+    const esAdmin = usuario.rol === 'duena'
     
     const html = `
       <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
