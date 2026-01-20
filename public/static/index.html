@@ -219,7 +219,7 @@
                 </div>
                 
                 <!-- Filtros -->
-                <div class="mb-6 flex gap-4">
+                <div class="mb-6 flex gap-4 flex-wrap">
                     <select id="filter-estado" onchange="loadTrabajos()" class="px-4 py-2 border rounded-lg">
                         <option value="">Todos los estados</option>
                         <option value="pendiente">Pendiente</option>
@@ -228,6 +228,17 @@
                         <option value="cancelado">Cancelado</option>
                     </select>
                     <input type="date" id="filter-fecha" onchange="loadTrabajos()" class="px-4 py-2 border rounded-lg">
+                    
+                    <!-- Checkbox Excluir Cancelados/Completados -->
+                    <div class="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200">
+                        <input type="checkbox" 
+                               id="excluir-finalizados-trabajos" 
+                               onchange="loadTrabajos()"
+                               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer">
+                        <label for="excluir-finalizados-trabajos" class="text-sm font-medium text-gray-700 cursor-pointer select-none whitespace-nowrap">
+                            <i class="fas fa-filter mr-1"></i>Excluir cancelados y completados
+                        </label>
+                    </div>
                 </div>
                 
                 <div id="trabajos-lista" class="overflow-x-auto"></div>
