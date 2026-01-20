@@ -794,18 +794,51 @@ async function showClienteForm(id = null) {
 // TRABAJOS
 // ============================================
 
-// Agregar checkbox de filtro en Trabajos
+// Agregar checkbox de filtro en Trabajos EN SEGUNDA FILA
 function agregarCheckboxTrabajos() {
-  console.log('🔧 Intentando agregar checkbox en Trabajos...')
-  
   // Verificar si ya existe para no duplicar
   if (document.getElementById('excluir-finalizados-trabajos')) {
-    console.log('⚠️ Checkbox ya existe, no se duplica')
+    console.log('✅ Checkbox en trabajos: ya existe (no se duplica)')
     return
   }
   
-  const filtroEstado = document.getElementById('filter-estado')
-  console.log('🔍 filtroEstado encontrado:', !!filtroEstado)
+  // Buscar el contenedor de filtros principal
+  const trabajosTab = document.getElementById('trabajos-tab')
+  if (!trabajosTab) {
+    console.log('❌ No se encontró trabajos-tab')
+    return
+  }
+  
+  // Buscar cualquier contenedor de filtros
+  let contenedorFiltros = trabajosTab.querySelector('.grid, .flex, [class*="gap"]')
+  
+  if (!contenedorFiltros) {
+    console.log('❌ No se encontró contenedor de filtros')
+    return
+  }
+  
+  // Crear segunda fila para el checkbox
+  const segundaFila = document.createElement('div')
+  segundaFila.className = 'flex items-center gap-4 mt-4'
+  segundaFila.innerHTML = `
+    <label class="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors">
+      <input 
+        type="checkbox" 
+        id="excluir-finalizados-trabajos" 
+        onchange="loadTrabajos()"
+        class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+      >
+      <span class="text-sm font-medium text-blue-700">
+        <i class="fas fa-filter mr-1"></i>
+        Excluir cancelados y completados
+      </span>
+    </label>
+  `
+  
+  // Insertar después del contenedor de filtros
+  contenedorFiltros.parentElement.insertBefore(segundaFila, contenedorFiltros.nextSibling)
+  
+  console.log('✅ Checkbox agregado en segunda fila de Trabajos')
   
   if (filtroEstado && filtroEstado.parentElement) {
     console.log('✅ parentElement encontrado:', !!filtroEstado.parentElement)
@@ -847,70 +880,8 @@ async function loadTrabajos() {
     
     console.log('✅ Trabajos recibidos:', data.length)
     
-    const container = document.getElementById('trabajos-lista')
-    container.innerHTML = `
-      <table class="min-w-full">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Número</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Inicio</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Empleada</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Entrega</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          ${data.map(t => `
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                  ${t.numero_trabajo || 'Sin número'}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                ${new Date(t.fecha_programada).toLocaleDateString('es-ES')}
-                <div class="text-xs text-gray-500">${new Date(t.fecha_programada).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">${t.cliente_nombre} ${t.cliente_apellidos}</div>
-              </td>
-              <td class="px-6 py-4 text-sm text-gray-900">${t.tipo_servicio.replace('_', ' ')}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                ${t.empleada_nombre ? `${t.empleada_nombre} ${t.empleada_apellidos}` : '<span class="text-gray-400">Sin asignar</span>'}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <select onchange="cambiarEstadoTrabajo(${t.id}, this.value)" class="px-2 py-1 text-xs font-semibold rounded-full border-0 cursor-pointer ${t.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' : t.estado === 'en_proceso' ? 'bg-blue-100 text-blue-800' : t.estado === 'completado' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-                  <option value="pendiente" ${t.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
-                  <option value="en_proceso" ${t.estado === 'en_proceso' ? 'selected' : ''}>En Proceso</option>
-                  <option value="completado" ${t.estado === 'completado' ? 'selected' : ''}>Completado</option>
-                  <option value="cancelado" ${t.estado === 'cancelado' ? 'selected' : ''}>Cancelado</option>
-                </select>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                ${t.fecha_finalizacion ? 
-                  `<div class="font-medium">${new Date(t.fecha_finalizacion).toLocaleDateString('es-ES')}</div>
-                   <div class="text-xs text-gray-500">${new Date(t.fecha_finalizacion).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</div>` 
-                  : '<span class="text-gray-400 italic">Sin fecha de entrega</span>'}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
-                <button onclick="viewTrabajo(${t.id})" class="text-blue-600 hover:text-blue-800" title="Ver detalles">
-                  <i class="fas fa-eye"></i>
-                </button>
-                <button onclick="editTrabajo(${t.id})" class="text-green-600 hover:text-green-800" title="Editar">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button onclick="deleteTrabajo(${t.id})" class="text-red-600 hover:text-red-800" title="Borrar">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    `
+    // Usar la función de renderizado centralizada
+    renderizarTrabajosTabla(data)
     
     // Agregar checkbox de filtro (después de renderizar)
     agregarCheckboxTrabajos()
@@ -1627,6 +1598,130 @@ async function showTrabajoForm(id = null) {
     }
   })
 }
+
+// Función para ordenar trabajos
+function ordenarTrabajos() {
+  const ordenSelect = document.getElementById('ordenar-trabajos')
+  if (!ordenSelect) return
+  
+  const orden = ordenSelect.value || 'fecha'
+  
+  if (!currentData.trabajos) return
+  
+  const trabajosOrdenados = [...currentData.trabajos]
+  
+  switch(orden) {
+    case 'fecha':
+      trabajosOrdenados.sort((a, b) => new Date(b.fecha_programada) - new Date(a.fecha_programada))
+      break
+    case 'cliente':
+      trabajosOrdenados.sort((a, b) => a.cliente_nombre.localeCompare(b.cliente_nombre))
+      break
+    case 'estado':
+      trabajosOrdenados.sort((a, b) => a.estado.localeCompare(b.estado))
+      break
+    case 'tipo':
+      trabajosOrdenados.sort((a, b) => a.tipo_servicio.localeCompare(b.tipo_servicio))
+      break
+  }
+  
+  currentData.trabajos = trabajosOrdenados
+  renderizarTrabajosTabla(trabajosOrdenados)
+}
+
+// Función para aplicar filtros de trabajos
+function aplicarFiltrosTrabajos() {
+  loadTrabajos()
+}
+
+// Función para limpiar filtros de trabajos
+function limpiarFiltrosTrabajos() {
+  const filtroEstado = document.getElementById('filter-estado')
+  const filtroFecha = document.getElementById('filter-fecha')
+  const checkboxExcluir = document.getElementById('excluir-finalizados-trabajos')
+  
+  if (filtroEstado) filtroEstado.value = ''
+  if (filtroFecha) filtroFecha.value = ''
+  if (checkboxExcluir) checkboxExcluir.checked = false
+  
+  loadTrabajos()
+  showToast('Filtros limpiados', 'success')
+}
+
+// Función auxiliar para renderizar trabajos en tabla
+function renderizarTrabajosTabla(trabajos) {
+  const container = document.getElementById('trabajos-lista')
+  if (!container) return
+  
+  container.innerHTML = `
+    <table class="min-w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Número</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Inicio</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Empleada</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Entrega</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        ${trabajos.map(t => `
+          <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                ${t.numero_trabajo || 'Sin número'}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              ${new Date(t.fecha_programada).toLocaleDateString('es-ES')}
+              <div class="text-xs text-gray-500">${new Date(t.fecha_programada).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-gray-900">${t.cliente_nombre} ${t.cliente_apellidos}</div>
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-900">${t.tipo_servicio.replace('_', ' ')}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              ${t.empleada_nombre ? `${t.empleada_nombre} ${t.empleada_apellidos}` : '<span class="text-gray-400">Sin asignar</span>'}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <select onchange="cambiarEstadoTrabajo(${t.id}, this.value)" class="px-2 py-1 text-xs font-semibold rounded-full border-0 cursor-pointer ${t.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' : t.estado === 'en_proceso' ? 'bg-blue-100 text-blue-800' : t.estado === 'completado' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                <option value="pendiente" ${t.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
+                <option value="en_proceso" ${t.estado === 'en_proceso' ? 'selected' : ''}>En Proceso</option>
+                <option value="completado" ${t.estado === 'completado' ? 'selected' : ''}>Completado</option>
+                <option value="cancelado" ${t.estado === 'cancelado' ? 'selected' : ''}>Cancelado</option>
+              </select>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              ${t.fecha_finalizacion ? 
+                `<div class="font-medium">${new Date(t.fecha_finalizacion).toLocaleDateString('es-ES')}</div>
+                 <div class="text-xs text-gray-500">${new Date(t.fecha_finalizacion).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</div>` 
+                : '<span class="text-gray-400 italic">Sin fecha de entrega</span>'}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+              <button onclick="viewTrabajo(${t.id})" class="text-blue-600 hover:text-blue-800" title="Ver detalles">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button onclick="editTrabajo(${t.id})" class="text-green-600 hover:text-green-800" title="Editar">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button onclick="deleteTrabajo(${t.id})" class="text-red-600 hover:text-red-800" title="Borrar">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `
+}
+
+// Exponer funciones globalmente
+window.ordenarTrabajos = ordenarTrabajos
+window.aplicarFiltrosTrabajos = aplicarFiltrosTrabajos
+window.limpiarFiltrosTrabajos = limpiarFiltrosTrabajos
 
 // ============================================
 // PERSONAL
