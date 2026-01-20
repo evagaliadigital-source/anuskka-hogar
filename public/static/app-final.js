@@ -11178,5 +11178,548 @@ function abrirSoporteModal() {
 }
 
 // ============================================
+// ARCHIVOS DE CLIENTES
+// ============================================
+
+// Ver detalles de cliente con archivos
+async function viewCliente(id) {
+  try {
+    const { data } = await axios.get(`${API}/clientes/${id}`)
+    const cliente = data.cliente
+    
+    // Obtener archivos del cliente
+    const archivosResponse = await axios.get(`${API}/clientes/${id}/archivos`)
+    const archivos = archivosResponse.data
+    
+    // Obtener rol del usuario logueado
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
+    const esAdmin = usuario.rol === 'duena'
+    
+    const html = `
+      <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+          <!-- Header -->
+          <div class="sticky top-0 bg-gradient-to-r from-gray-800 to-gray-900 text-white p-6 rounded-t-xl">
+            <div class="flex justify-between items-center">
+              <div>
+                <h3 class="text-2xl font-bold">${cliente.nombre} ${cliente.apellidos}</h3>
+                <p class="text-gray-300 text-sm mt-1">
+                  <i class="fas fa-tag mr-2"></i>${cliente.numero_cliente || 'Sin número'}
+                </p>
+              </div>
+              <button onclick="closeModal()" class="text-white hover:text-gray-300">
+                <i class="fas fa-times text-2xl"></i>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Contenido -->
+          <div class="p-6">
+            <!-- Información del cliente -->
+            <div class="grid grid-cols-2 gap-6 mb-8">
+              <div>
+                <h4 class="font-semibold text-gray-700 mb-3 flex items-center">
+                  <i class="fas fa-user text-gray-500 mr-2"></i>Información Personal
+                </h4>
+                <div class="space-y-2">
+                  <p class="text-sm"><span class="font-medium">Teléfono:</span> ${cliente.telefono}</p>
+                  ${cliente.email ? `<p class="text-sm"><span class="font-medium">Email:</span> ${cliente.email}</p>` : ''}
+                  <p class="text-sm"><span class="font-medium">Dirección:</span> ${cliente.direccion}</p>
+                  <p class="text-sm"><span class="font-medium">Ciudad:</span> ${cliente.ciudad}</p>
+                  ${cliente.codigo_postal ? `<p class="text-sm"><span class="font-medium">CP:</span> ${cliente.codigo_postal}</p>` : ''}
+                </div>
+              </div>
+              
+              <div>
+                <h4 class="font-semibold text-gray-700 mb-3 flex items-center">
+                  <i class="fas fa-sticky-note text-gray-500 mr-2"></i>Notas
+                </h4>
+                <p class="text-sm text-gray-600">${cliente.notas || 'Sin notas'}</p>
+              </div>
+            </div>
+            
+            <!-- Sección de Archivos -->
+            <div class="border-t pt-6">
+              <div class="flex justify-between items-center mb-4">
+                <h4 class="font-semibold text-gray-700 flex items-center">
+                  <i class="fas fa-paperclip text-gray-500 mr-2"></i>Archivos Adjuntos (${archivos.length})
+                </h4>
+                <button onclick="subirArchivoCliente(${id})" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                  <i class="fas fa-upload mr-2"></i>Subir Archivo
+                </button>
+              </div>
+              
+              <!-- Grid de archivos -->
+              <div id="archivos-grid" class="grid grid-cols-4 gap-4">
+                ${archivos.length === 0 ? 
+                  '<p class="col-span-4 text-center text-gray-500 py-8">No hay archivos adjuntos</p>' :
+                  archivos.map(archivo => `
+                    <div class="border rounded-lg p-3 hover:shadow-md transition-shadow">
+                      <!-- Miniatura -->
+                      <div class="h-24 flex items-center justify-center bg-gray-100 rounded mb-2">
+                        ${archivo.tipo_archivo === 'image' ? 
+                          `<img src="${API}/clientes/${id}/archivos/${archivo.id}/url" 
+                                class="max-h-full max-w-full object-contain rounded cursor-pointer"
+                                onclick="verArchivoCompleto(${id}, ${archivo.id}, '${archivo.tipo_archivo}', '${archivo.nombre_archivo}')"
+                                alt="${archivo.nombre_archivo}">` :
+                          `<i class="fas fa-file-pdf text-red-500 text-4xl cursor-pointer"
+                              onclick="verArchivoCompleto(${id}, ${archivo.id}, '${archivo.tipo_archivo}', '${archivo.nombre_archivo}')"></i>`
+                        }
+                      </div>
+                      
+                      <!-- Nombre del archivo -->
+                      <p class="text-xs font-medium text-gray-700 truncate mb-2" title="${archivo.nombre_archivo}">
+                        ${archivo.nombre_archivo}
+                      </p>
+                      
+                      <!-- Acciones -->
+                      <div class="flex gap-2">
+                        <button onclick="verArchivoCompleto(${id}, ${archivo.id}, '${archivo.tipo_archivo}', '${archivo.nombre_archivo}')" 
+                                class="flex-1 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200">
+                          <i class="fas fa-eye"></i>
+                        </button>
+                        <button onclick="descargarArchivo(${id}, ${archivo.id}, '${archivo.nombre_archivo}')" 
+                                class="flex-1 text-xs bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200">
+                          <i class="fas fa-download"></i>
+                        </button>
+                        ${esAdmin ? `
+                          <button onclick="borrarArchivo(${id}, ${archivo.id})" 
+                                  class="flex-1 text-xs bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        ` : ''}
+                      </div>
+                      
+                      <!-- Info adicional -->
+                      <p class="text-xs text-gray-500 mt-2">
+                        ${(archivo.size_bytes / 1024).toFixed(1)} KB
+                      </p>
+                      <p class="text-xs text-gray-400">
+                        ${new Date(archivo.fecha_subida).toLocaleDateString('es-ES')}
+                      </p>
+                    </div>
+                  `).join('')
+                }
+              </div>
+            </div>
+            
+            <!-- Botones de acción -->
+            <div class="flex gap-3 mt-6 pt-6 border-t">
+              <button onclick="editCliente(${id}); closeModal();" class="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+                <i class="fas fa-edit mr-2"></i>Editar Cliente
+              </button>
+              <button onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `
+    
+    document.body.insertAdjacentHTML('beforeend', html)
+  } catch (error) {
+    console.error('Error viendo cliente:', error)
+    showToast('❌ Error al cargar detalles del cliente', 'error')
+  }
+}
+
+// Subir archivo para un cliente
+async function subirArchivoCliente(clienteId) {
+  const html = `
+    <div id="modal-archivo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+      <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full">
+        <h3 class="text-xl font-bold mb-4">Subir Archivo</h3>
+        
+        <form id="upload-form">
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Seleccionar archivo (PDF, JPG, PNG, etc.)
+            </label>
+            <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" 
+                   class="w-full px-3 py-2 border rounded-lg">
+            <p class="text-xs text-gray-500 mt-1">Tamaño máximo: 10MB</p>
+          </div>
+          
+          <div class="flex gap-3">
+            <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+              <i class="fas fa-upload mr-2"></i>Subir
+            </button>
+            <button type="button" onclick="document.getElementById('modal-archivo').remove()" 
+                    class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+              Cancelar
+            </button>
+          </div>
+        </form>
+        
+        <div id="upload-progress" class="mt-4 hidden">
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all" style="width: 0%"></div>
+          </div>
+          <p class="text-sm text-gray-600 text-center mt-2">Subiendo...</p>
+        </div>
+      </div>
+    </div>
+  `
+  
+  document.body.insertAdjacentHTML('beforeend', html)
+  
+  document.getElementById('upload-form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    
+    const fileInput = document.getElementById('file-input')
+    const file = fileInput.files[0]
+    
+    if (!file) {
+      showToast('❌ Selecciona un archivo', 'error')
+      return
+    }
+    
+    // Validar tamaño
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('❌ Archivo muy grande (máximo 10MB)', 'error')
+      return
+    }
+    
+    try {
+      // Mostrar progreso
+      document.getElementById('upload-progress').classList.remove('hidden')
+      
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('subido_por', JSON.parse(localStorage.getItem('usuario') || '{}').email || 'admin')
+      
+      const response = await axios.post(`${API}/clientes/${clienteId}/archivos`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      
+      if (response.data.success) {
+        showToast('✅ Archivo subido correctamente', 'success')
+        document.getElementById('modal-archivo').remove()
+        
+        // Recargar vista del cliente
+        closeModal()
+        viewCliente(clienteId)
+      }
+    } catch (error) {
+      console.error('Error subiendo archivo:', error)
+      showToast('❌ Error al subir archivo', 'error')
+    }
+  })
+}
+
+// Ver archivo completo (preview)
+function verArchivoCompleto(clienteId, archivoId, tipoArchivo, nombreArchivo) {
+  const url = `${API}/clientes/${clienteId}/archivos/${archivoId}/url`
+  
+  const html = `
+    <div id="modal-preview" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[70]">
+      <div class="w-full h-full p-4 flex flex-col">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-white text-xl font-semibold">${nombreArchivo}</h3>
+          <div class="flex gap-3">
+            <button onclick="descargarArchivo(${clienteId}, ${archivoId}, '${nombreArchivo}')" 
+                    class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+              <i class="fas fa-download mr-2"></i>Descargar
+            </button>
+            <button onclick="document.getElementById('modal-preview').remove()" 
+                    class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+              <i class="fas fa-times mr-2"></i>Cerrar
+            </button>
+          </div>
+        </div>
+        
+        <!-- Contenido -->
+        <div class="flex-1 bg-white rounded-lg overflow-hidden">
+          ${tipoArchivo === 'image' ? 
+            `<img src="${url}" class="w-full h-full object-contain" alt="${nombreArchivo}">` :
+            `<iframe src="${url}" class="w-full h-full" frameborder="0"></iframe>`
+          }
+        </div>
+      </div>
+    </div>
+  `
+  
+  document.body.insertAdjacentHTML('beforeend', html)
+}
+
+// Descargar archivo
+function descargarArchivo(clienteId, archivoId, nombreArchivo) {
+  const url = `${API}/clientes/${clienteId}/archivos/${archivoId}/url`
+  
+  // Crear link temporal y hacer clic
+  const a = document.createElement('a')
+  a.href = url
+  a.download = nombreArchivo
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  
+  showToast('⬇️ Descargando archivo...', 'info')
+}
+
+// Borrar archivo (solo admin)
+async function borrarArchivo(clienteId, archivoId) {
+  if (!confirm('¿Estás segura de borrar este archivo? Esta acción no se puede deshacer.')) {
+    return
+  }
+  
+  try {
+    const response = await axios.delete(`${API}/clientes/${clienteId}/archivos/${archivoId}`)
+    
+    if (response.data.success) {
+      showToast('✅ Archivo borrado correctamente', 'success')
+      
+      // Recargar vista del cliente
+      closeModal()
+      viewCliente(clienteId)
+    }
+  } catch (error) {
+    console.error('Error borrando archivo:', error)
+    showToast('❌ Error al borrar archivo', 'error')
+  }
+}
+
+// Exponer funciones globalmente
+window.viewCliente = viewCliente
+window.subirArchivoCliente = subirArchivoCliente
+window.verArchivoCompleto = verArchivoCompleto
+window.descargarArchivo = descargarArchivo
+window.borrarArchivo = borrarArchivo
+
+// ============================================
+// GESTIÓN DE ARCHIVOS DE CLIENTES
+// ============================================
+
+// Subir archivo a un cliente
+async function subirArchivoCliente(clienteId) {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = 'image/*,application/pdf,.doc,.docx'
+  input.multiple = false
+  
+  input.onchange = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    
+    // Validar tamaño (10MB máximo)
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('❌ El archivo es demasiado grande (máximo 10MB)', 'error')
+      return
+    }
+    
+    try {
+      showLoading('Subiendo archivo...')
+      
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('subido_por', emailUsuario)
+      
+      const response = await axios.post(`${API}/clientes/${clienteId}/archivos`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      
+      if (response.data.success) {
+        hideLoading()
+        showToast('✅ Archivo subido correctamente', 'success')
+        // Recargar archivos
+        cargarArchivosCliente(clienteId)
+      }
+    } catch (error) {
+      hideLoading()
+      console.error('Error subiendo archivo:', error)
+      showToast('❌ Error al subir archivo: ' + (error.response?.data?.error || error.message), 'error')
+    }
+  }
+  
+  input.click()
+}
+
+// Cargar archivos de un cliente
+async function cargarArchivosCliente(clienteId) {
+  try {
+    const response = await axios.get(`${API}/clientes/${clienteId}/archivos`)
+    
+    if (response.data.success) {
+      const archivos = response.data.archivos
+      mostrarArchivosCliente(archivos, clienteId)
+    }
+  } catch (error) {
+    console.error('Error cargando archivos:', error)
+    showToast('❌ Error al cargar archivos', 'error')
+  }
+}
+
+// Mostrar archivos en la ficha del cliente
+function mostrarArchivosCliente(archivos, clienteId) {
+  const container = document.getElementById('cliente-archivos-container')
+  if (!container) return
+  
+  if (!archivos || archivos.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-8 text-gray-500">
+        <i class="fas fa-folder-open text-4xl mb-2"></i>
+        <p>No hay archivos adjuntos</p>
+      </div>
+    `
+    return
+  }
+  
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
+  const esAdmin = usuario.rol === 'admin'
+  
+  container.innerHTML = `
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      ${archivos.map(archivo => `
+        <div class="border rounded-lg p-3 hover:shadow-md transition-shadow">
+          <!-- Miniatura -->
+          <div class="aspect-square mb-2 bg-gray-100 rounded flex items-center justify-center overflow-hidden">
+            ${archivo.tipo_archivo === 'image' 
+              ? `<img src="${API}/clientes/${clienteId}/archivos/${archivo.id}/url" 
+                      alt="${archivo.nombre_archivo}" 
+                      class="w-full h-full object-cover cursor-pointer"
+                      onclick="verArchivoCliente(${clienteId}, ${archivo.id}, '${archivo.tipo_archivo}')">`
+              : archivo.tipo_archivo === 'pdf'
+                ? `<div class="text-center cursor-pointer" onclick="verArchivoCliente(${clienteId}, ${archivo.id}, '${archivo.tipo_archivo}')">
+                     <i class="fas fa-file-pdf text-red-500 text-4xl mb-1"></i>
+                   </div>`
+                : `<div class="text-center cursor-pointer" onclick="verArchivoCliente(${clienteId}, ${archivo.id}, '${archivo.tipo_archivo}')">
+                     <i class="fas fa-file text-gray-500 text-4xl mb-1"></i>
+                   </div>`
+            }
+          </div>
+          
+          <!-- Nombre del archivo (truncado) -->
+          <p class="text-xs text-gray-700 font-medium truncate mb-1" title="${archivo.nombre_archivo}">
+            ${archivo.nombre_archivo}
+          </p>
+          
+          <!-- Tamaño y fecha -->
+          <p class="text-xs text-gray-500 mb-2">
+            ${formatBytes(archivo.size_bytes)}
+          </p>
+          
+          <!-- Botones de acción -->
+          <div class="flex gap-1">
+            <button 
+              onclick="verArchivoCliente(${clienteId}, ${archivo.id}, '${archivo.tipo_archivo}')"
+              class="flex-1 bg-blue-500 text-white text-xs py-1 px-2 rounded hover:bg-blue-600 transition-colors"
+              title="Ver archivo">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button 
+              onclick="descargarArchivoCliente(${clienteId}, ${archivo.id}, '${archivo.nombre_archivo}')"
+              class="flex-1 bg-green-500 text-white text-xs py-1 px-2 rounded hover:bg-green-600 transition-colors"
+              title="Descargar">
+              <i class="fas fa-download"></i>
+            </button>
+            ${esAdmin ? `
+              <button 
+                onclick="borrarArchivoCliente(${clienteId}, ${archivo.id})"
+                class="flex-1 bg-red-500 text-white text-xs py-1 px-2 rounded hover:bg-red-600 transition-colors"
+                title="Borrar (solo admin)">
+                <i class="fas fa-trash"></i>
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `
+}
+
+// Ver archivo en modal de vista previa
+async function verArchivoCliente(clienteId, archivoId, tipoArchivo) {
+  const url = `${API}/clientes/${clienteId}/archivos/${archivoId}/url`
+  
+  // Crear modal de vista previa
+  const modal = document.createElement('div')
+  modal.className = 'fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4'
+  modal.onclick = (e) => {
+    if (e.target === modal) modal.remove()
+  }
+  
+  modal.innerHTML = `
+    <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-auto">
+      <div class="sticky top-0 bg-white border-b px-4 py-3 flex justify-between items-center">
+        <h3 class="font-bold text-lg">Vista Previa</h3>
+        <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      <div class="p-4">
+        ${tipoArchivo === 'image' 
+          ? `<img src="${url}" class="w-full h-auto" alt="Vista previa">`
+          : tipoArchivo === 'pdf'
+            ? `<iframe src="${url}" class="w-full h-[70vh]" frameborder="0"></iframe>`
+            : `<div class="text-center py-12">
+                 <i class="fas fa-file text-gray-400 text-6xl mb-4"></i>
+                 <p class="text-gray-600 mb-4">No se puede mostrar vista previa de este archivo</p>
+                 <a href="${url}" download class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                   <i class="fas fa-download mr-2"></i>Descargar
+                 </a>
+               </div>`
+        }
+      </div>
+    </div>
+  `
+  
+  document.body.appendChild(modal)
+}
+
+// Descargar archivo
+function descargarArchivoCliente(clienteId, archivoId, nombreArchivo) {
+  const url = `${API}/clientes/${clienteId}/archivos/${archivoId}/url`
+  const a = document.createElement('a')
+  a.href = url
+  a.download = nombreArchivo
+  a.click()
+}
+
+// Borrar archivo (solo admin)
+async function borrarArchivoCliente(clienteId, archivoId) {
+  if (!confirm('¿Estás seguro de que quieres borrar este archivo?')) {
+    return
+  }
+  
+  try {
+    showLoading('Borrando archivo...')
+    
+    const response = await axios.delete(`${API}/clientes/${clienteId}/archivos/${archivoId}`)
+    
+    if (response.data.success) {
+      hideLoading()
+      showToast('✅ Archivo borrado correctamente', 'success')
+      // Recargar archivos
+      cargarArchivosCliente(clienteId)
+    }
+  } catch (error) {
+    hideLoading()
+    console.error('Error borrando archivo:', error)
+    showToast('❌ Error al borrar archivo', 'error')
+  }
+}
+
+// Formatear tamaño de archivo
+function formatBytes(bytes) {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
+}
+
+// Exponer funciones globalmente
+window.subirArchivoCliente = subirArchivoCliente
+window.cargarArchivosCliente = cargarArchivosCliente
+window.verArchivoCliente = verArchivoCliente
+window.descargarArchivoCliente = descargarArchivoCliente
+window.borrarArchivoCliente = borrarArchivoCliente
+
+// ============================================
+
 
 

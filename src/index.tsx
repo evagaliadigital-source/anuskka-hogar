@@ -187,6 +187,172 @@ app.put('/api/clientes/:id', async (c) => {
 })
 
 // ============================================
+// API ENDPOINTS - ARCHIVOS DE CLIENTES
+// ============================================
+
+// Subir archivo para un cliente (PDF, imagen, etc.)
+app.post('/api/clientes/:id/archivos', async (c) => {
+  try {
+    const clienteId = c.req.param('id')
+    const formData = await c.req.formData()
+    const file = formData.get('file') as File
+    const subirPor = formData.get('subido_por') as string
+    
+    if (!file) {
+      return c.json({ success: false, error: 'No se proporcionó archivo' }, 400)
+    }
+    
+    // Validar tipo de archivo
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+    if (!allowedTypes.includes(file.type)) {
+      return c.json({ success: false, error: 'Tipo de archivo no permitido' }, 400)
+    }
+    
+    // Validar tamaño (máximo 10MB)
+    const maxSize = 10 * 1024 * 1024 // 10MB
+    if (file.size > maxSize) {
+      return c.json({ success: false, error: 'Archivo demasiado grande (máximo 10MB)' }, 400)
+    }
+    
+    // Generar nombre único para R2
+    const timestamp = Date.now()
+    const randomStr = Math.random().toString(36).substring(7)
+    const extension = file.name.split('.').pop()
+    const r2Key = `clientes/${clienteId}/${timestamp}-${randomStr}.${extension}`
+    
+    // Subir a R2
+    const arrayBuffer = await file.arrayBuffer()
+    await c.env.IMAGES.put(r2Key, arrayBuffer, {
+      httpMetadata: {
+        contentType: file.type
+      }
+    })
+    
+    // Determinar tipo de archivo
+    let tipoArchivo = 'doc'
+    if (file.type.startsWith('image/')) {
+      tipoArchivo = 'image'
+    } else if (file.type === 'application/pdf') {
+      tipoArchivo = 'pdf'
+    }
+    
+    // Guardar en base de datos
+    const result = await c.env.DB.prepare(`
+      INSERT INTO cliente_archivos 
+      (cliente_id, nombre_archivo, tipo_archivo, mime_type, url_r2, size_bytes, subido_por)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      clienteId,
+      file.name,
+      tipoArchivo,
+      file.type,
+      r2Key,
+      file.size,
+      subirPor || 'admin'
+    ).run()
+    
+    return c.json({ 
+      success: true, 
+      archivo: {
+        id: result.meta.last_row_id,
+        nombre_archivo: file.name,
+        tipo_archivo: tipoArchivo,
+        url_r2: r2Key,
+        size_bytes: file.size
+      }
+    })
+    
+  } catch (error) {
+    console.error('❌ Error subiendo archivo:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// Listar archivos de un cliente
+app.get('/api/clientes/:id/archivos', async (c) => {
+  try {
+    const clienteId = c.req.param('id')
+    
+    const { results } = await c.env.DB.prepare(`
+      SELECT * FROM cliente_archivos 
+      WHERE cliente_id = ? 
+      ORDER BY fecha_subida DESC
+    `).bind(clienteId).all()
+    
+    return c.json({ success: true, archivos: results })
+    
+  } catch (error) {
+    console.error('❌ Error obteniendo archivos:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// Obtener URL pública de un archivo (para preview/descarga)
+app.get('/api/clientes/:id/archivos/:archivoId/url', async (c) => {
+  try {
+    const archivoId = c.req.param('archivoId')
+    
+    const archivo = await c.env.DB.prepare(`
+      SELECT * FROM cliente_archivos WHERE id = ?
+    `).bind(archivoId).first()
+    
+    if (!archivo) {
+      return c.json({ success: false, error: 'Archivo no encontrado' }, 404)
+    }
+    
+    // Obtener objeto de R2
+    const object = await c.env.IMAGES.get(archivo.url_r2)
+    
+    if (!object) {
+      return c.json({ success: false, error: 'Archivo no encontrado en storage' }, 404)
+    }
+    
+    // Devolver el archivo directamente
+    return new Response(object.body, {
+      headers: {
+        'Content-Type': archivo.mime_type || 'application/octet-stream',
+        'Content-Disposition': `inline; filename="${archivo.nombre_archivo}"`,
+        'Cache-Control': 'public, max-age=3600'
+      }
+    })
+    
+  } catch (error) {
+    console.error('❌ Error obteniendo URL archivo:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// Borrar archivo (solo admin)
+app.delete('/api/clientes/:id/archivos/:archivoId', async (c) => {
+  try {
+    const archivoId = c.req.param('archivoId')
+    
+    // Obtener info del archivo
+    const archivo = await c.env.DB.prepare(`
+      SELECT * FROM cliente_archivos WHERE id = ?
+    `).bind(archivoId).first()
+    
+    if (!archivo) {
+      return c.json({ success: false, error: 'Archivo no encontrado' }, 404)
+    }
+    
+    // Borrar de R2
+    await c.env.IMAGES.delete(archivo.url_r2)
+    
+    // Borrar de base de datos
+    await c.env.DB.prepare(`
+      DELETE FROM cliente_archivos WHERE id = ?
+    `).bind(archivoId).run()
+    
+    return c.json({ success: true, message: 'Archivo eliminado correctamente' })
+    
+  } catch (error) {
+    console.error('❌ Error borrando archivo:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
+// ============================================
 // API ENDPOINTS - PERSONAL
 // ============================================
 
