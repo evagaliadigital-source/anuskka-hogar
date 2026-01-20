@@ -9868,13 +9868,12 @@ function aplicarFiltros() {
     loadTareas()
   } else if (vistaActualTareas === 'kanban') {
     loadTareasKanban()
+  } else if (vistaActualTareas === 'calendario') {
+    cargarCalendarioTareas()
   } else if (vistaActualTareas === 'miniatura') {
     loadTareasMiniatura()
   } else {
     loadTareasMiniatura()
-  }
-} else if (vistaActualTareas === 'calendario') {
-    cargarCalendarioTareas()
   }
 }
 
