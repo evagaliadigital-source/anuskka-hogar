@@ -10760,3 +10760,72 @@ function abrirSoporteModal() {
 
 // ============================================
 
+
+// ============================================
+// SCRIPT UNIVERSAL PARA CHECKBOX EN TRABAJOS
+// ============================================
+// Este script se ejecuta cada vez que se carga la pestaña de trabajos
+// y busca CUALQUIER contenedor de filtros para agregar el checkbox
+
+window.addEventListener('load', () => {
+  // Observer para detectar cuando aparece trabajos-tab
+  const observer = new MutationObserver(() => {
+    const trabajosTab = document.getElementById('trabajos-tab')
+    if (trabajosTab && trabajosTab.classList.contains('active')) {
+      agregarCheckboxUniversal()
+    }
+  })
+  
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['class']
+  })
+  
+  // También intentar al cargar
+  setTimeout(agregarCheckboxUniversal, 2000)
+})
+
+function agregarCheckboxUniversal() {
+  // Si ya existe, no duplicar
+  if (document.getElementById('excluir-finalizados-trabajos')) {
+    console.log('⚠️ Checkbox ya existe')
+    return
+  }
+  
+  console.log('🔧 Buscando contenedor de filtros...')
+  
+  // Buscar contenedores posibles (en orden de prioridad)
+  const posiblesContenedores = [
+    document.querySelector('#trabajos-tab .flex.gap-4'),
+    document.querySelector('#trabajos-tab .mb-6.flex'),
+    document.querySelector('#trabajos-tab [class*="flex"][class*="gap"]'),
+    document.getElementById('filter-estado')?.parentElement,
+    document.querySelector('#trabajos-tab select')?.parentElement
+  ]
+  
+  for (const contenedor of posiblesContenedores) {
+    if (contenedor) {
+      console.log('✅ Contenedor encontrado:', contenedor.className)
+      
+      const checkboxHTML = document.createElement('div')
+      checkboxHTML.className = 'flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200'
+      checkboxHTML.innerHTML = `
+        <input type="checkbox" 
+               id="excluir-finalizados-trabajos" 
+               onchange="loadTrabajos()"
+               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer">
+        <label for="excluir-finalizados-trabajos" class="text-sm font-medium text-gray-700 cursor-pointer select-none whitespace-nowrap">
+          <i class="fas fa-filter mr-1"></i>Excluir cancelados y completados
+        </label>
+      `
+      
+      contenedor.appendChild(checkboxHTML)
+      console.log('✅ Checkbox agregado correctamente')
+      return
+    }
+  }
+  
+  console.log('❌ No se encontró contenedor de filtros')
+}
