@@ -10716,7 +10716,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // CHECKBOX PARA TRABAJOS
     const filtroEstadoTrabajos = document.getElementById('filter-estado')
-    if (filtroEstadoTrabajos && filtroEstadoTrabajos.parentElement) {
+    if (filtroEstadoTrabajos) {
       const checkboxContainer = document.createElement('div')
       checkboxContainer.className = 'flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200'
       checkboxContainer.innerHTML = `
@@ -10728,7 +10728,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <i class="fas fa-filter mr-1"></i>Excluir cancelados y completados
         </label>
       `
-      filtroEstadoTrabajos.parentElement.insertAdjacentElement('afterend', checkboxContainer)
+      // Insertarlo dentro del mismo contenedor flex
+      filtroEstadoTrabajos.parentElement.appendChild(checkboxContainer)
       console.log('✅ Checkbox "Excluir finalizados" agregado en TRABAJOS')
     }
   }, 1000)
