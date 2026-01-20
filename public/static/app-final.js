@@ -276,7 +276,8 @@ function showTab(tabName) {
       loadTrabajos()
       break
     case 'tareas':
-      loadTareas()
+      // Cargar vista miniatura por defecto
+      cambiarVistaTareas('miniatura')
       actualizarContadorTareas()
       actualizarContadoresTareasHeader()
       break
@@ -7082,14 +7083,17 @@ async function confirmarEliminarTarea(tareaId) {
     showSuccess('✅ Tarea eliminada correctamente')
     
     // Recargar vista actual
-    if (typeof vistaActualTareas === 'undefined' || vistaActualTareas === 'lista') {
+    if (vistaActualTareas === 'lista') {
       loadTareas()
     } else if (vistaActualTareas === 'kanban') {
       loadTareasKanban()
     } else if (vistaActualTareas === 'calendario') {
       cargarCalendarioTareas()
+    } else if (vistaActualTareas === 'miniatura') {
+      loadTareasMiniatura()
     } else {
-      loadTareas()
+      // Por defecto miniatura
+      loadTareasMiniatura()
     }
     
     actualizarContadorTareas()
@@ -7291,15 +7295,17 @@ async function showNuevaTarea() {
         showNotification('Tarea creada correctamente', 'success')
         
         // Recargar vista actual (forzar recarga siempre)
-        if (typeof vistaActualTareas === 'undefined' || vistaActualTareas === 'lista') {
+        if (vistaActualTareas === 'lista') {
           loadTareas()
         } else if (vistaActualTareas === 'kanban') {
           loadTareasKanban()
         } else if (vistaActualTareas === 'calendario') {
           cargarCalendarioTareas()
+        } else if (vistaActualTareas === 'miniatura') {
+          loadTareasMiniatura()
         } else {
-          // Fallback: recargar lista por defecto
-          loadTareas()
+          // Fallback: recargar miniatura por defecto
+          loadTareasMiniatura()
         }
         
         // Actualizar contadores
@@ -7507,14 +7513,16 @@ async function editarTarea(tareaId) {
           showNotification('Tarea actualizada correctamente', 'success')
           
           // Recargar vista actual
-          if (typeof vistaActualTareas === 'undefined' || vistaActualTareas === 'lista') {
+          if (vistaActualTareas === 'lista') {
             loadTareas()
           } else if (vistaActualTareas === 'kanban') {
             loadTareasKanban()
           } else if (vistaActualTareas === 'calendario') {
             cargarCalendarioTareas()
+          } else if (vistaActualTareas === 'miniatura') {
+            loadTareasMiniatura()
           } else {
-            loadTareas()
+            loadTareasMiniatura()
           }
           
           // Actualizar contadores
@@ -9850,11 +9858,16 @@ function buscarTareas() {
 
 // Aplicar todos los filtros
 function aplicarFiltros() {
-  if (typeof vistaActualTareas === 'undefined' || vistaActualTareas === 'lista') {
+  if (vistaActualTareas === 'lista') {
     loadTareas()
   } else if (vistaActualTareas === 'kanban') {
     loadTareasKanban()
-  } else if (vistaActualTareas === 'calendario') {
+  } else if (vistaActualTareas === 'miniatura') {
+    loadTareasMiniatura()
+  } else {
+    loadTareasMiniatura()
+  }
+} else if (vistaActualTareas === 'calendario') {
     cargarCalendarioTareas()
   }
 }
