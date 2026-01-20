@@ -814,40 +814,66 @@ app.delete('/api/admin/reset-all', async (c) => {
     
     console.log('🗑️ RESET: Iniciando limpieza completa...')
     
+    // Deshabilitar foreign keys temporalmente
+    await db.prepare('PRAGMA foreign_keys = OFF').run()
+    console.log('🔓 Foreign keys deshabilitadas')
+    
+    // Borrar TODAS las tablas sin preocuparse por el orden
+    
     // 1. Borrar todas las tareas pendientes
     await db.prepare('DELETE FROM tareas_pendientes').run()
     console.log('✅ Tareas eliminadas')
     
-    // 2. Borrar todos los trabajos
-    await db.prepare('DELETE FROM trabajos').run()
-    console.log('✅ Trabajos eliminados')
-    
-    // 3. Borrar todos los clientes
-    await db.prepare('DELETE FROM clientes').run()
-    console.log('✅ Clientes eliminados')
-    
-    // 4. Borrar todos los presupuestos
+    // 2. Borrar todos los presupuestos
     await db.prepare('DELETE FROM presupuestos').run()
     console.log('✅ Presupuestos eliminados')
     
-    // 5. Resetear el contador de numeraciones (SQLite no tiene ALTER SEQUENCE)
-    // Los números se generan con MAX(id)+1, así que al borrar todo, empezarán en 1
+    // 3. Borrar proyectos de diseño (si existen)
+    try {
+      await db.prepare('DELETE FROM proyectos_diseno').run()
+      console.log('✅ Proyectos de diseño eliminados')
+    } catch (e) {
+      console.log('ℹ️ Proyectos de diseño: tabla no existe o ya vacía')
+    }
+    
+    // 4. Borrar todos los trabajos
+    await db.prepare('DELETE FROM trabajos').run()
+    console.log('✅ Trabajos eliminados')
+    
+    // 5. Borrar todos los clientes
+    await db.prepare('DELETE FROM clientes').run()
+    console.log('✅ Clientes eliminados')
+    
+    // Rehabilitar foreign keys
+    await db.prepare('PRAGMA foreign_keys = ON').run()
+    console.log('🔒 Foreign keys rehabilitadas')
     
     console.log('🎉 RESET COMPLETO - Base de datos limpia')
     
     return c.json({ 
       success: true, 
-      message: 'Todos los datos han sido eliminados. Las numeraciones se resetearán automáticamente.',
+      message: 'Todos los datos han sido eliminados correctamente. Las numeraciones empezarán desde C-0001 y T-0001.',
       deleted: {
-        clientes: '✅ Todos',
-        trabajos: '✅ Todos',
-        tareas: '✅ Todas',
-        presupuestos: '✅ Todos'
+        clientes: '✅ Todos eliminados',
+        trabajos: '✅ Todos eliminados',
+        tareas: '✅ Todas eliminadas',
+        presupuestos: '✅ Todos eliminados',
+        proyectos_diseno: '✅ Todos eliminados'
+      },
+      next_numbers: {
+        cliente: 'C-0001',
+        trabajo: 'T-0001'
       }
     })
     
   } catch (error) {
     console.error('❌ Error en reset:', error)
+    
+    // Asegurar que foreign keys se rehabiliten incluso si hay error
+    try {
+      await c.env.DB.prepare('PRAGMA foreign_keys = ON').run()
+    } catch (e) {}
+    
     return c.json({ 
       success: false, 
       message: 'Error al limpiar datos',
