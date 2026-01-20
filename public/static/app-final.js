@@ -757,7 +757,9 @@ async function showClienteForm(id = null) {
 // TRABAJOS
 // ============================================
 
+// FUNCIÓN DESHABILITADA - Los controles ya existen en el HTML estático
 // Agregar segunda fila completa con checkbox y controles en Trabajos
+/*
 function agregarCheckboxTrabajos() {
   // Verificar si ya existe para no duplicar
   if (document.getElementById('segunda-fila-trabajos')) {
@@ -843,6 +845,7 @@ function agregarCheckboxTrabajos() {
   
   console.log('✅ Segunda fila completa agregada en Trabajos')
 }
+*/
 
 async function loadTrabajos() {
   try {
@@ -867,8 +870,8 @@ async function loadTrabajos() {
     // Usar la función de renderizado centralizada
     renderizarTrabajosTabla(data)
     
-    // Agregar checkbox de filtro (después de renderizar)
-    agregarCheckboxTrabajos()
+    // NO AGREGAR CHECKBOX - Ya existe en el HTML
+    // agregarCheckboxTrabajos() ← COMENTADO
   } catch (error) {
     console.error('Error cargando trabajos:', error)
     showError('Error al cargar trabajos')
