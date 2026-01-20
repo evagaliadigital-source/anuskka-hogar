@@ -312,6 +312,48 @@ function showTab(tabName) {
 // El sistema de permisos se maneja en tienePermiso() y ocultarPestanasSegunRol()
 
 // ============================================
+// ADMINISTRACIÓN - LIMPIAR TODOS LOS DATOS
+// ============================================
+
+async function limpiarTodosLosDatos() {
+  const confirmacion1 = confirm('⚠️ ATENCIÓN: Esto borrará TODOS los clientes, trabajos, tareas y presupuestos.\n\n¿Estás SEGURA de continuar?')
+  
+  if (!confirmacion1) {
+    return
+  }
+  
+  const confirmacion2 = confirm('🚨 ÚLTIMA CONFIRMACIÓN:\n\nSe borrarán:\n- Todos los clientes\n- Todos los trabajos\n- Todas las tareas\n- Todos los presupuestos\n\nLas numeraciones empezarán desde C-0001 y T-0001.\n\n¿CONTINUAR?')
+  
+  if (!confirmacion2) {
+    return
+  }
+  
+  try {
+    showToast('🗑️ Eliminando todos los datos...', 'info')
+    
+    const response = await axios.delete(`${API}/admin/reset-all`)
+    
+    if (response.data.success) {
+      showToast('✅ Todos los datos han sido eliminados correctamente', 'success')
+      
+      // Recargar la página después de 2 segundos
+      setTimeout(() => {
+        location.reload()
+      }, 2000)
+    } else {
+      showToast('❌ Error al eliminar datos', 'error')
+    }
+    
+  } catch (error) {
+    console.error('Error limpiando datos:', error)
+    showToast('❌ Error al eliminar datos', 'error')
+  }
+}
+
+// Exponer función globalmente
+window.limpiarTodosLosDatos = limpiarTodosLosDatos
+
+// ============================================
 // PWA - BANNER DE INSTALACIÓN GRANDE Y VISIBLE
 // ============================================
 

@@ -803,6 +803,59 @@ app.put('/api/stock/:id', async (c) => {
 // API ENDPOINTS - DASHBOARD / MÉTRICAS
 // ============================================
 
+// ============================================
+// ADMINISTRACIÓN - LIMPIAR DATOS
+// ============================================
+
+// Endpoint para BORRAR TODOS los clientes, trabajos y resetear numeraciones
+app.delete('/api/admin/reset-all', async (c) => {
+  try {
+    const db = c.env.DB
+    
+    console.log('🗑️ RESET: Iniciando limpieza completa...')
+    
+    // 1. Borrar todas las tareas pendientes
+    await db.prepare('DELETE FROM tareas_pendientes').run()
+    console.log('✅ Tareas eliminadas')
+    
+    // 2. Borrar todos los trabajos
+    await db.prepare('DELETE FROM trabajos').run()
+    console.log('✅ Trabajos eliminados')
+    
+    // 3. Borrar todos los clientes
+    await db.prepare('DELETE FROM clientes').run()
+    console.log('✅ Clientes eliminados')
+    
+    // 4. Borrar todos los presupuestos
+    await db.prepare('DELETE FROM presupuestos').run()
+    console.log('✅ Presupuestos eliminados')
+    
+    // 5. Resetear el contador de numeraciones (SQLite no tiene ALTER SEQUENCE)
+    // Los números se generan con MAX(id)+1, así que al borrar todo, empezarán en 1
+    
+    console.log('🎉 RESET COMPLETO - Base de datos limpia')
+    
+    return c.json({ 
+      success: true, 
+      message: 'Todos los datos han sido eliminados. Las numeraciones se resetearán automáticamente.',
+      deleted: {
+        clientes: '✅ Todos',
+        trabajos: '✅ Todos',
+        tareas: '✅ Todas',
+        presupuestos: '✅ Todos'
+      }
+    })
+    
+  } catch (error) {
+    console.error('❌ Error en reset:', error)
+    return c.json({ 
+      success: false, 
+      message: 'Error al limpiar datos',
+      error: error.message 
+    }, 500)
+  }
+})
+
 app.get('/api/dashboard', async (c) => {
   // Trabajos activos (pendientes + en proceso)
   const trabajosActivos = await c.env.DB.prepare(`
