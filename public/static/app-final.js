@@ -694,17 +694,19 @@ function renderizarBuscadorClientes() {
           >
         </div>
         
-        <!-- Filtro por ciudad -->
+        <!-- Filtro por trabajos activos -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">
-            <i class="fas fa-map-marker-alt mr-2"></i>Filtrar por ciudad
+            <i class="fas fa-tasks mr-2"></i>Filtrar por trabajos
           </label>
           <select 
-            id="filtro-ciudad-cliente" 
+            id="filtro-trabajos-cliente" 
             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             onchange="filtrarClientes()"
           >
-            <option value="">Todas las ciudades</option>
+            <option value="">Todos los clientes</option>
+            <option value="activos">Con trabajos activos</option>
+            <option value="sin_trabajos">Sin trabajos</option>
           </select>
         </div>
       </div>
@@ -731,31 +733,12 @@ function renderizarBuscadorClientes() {
   `
   
   container.innerHTML = buscadorHTML
-  
-  // Poblar select de ciudades
-  poblarFiltroCiudades()
-}
-
-// Poblar filtro de ciudades
-function poblarFiltroCiudades() {
-  const select = document.getElementById('filtro-ciudad-cliente')
-  if (!select || !currentData.clientes) return
-  
-  const ciudades = [...new Set(currentData.clientes.map(c => c.ciudad).filter(c => c))]
-  ciudades.sort()
-  
-  ciudades.forEach(ciudad => {
-    const option = document.createElement('option')
-    option.value = ciudad
-    option.textContent = ciudad
-    select.appendChild(option)
-  })
 }
 
 // Filtrar clientes
-function filtrarClientes() {
+async function filtrarClientes() {
   const buscador = document.getElementById('buscar-cliente')?.value.toLowerCase() || ''
-  const ciudad = document.getElementById('filtro-ciudad-cliente')?.value || ''
+  const filtroTrabajos = document.getElementById('filtro-trabajos-cliente')?.value || ''
   
   if (!currentData.clientes) return
   
@@ -778,9 +761,27 @@ function filtrarClientes() {
     })
   }
   
-  // Filtrar por ciudad
-  if (ciudad) {
-    clientesFiltrados = clientesFiltrados.filter(c => c.ciudad === ciudad)
+  // Filtrar por trabajos activos
+  if (filtroTrabajos) {
+    try {
+      const { data: trabajos } = await axios.get(`${API}/trabajos`)
+      
+      if (filtroTrabajos === 'activos') {
+        // Clientes con trabajos activos (en_proceso o pendiente)
+        const clientesConTrabajosActivos = new Set(
+          trabajos
+            .filter(t => t.estado === 'en_proceso' || t.estado === 'pendiente')
+            .map(t => t.cliente_id)
+        )
+        clientesFiltrados = clientesFiltrados.filter(c => clientesConTrabajosActivos.has(c.id))
+      } else if (filtroTrabajos === 'sin_trabajos') {
+        // Clientes sin trabajos
+        const clientesConTrabajos = new Set(trabajos.map(t => t.cliente_id))
+        clientesFiltrados = clientesFiltrados.filter(c => !clientesConTrabajos.has(c.id))
+      }
+    } catch (error) {
+      console.error('Error al cargar trabajos para filtrar:', error)
+    }
   }
   
   renderizarTablaClientes(clientesFiltrados)
@@ -789,10 +790,10 @@ function filtrarClientes() {
 // Limpiar filtros
 function limpiarFiltrosClientes() {
   const buscador = document.getElementById('buscar-cliente')
-  const ciudad = document.getElementById('filtro-ciudad-cliente')
+  const filtroTrabajos = document.getElementById('filtro-trabajos-cliente')
   
   if (buscador) buscador.value = ''
-  if (ciudad) ciudad.value = ''
+  if (filtroTrabajos) filtroTrabajos.value = ''
   
   renderizarTablaClientes(currentData.clientes)
 }
