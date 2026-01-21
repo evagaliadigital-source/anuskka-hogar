@@ -12,5 +12,11 @@
       "database_name": "anushka-hogar-production",
       "database_id": "bcd7e4b4-baff-4b97-9271-75a5348e0d53"
     }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "IMAGES",
+      "bucket_name": "anushka-hogar-archivos"
+    }
   ]
 }

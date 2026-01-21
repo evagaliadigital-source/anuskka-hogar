@@ -11489,6 +11489,11 @@ async function viewCliente(id) {
 
 // Subir archivo para un cliente
 async function subirArchivoCliente(clienteId) {
+  // TEMPORAL: Funcionalidad deshabilitada hasta configurar R2 en Cloudflare
+  showToast('⚠️ Subida de archivos temporalmente deshabilitada. Contacta al administrador para configurar almacenamiento R2.', 'warning')
+  return
+  
+  /* CÓDIGO COMENTADO HASTA CONFIGURAR R2 EN CLOUDFLARE DASHBOARD
   const html = `
     <div id="modal-archivo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
       <div class="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -11716,6 +11721,8 @@ async function subirArchivoCliente(clienteId) {
       showToast('❌ Error al subir archivo', 'error')
     }
   })
+}
+*/
 }
 
 // Ver archivo completo (preview)
