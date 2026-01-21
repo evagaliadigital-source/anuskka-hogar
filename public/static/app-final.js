@@ -677,6 +677,10 @@ function renderizarBuscadorClientes() {
   // Verificar si ya existe el buscador
   if (document.getElementById('clientes-buscador')) return
   
+  // Verificar rol del usuario (solo admin/duena puede exportar CSV)
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
+  const esAdmin = usuario.rol === 'duena'
+  
   const buscadorHTML = `
     <div id="clientes-buscador" class="mb-6 bg-gray-50 p-4 rounded-lg">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -719,12 +723,14 @@ function renderizarBuscadorClientes() {
         >
           <i class="fas fa-eraser mr-2"></i>Limpiar filtros
         </button>
+        ${esAdmin ? `
         <button 
           onclick="exportarClientesCSV()" 
           class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
         >
           <i class="fas fa-file-export mr-2"></i>Exportar a CSV
         </button>
+        ` : ''}
       </div>
     </div>
     
@@ -11475,69 +11481,71 @@ async function viewCliente(id) {
 // Subir archivo para un cliente
 async function subirArchivoCliente(clienteId) {
   const html = `
-    <div id="modal-archivo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
-      <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full">
-        <h3 class="text-xl font-bold mb-4">
-          <i class="fas fa-paperclip mr-2"></i>Subir Archivo o Foto
-        </h3>
-        
-        <form id="upload-form">
-          <!-- Opciones de subida -->
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-3">
-              Selecciona una opción:
-            </label>
-            
-            <!-- Botón para tomar foto -->
-            <button type="button" id="btn-camera" 
-                    class="w-full mb-3 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-              <i class="fas fa-camera text-xl"></i>
-              <span>Tomar Foto con Cámara</span>
-            </button>
-            
-            <!-- Botón para seleccionar archivo -->
-            <label for="file-input" 
-                   class="w-full bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 cursor-pointer">
-              <i class="fas fa-folder-open text-xl"></i>
-              <span>Seleccionar Archivo</span>
-            </label>
-            <input type="file" id="file-input" accept="image/*,.pdf,.doc,.docx" 
-                   capture="environment"
-                   class="hidden">
-            
-            <p class="text-xs text-gray-500 mt-2 text-center">
-              📷 Foto desde cámara | 📁 PDF, JPG, PNG, DOC<br>
-              Tamaño máximo: 10MB
-            </p>
-          </div>
+    <div id="modal-archivo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+      <div class="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+          <h3 class="text-xl font-bold mb-4">
+            <i class="fas fa-paperclip mr-2"></i>Subir Archivo o Foto
+          </h3>
           
-          <!-- Preview -->
-          <div id="preview-container" class="mb-4 hidden">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Vista previa:
-            </label>
-            <div class="border rounded-lg p-3 bg-gray-50">
-              <img id="preview-image" class="max-w-full max-h-48 mx-auto rounded" />
-              <p id="preview-filename" class="text-sm text-gray-600 text-center mt-2"></p>
+          <form id="upload-form">
+            <!-- Opciones de subida -->
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-3">
+                Selecciona una opción:
+              </label>
+              
+              <!-- Botón para tomar foto -->
+              <button type="button" id="btn-camera" 
+                      class="w-full mb-3 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+                <i class="fas fa-camera text-xl"></i>
+                <span>Tomar Foto con Cámara</span>
+              </button>
+              
+              <!-- Botón para seleccionar archivo -->
+              <label for="file-input" 
+                     class="w-full bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 cursor-pointer block">
+                <i class="fas fa-folder-open text-xl"></i>
+                <span>Seleccionar Archivo</span>
+              </label>
+              <input type="file" id="file-input" accept="image/*,.pdf,.doc,.docx" 
+                     capture="environment"
+                     class="hidden">
+              
+              <p class="text-xs text-gray-500 mt-2 text-center">
+                📷 Foto desde cámara | 📁 PDF, JPG, PNG, DOC<br>
+                Tamaño máximo: 10MB
+              </p>
             </div>
-          </div>
+            
+            <!-- Preview -->
+            <div id="preview-container" class="mb-4 hidden">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Vista previa:
+              </label>
+              <div class="border rounded-lg p-3 bg-gray-50">
+                <img id="preview-image" class="max-w-full max-h-40 mx-auto rounded" />
+                <p id="preview-filename" class="text-sm text-gray-600 text-center mt-2"></p>
+              </div>
+            </div>
+            
+            <div class="flex gap-3">
+              <button type="submit" id="btn-upload" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
+                <i class="fas fa-upload mr-2"></i>Subir
+              </button>
+              <button type="button" onclick="document.getElementById('modal-archivo').remove()" 
+                      class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+                Cancelar
+              </button>
+            </div>
+          </form>
           
-          <div class="flex gap-3">
-            <button type="submit" id="btn-upload" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
-              <i class="fas fa-upload mr-2"></i>Subir
-            </button>
-            <button type="button" onclick="document.getElementById('modal-archivo').remove()" 
-                    class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-              Cancelar
-            </button>
+          <div id="upload-progress" class="mt-4 hidden">
+            <div class="w-full bg-gray-200 rounded-full h-2">
+              <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all" style="width: 0%"></div>
+            </div>
+            <p class="text-sm text-gray-600 text-center mt-2">Subiendo...</p>
           </div>
-        </form>
-        
-        <div id="upload-progress" class="mt-4 hidden">
-          <div class="w-full bg-gray-200 rounded-full h-2">
-            <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all" style="width: 0%"></div>
-          </div>
-          <p class="text-sm text-gray-600 text-center mt-2">Subiendo...</p>
         </div>
       </div>
     </div>
