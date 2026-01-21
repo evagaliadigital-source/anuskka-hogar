@@ -8930,8 +8930,6 @@ async function cargarAlertas() {
     }
   }
   */
-    }
-  }
 }
 
 function renderAlertasGrupo(tipo, tareas, color) {
