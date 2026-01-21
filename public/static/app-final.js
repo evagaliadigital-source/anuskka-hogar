@@ -8875,6 +8875,11 @@ function toggleAvisos() {
 }
 
 async function cargarAlertas() {
+  // TODO: Implementar endpoint /api/tareas/alertas en el backend
+  console.log('⚠️ Alertas temporalmente deshabilitadas - endpoint no implementado')
+  return
+  
+  /* CÓDIGO ORIGINAL COMENTADO HASTA QUE SE IMPLEMENTE EL ENDPOINT
   try {
     console.log('🔔 Cargando alertas de tareas...')
     console.log('📍 URL:', `${API}/tareas/alertas`)
@@ -8922,6 +8927,9 @@ async function cargarAlertas() {
           </button>
         </div>
       `
+    }
+  }
+  */
     }
   }
 }
@@ -8978,7 +8986,9 @@ function getTipoIcon(tipo) {
   return iconos[tipo] || '📋 Tarea'
 }
 
-// Cargar contador de alertas cada 30 segundos
+// Cargar contador de alertas cada 30 segundos - TEMPORALMENTE DESHABILITADO
+// TODO: Habilitar cuando se implemente endpoint /api/tareas/alertas
+/* CÓDIGO COMENTADO
 setInterval(async () => {
   try {
     const { data } = await axios.get(`${API}/tareas/alertas`)
@@ -8994,6 +9004,7 @@ setInterval(async () => {
     console.error('Error actualizando contador de alertas:', error)
   }
 }, 30000)
+*/
 
 // Cargar alertas al inicio
 setTimeout(cargarAlertas, 1000)
