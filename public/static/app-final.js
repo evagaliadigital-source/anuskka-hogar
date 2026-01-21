@@ -11421,7 +11421,7 @@ async function viewCliente(id) {
                       <!-- Miniatura -->
                       <div class="h-24 flex items-center justify-center bg-gray-100 rounded mb-2">
                         ${archivo.tipo_archivo === 'image' ? 
-                          `<img src="${API}/clientes/${id}/archivos/${archivo.id}/preview" 
+                          `<img src="${API}/clientes/${id}/archivos/${archivo.id}/url" 
                                 class="max-h-full max-w-full object-contain rounded cursor-pointer"
                                 onclick="verArchivoCompleto(${id}, ${archivo.id}, '${archivo.tipo_archivo}', '${archivo.nombre_archivo}')"
                                 alt="${archivo.nombre_archivo}">` :
@@ -11533,7 +11533,7 @@ async function subirArchivoCliente(clienteId) {
                 Vista previa:
               </label>
               <div class="border rounded-lg p-3 bg-gray-50">
-                <img id="preview-image" class="max-w-full max-h-40 mx-auto rounded" />
+                <img id="preview-image" class="max-w-full max-h-40 mx-auto rounded object-contain" />
                 <p id="preview-filename" class="text-sm text-gray-600 text-center mt-2"></p>
               </div>
             </div>
