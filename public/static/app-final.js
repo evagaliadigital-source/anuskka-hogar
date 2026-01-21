@@ -658,60 +658,257 @@ async function loadClientes() {
     console.log('✅ Data recibida:', data.length, 'clientes')
     currentData.clientes = data
     
-    const container = document.getElementById('clientes-lista')
-    if (!container) {
-      console.error('❌ Container clientes-lista NO encontrado')
-      return
-    }
-    console.log('✅ Container encontrado, renderizando tabla...')
-    container.innerHTML = `
-      <table class="min-w-full">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Número</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Teléfono</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dirección</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ciudad</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          ${data.map(c => `
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  ${c.numero_cliente || 'Sin número'}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="font-medium text-gray-900">${c.nombre} ${c.apellidos}</div>
-                ${c.email ? `<div class="text-sm text-gray-500">${c.email}</div>` : ''}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${c.telefono}</td>
-              <td class="px-6 py-4 text-sm text-gray-900">${c.direccion}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${c.ciudad}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <button onclick="viewCliente(${c.id})" class="text-blue-600 hover:text-blue-800 mr-3" title="Ver detalles">
-                  <i class="fas fa-eye"></i>
-                </button>
-                <button onclick="editCliente(${c.id})" class="text-green-600 hover:text-green-800 mr-3" title="Editar">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button onclick="showClientePresupuestos(${c.id})" class="text-purple-600 hover:text-purple-800" title="Ver presupuestos">
-                  <i class="fas fa-file-alt"></i>
-                </button>
-              </td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    `
+    // Renderizar buscador y filtros
+    renderizarBuscadorClientes()
+    
+    // Renderizar tabla o mensaje vacío
+    renderizarTablaClientes(data)
   } catch (error) {
     console.error('Error cargando clientes:', error)
     showError('Error al cargar clientes')
   }
 }
+
+// Renderizar buscador y filtros
+function renderizarBuscadorClientes() {
+  const container = document.getElementById('clientes-lista')
+  if (!container) return
+  
+  // Verificar si ya existe el buscador
+  if (document.getElementById('clientes-buscador')) return
+  
+  const buscadorHTML = `
+    <div id="clientes-buscador" class="mb-6 bg-gray-50 p-4 rounded-lg">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Buscador -->
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            <i class="fas fa-search mr-2"></i>Buscar cliente
+          </label>
+          <input 
+            type="text" 
+            id="buscar-cliente" 
+            placeholder="Buscar por nombre, teléfono, email o ciudad..."
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            onkeyup="filtrarClientes()"
+          >
+        </div>
+        
+        <!-- Filtro por ciudad -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            <i class="fas fa-map-marker-alt mr-2"></i>Filtrar por ciudad
+          </label>
+          <select 
+            id="filtro-ciudad-cliente" 
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            onchange="filtrarClientes()"
+          >
+            <option value="">Todas las ciudades</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- Botones de acción -->
+      <div class="mt-4 flex gap-3">
+        <button 
+          onclick="limpiarFiltrosClientes()" 
+          class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+        >
+          <i class="fas fa-eraser mr-2"></i>Limpiar filtros
+        </button>
+        <button 
+          onclick="exportarClientesCSV()" 
+          class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+        >
+          <i class="fas fa-file-export mr-2"></i>Exportar a CSV
+        </button>
+      </div>
+    </div>
+    
+    <!-- Contenedor de tabla -->
+    <div id="clientes-tabla-container"></div>
+  `
+  
+  container.innerHTML = buscadorHTML
+  
+  // Poblar select de ciudades
+  poblarFiltroCiudades()
+}
+
+// Poblar filtro de ciudades
+function poblarFiltroCiudades() {
+  const select = document.getElementById('filtro-ciudad-cliente')
+  if (!select || !currentData.clientes) return
+  
+  const ciudades = [...new Set(currentData.clientes.map(c => c.ciudad).filter(c => c))]
+  ciudades.sort()
+  
+  ciudades.forEach(ciudad => {
+    const option = document.createElement('option')
+    option.value = ciudad
+    option.textContent = ciudad
+    select.appendChild(option)
+  })
+}
+
+// Filtrar clientes
+function filtrarClientes() {
+  const buscador = document.getElementById('buscar-cliente')?.value.toLowerCase() || ''
+  const ciudad = document.getElementById('filtro-ciudad-cliente')?.value || ''
+  
+  if (!currentData.clientes) return
+  
+  let clientesFiltrados = currentData.clientes
+  
+  // Filtrar por texto de búsqueda
+  if (buscador) {
+    clientesFiltrados = clientesFiltrados.filter(c => {
+      const nombreCompleto = `${c.nombre} ${c.apellidos}`.toLowerCase()
+      const telefono = c.telefono?.toLowerCase() || ''
+      const email = c.email?.toLowerCase() || ''
+      const ciudadCliente = c.ciudad?.toLowerCase() || ''
+      const direccion = c.direccion?.toLowerCase() || ''
+      
+      return nombreCompleto.includes(buscador) ||
+             telefono.includes(buscador) ||
+             email.includes(buscador) ||
+             ciudadCliente.includes(buscador) ||
+             direccion.includes(buscador)
+    })
+  }
+  
+  // Filtrar por ciudad
+  if (ciudad) {
+    clientesFiltrados = clientesFiltrados.filter(c => c.ciudad === ciudad)
+  }
+  
+  renderizarTablaClientes(clientesFiltrados)
+}
+
+// Limpiar filtros
+function limpiarFiltrosClientes() {
+  const buscador = document.getElementById('buscar-cliente')
+  const ciudad = document.getElementById('filtro-ciudad-cliente')
+  
+  if (buscador) buscador.value = ''
+  if (ciudad) ciudad.value = ''
+  
+  renderizarTablaClientes(currentData.clientes)
+}
+
+// Exportar clientes a CSV
+function exportarClientesCSV() {
+  if (!currentData.clientes || currentData.clientes.length === 0) {
+    showToast('❌ No hay clientes para exportar', 'error')
+    return
+  }
+  
+  const headers = ['Número', 'Nombre', 'Apellidos', 'Teléfono', 'Email', 'Dirección', 'Ciudad', 'CP', 'Fecha Registro']
+  const rows = currentData.clientes.map(c => [
+    c.numero_cliente || '',
+    c.nombre || '',
+    c.apellidos || '',
+    c.telefono || '',
+    c.email || '',
+    c.direccion || '',
+    c.ciudad || '',
+    c.codigo_postal || '',
+    new Date(c.fecha_registro).toLocaleDateString('es-ES')
+  ])
+  
+  let csv = headers.join(',') + '\n'
+  rows.forEach(row => {
+    csv += row.map(field => `"${field}"`).join(',') + '\n'
+  })
+  
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(blob)
+  link.download = `clientes_${new Date().toISOString().split('T')[0]}.csv`
+  link.click()
+  
+  showToast('✅ Clientes exportados correctamente', 'success')
+}
+
+// Renderizar tabla de clientes
+function renderizarTablaClientes(clientes) {
+  const container = document.getElementById('clientes-tabla-container')
+  if (!container) return
+  
+  // Si no hay clientes, mostrar mensaje vacío
+  if (!clientes || clientes.length === 0) {
+    container.innerHTML = `
+      <div class="flex flex-col items-center justify-center py-16 px-4">
+        <div class="text-gray-400 mb-6">
+          <i class="fas fa-users text-6xl"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-gray-700 mb-2">No hay clientes</h3>
+        <p class="text-gray-500 mb-6 text-center">
+          ${document.getElementById('buscar-cliente')?.value || document.getElementById('filtro-ciudad-cliente')?.value
+            ? 'No se encontraron clientes con los filtros aplicados'
+            : 'Crea tu primer cliente para comenzar'}
+        </p>
+        <button onclick="showClienteForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all">
+          <i class="fas fa-plus mr-2"></i>Crear Cliente
+        </button>
+      </div>
+    `
+    return
+  }
+  
+  container.innerHTML = `
+    <div class="mb-4 text-sm text-gray-600">
+      <i class="fas fa-info-circle mr-2"></i>Mostrando ${clientes.length} cliente(s)
+    </div>
+    <table class="min-w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Número</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Teléfono</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dirección</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ciudad</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        ${clientes.map(c => `
+          <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                ${c.numero_cliente || 'Sin número'}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="font-medium text-gray-900">${c.nombre} ${c.apellidos}</div>
+              ${c.email ? `<div class="text-sm text-gray-500">${c.email}</div>` : ''}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${c.telefono}</td>
+            <td class="px-6 py-4 text-sm text-gray-900">${c.direccion}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${c.ciudad}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+              <button onclick="viewCliente(${c.id})" class="text-blue-600 hover:text-blue-800 mr-3" title="Ver detalles">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button onclick="editCliente(${c.id})" class="text-green-600 hover:text-green-800 mr-3" title="Editar">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button onclick="showClientePresupuestos(${c.id})" class="text-purple-600 hover:text-purple-800" title="Ver presupuestos">
+                <i class="fas fa-file-alt"></i>
+              </button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `
+}
+
+// Exponer funciones globalmente
+window.filtrarClientes = filtrarClientes
+window.limpiarFiltrosClientes = limpiarFiltrosClientes
+window.exportarClientesCSV = exportarClientesCSV
 
 async function showClienteForm(id = null) {
   const isEdit = id !== null
