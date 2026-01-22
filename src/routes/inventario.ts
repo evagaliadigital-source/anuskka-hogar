@@ -3,6 +3,7 @@ import OpenAI from 'openai'
 
 type Bindings = {
   DB: D1Database
+  GENSPARK_TOKEN: string
 }
 
 const inventario = new Hono<{ Bindings: Bindings }>()
@@ -11,11 +12,11 @@ const inventario = new Hono<{ Bindings: Bindings }>()
 // UTILIDAD: EXTRACCIÓN DE FACTURA CON IA
 // ============================================
 
-async function extraerDatosFacturaConIA(archivo_url: string) {
+async function extraerDatosFacturaConIA(archivo_url: string, apiKey: string) {
   try {
     // Inicializar cliente OpenAI
     const openai = new OpenAI({
-      apiKey: process.env.GENSPARK_TOKEN || process.env.OPENAI_API_KEY,
+      apiKey: apiKey,
       baseURL: 'https://www.genspark.ai/api/llm_proxy/v1'
     })
 
@@ -711,7 +712,7 @@ inventario.post('/importar-factura', async (c) => {
     console.log('📄 URL:', archivo_url)
     
     // Extraer datos con GPT-4o Vision
-    const extraccionResult = await extraerDatosFacturaConIA(archivo_url)
+    const extraccionResult = await extraerDatosFacturaConIA(archivo_url, c.env.GENSPARK_TOKEN)
     
     if (!extraccionResult.success) {
       return c.json({ 
@@ -726,6 +727,34 @@ inventario.post('/importar-factura', async (c) => {
     console.log(`✅ Extraídas ${lineasExtraidas.length} líneas de la factura`)
     console.log('📊 Proveedor detectado:', datosFactura.proveedor)
     console.log('📅 Fecha:', datosFactura.fecha)
+    
+    // NUEVO: Buscar si el proveedor existe en la BD
+    let proveedorEncontrado = null
+    if (proveedor_id) {
+      // Usuario ya seleccionó proveedor manualmente
+      const prov = await c.env.DB.prepare(`
+        SELECT * FROM proveedores WHERE id = ? AND activo = 1
+      `).bind(proveedor_id).first()
+      proveedorEncontrado = prov
+    } else if (datosFactura.proveedor) {
+      // Buscar por nombre similar
+      const prov = await c.env.DB.prepare(`
+        SELECT * FROM proveedores 
+        WHERE activo = 1 
+        AND (
+          LOWER(nombre) LIKE LOWER(?)
+          OR LOWER(?) LIKE LOWER(nombre)
+        )
+        LIMIT 1
+      `).bind(`%${datosFactura.proveedor}%`, `%${datosFactura.proveedor}%`).first()
+      
+      if (prov) {
+        proveedorEncontrado = prov
+        console.log(`✅ Proveedor encontrado en BD: ${prov.nombre} (ID: ${prov.id})`)
+      } else {
+        console.log(`⚠️ Proveedor "${datosFactura.proveedor}" NO encontrado en BD`)
+      }
+    }
 
     // Intentar matching automático con productos existentes
     const lineasConMatching = []
@@ -850,6 +879,16 @@ inventario.post('/importar-factura', async (c) => {
         fecha: datosFactura.fecha,
         numero_factura: datosFactura.numero_factura,
         total: datosFactura.total_factura
+      },
+      // NUEVO: Info del proveedor
+      proveedor_encontrado: proveedorEncontrado ? {
+        id: proveedorEncontrado.id,
+        nombre: proveedorEncontrado.nombre,
+        existe: true
+      } : {
+        nombre: datosFactura.proveedor,
+        existe: false,
+        sugerencia: 'Crear proveedor antes de continuar'
       }
     })
     

@@ -13297,6 +13297,12 @@ async function procesarFactura(event) {
 }
 
 function mostrarVistaPreviaImportacionFactura(data) {
+  // NUEVO: Verificar si el proveedor existe
+  if (data.proveedor_encontrado && !data.proveedor_encontrado.existe) {
+    mostrarModalCrearProveedor(data)
+    return
+  }
+  
   const proveedor = inventarioData.proveedores.find(p => p.id === importacionData.proveedor_id)
   
   const lineasHTML = data.lineas.map((linea, index) => {
@@ -13636,7 +13642,162 @@ function cancelarImportacion() {
   }
 }
 
-// Exponer funciones globales de importación
+// ============================================
+// MODAL: CREAR PROVEEDOR DETECTADO
+// ============================================
+
+function mostrarModalCrearProveedor(data) {
+  const proveedorDetectado = data.proveedor_encontrado.nombre
+  
+  showModal(`
+    <div class="space-y-6">
+      <div class="text-center">
+        <div class="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-exclamation-triangle text-4xl text-orange-600"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-gray-800 mb-2">Proveedor No Encontrado</h3>
+        <p class="text-gray-600">La IA detectó el proveedor en la factura pero NO existe en tu base de datos</p>
+      </div>
+      
+      <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+        <div class="flex items-start">
+          <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
+          <div>
+            <p class="font-semibold text-blue-800">Proveedor detectado:</p>
+            <p class="text-xl text-blue-900 font-bold">"${proveedorDetectado}"</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="bg-white border rounded-lg p-6">
+        <h4 class="font-bold text-gray-800 mb-4">
+          <i class="fas fa-plus-circle mr-2 text-green-600"></i>
+          Crear este proveedor ahora
+        </h4>
+        
+        <form onsubmit="crearProveedorYContinuar(event, ${JSON.stringify(data).replace(/"/g, '&quot;')})">
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del proveedor *</label>
+            <input 
+              type="text" 
+              name="nombre" 
+              value="${proveedorDetectado}"
+              required 
+              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Persona de contacto</label>
+            <input 
+              type="text" 
+              name="contacto" 
+              placeholder="Nombre del contacto"
+              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+              <input 
+                type="tel" 
+                name="telefono" 
+                placeholder="600 000 000"
+                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              >
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+              <input 
+                type="email" 
+                name="email" 
+                placeholder="contacto@proveedor.com"
+                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              >
+            </div>
+          </div>
+          
+          <div class="flex gap-3">
+            <button 
+              type="button" 
+              onclick="cancelarImportacion()" 
+              class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+            >
+              Cancelar todo
+            </button>
+            <button 
+              type="submit" 
+              class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            >
+              <i class="fas fa-save mr-2"></i>Crear y Continuar
+            </button>
+          </div>
+        </form>
+      </div>
+      
+      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div class="flex items-start">
+          <i class="fas fa-lightbulb text-yellow-600 mt-1 mr-3"></i>
+          <div class="text-sm text-yellow-800">
+            <p class="font-semibold mb-1">¿Por qué es importante?</p>
+            <p>Crear el proveedor ahora permitirá matching automático en futuras facturas de "${proveedorDetectado}".</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `)
+}
+
+async function crearProveedorYContinuar(event, dataFactura) {
+  event.preventDefault()
+  
+  const formData = new FormData(event.target)
+  const proveedorData = {
+    nombre: formData.get('nombre'),
+    contacto: formData.get('contacto') || null,
+    telefono: formData.get('telefono') || null,
+    email: formData.get('email') || null
+  }
+  
+  try {
+    showToast('⏳ Creando proveedor...', 'info')
+    
+    const res = await axios.post(`${API}/inventario/proveedores`, proveedorData)
+    
+    if (res.data.success) {
+      showToast('✅ Proveedor creado correctamente', 'success')
+      
+      // Recargar proveedores
+      const provRes = await axios.get(`${API}/inventario/proveedores`)
+      if (provRes.data.success) {
+        inventarioData.proveedores = provRes.data.proveedores
+      }
+      
+      // Actualizar datos de importación con el nuevo proveedor_id
+      importacionData.proveedor_id = res.data.proveedor_id
+      
+      // Cerrar modal y mostrar vista previa normal
+      closeModal()
+      
+      // Actualizar data con el proveedor encontrado
+      dataFactura.proveedor_encontrado = {
+        id: res.data.proveedor_id,
+        nombre: proveedorData.nombre,
+        existe: true
+      }
+      
+      mostrarVistaPreviaImportacionFactura(dataFactura)
+    }
+  } catch (error) {
+    console.error('Error creando proveedor:', error)
+    showToast('❌ Error al crear proveedor', 'error')
+  }
+}
+
+// Exponer funciones globales
+window.mostrarModalCrearProveedor = mostrarModalCrearProveedor
+window.crearProveedorYContinuar = crearProveedorYContinuar
 window.showImportarFacturaModal = showImportarFacturaModal
 window.procesarFactura = procesarFactura
 window.mostrarArchivoSeleccionado = mostrarArchivoSeleccionado
