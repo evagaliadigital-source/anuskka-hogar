@@ -12183,9 +12183,6 @@ function showProductoForm(productoId = null) {
   inventarioData.variantesTemporales = []
   inventarioData.categoriaSeleccionada = null
   
-  const modal = document.getElementById('modal-overlay')
-  const modalContent = document.getElementById('modal-content')
-  
   if (productoId) {
     // Modo edición - cargar producto
     loadProductoForEdit(productoId)
@@ -12193,8 +12190,6 @@ function showProductoForm(productoId = null) {
     // Modo creación
     renderProductoForm()
   }
-  
-  modal.classList.remove('hidden')
 }
 
 async function loadProductoForEdit(productoId) {
@@ -12214,7 +12209,6 @@ async function loadProductoForEdit(productoId) {
 }
 
 function renderProductoForm(producto = null) {
-  const modalContent = document.getElementById('modal-content')
   const isEdit = producto !== null
   
   const categoriasOptions = inventarioData.categorias.map(cat => `
@@ -12236,7 +12230,7 @@ function renderProductoForm(producto = null) {
     categoriaInfo = findCategoriaById(inventarioData.categoriaSeleccionada)
   }
   
-  modalContent.innerHTML = `
+  const modalContent = `
     <div class="max-w-4xl mx-auto">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-gray-800">
@@ -12341,6 +12335,8 @@ function renderProductoForm(producto = null) {
       </form>
     </div>
   `
+  
+  showModal(modalContent, 'max-w-5xl')
 }
 
 function renderFormularioDinamico(categoriaInfo, producto = null) {
@@ -12828,10 +12824,7 @@ async function deleteProducto(productoId) {
 // ============================================
 
 function showProveedoresModal() {
-  const modal = document.getElementById('modal-overlay')
-  const modalContent = document.getElementById('modal-content')
-  
-  modalContent.innerHTML = `
+  const modalContent = `
     <div class="max-w-2xl mx-auto">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-bold text-gray-800">
@@ -12869,13 +12862,11 @@ function showProveedoresModal() {
     </div>
   `
   
-  modal.classList.remove('hidden')
+  showModal(modalContent)
 }
 
 function showNuevoProveedorForm() {
-  const modalContent = document.getElementById('modal-content')
-  
-  modalContent.innerHTML = `
+  const modalContent = `
     <div class="max-w-md mx-auto">
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-xl font-bold text-gray-800">
@@ -12947,6 +12938,8 @@ function showNuevoProveedorForm() {
       </form>
     </div>
   `
+  
+  showModal(modalContent)
 }
 
 async function guardarProveedor(event) {
