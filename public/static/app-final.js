@@ -1746,21 +1746,14 @@ async function showTrabajoForm(id = null) {
             </div>
           </div>
           
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Duración (horas)</label>
-              <input type="number" step="0.5" name="duracion_horas" value="${trabajo.duracion_estimada ? (trabajo.duracion_estimada / 60).toFixed(1) : ''}" 
-                     class="w-full px-4 py-2 border rounded-lg" placeholder="Ej: 2.5">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Prioridad</label>
-              <select name="prioridad" class="w-full px-4 py-2 border rounded-lg">
-                <option value="baja" ${trabajo.prioridad === 'baja' ? 'selected' : ''}>Baja</option>
-                <option value="normal" ${trabajo.prioridad === 'normal' ? 'selected' : ''}>Normal</option>
-                <option value="alta" ${trabajo.prioridad === 'alta' ? 'selected' : ''}>Alta</option>
-                <option value="urgente" ${trabajo.prioridad === 'urgente' ? 'selected' : ''}>Urgente</option>
-              </select>
-            </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Prioridad</label>
+            <select name="prioridad" class="w-full px-4 py-2 border rounded-lg">
+              <option value="baja" ${trabajo.prioridad === 'baja' ? 'selected' : ''}>Baja</option>
+              <option value="normal" ${trabajo.prioridad === 'normal' ? 'selected' : ''}>Normal</option>
+              <option value="alta" ${trabajo.prioridad === 'alta' ? 'selected' : ''}>Alta</option>
+              <option value="urgente" ${trabajo.prioridad === 'urgente' ? 'selected' : ''}>Urgente</option>
+            </select>
           </div>
           
           ${isEdit ? `
