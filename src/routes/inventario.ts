@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import OpenAI from 'openai'
 
 type Bindings = {
   DB: D1Database
@@ -7,8 +8,95 @@ type Bindings = {
 const inventario = new Hono<{ Bindings: Bindings }>()
 
 // ============================================
-// CATEGORÍAS
+// UTILIDAD: EXTRACCIÓN DE FACTURA CON IA
 // ============================================
+
+async function extraerDatosFacturaConIA(archivo_url: string) {
+  try {
+    // Inicializar cliente OpenAI
+    const openai = new OpenAI({
+      apiKey: process.env.GENSPARK_TOKEN || process.env.OPENAI_API_KEY,
+      baseURL: 'https://www.genspark.ai/api/llm_proxy/v1'
+    })
+
+    const prompt = `Eres un experto en extraer datos de facturas de proveedores textiles.
+
+Analiza esta imagen de factura y extrae TODA la información en formato JSON con esta estructura EXACTA:
+
+{
+  "proveedor": "Nombre del proveedor",
+  "fecha": "YYYY-MM-DD",
+  "numero_factura": "Número de factura",
+  "lineas": [
+    {
+      "numero_linea": 1,
+      "codigo_proveedor": "Código/Referencia del producto (ej: REF-8831, 8831, etc.)",
+      "descripcion": "Descripción completa del producto",
+      "cantidad": número entero o decimal,
+      "precio_unitario": número decimal,
+      "precio_total": número decimal,
+      "unidad": "unidad" | "metro" | "juego" | "paquete"
+    }
+  ],
+  "total_factura": número decimal
+}
+
+REGLAS IMPORTANTES:
+1. Extrae TODAS las líneas de productos
+2. Si no encuentras un código de proveedor, intenta identificar cualquier número de referencia
+3. Convierte todos los precios a números decimales (sin símbolos de moneda)
+4. Si la unidad no está clara, usa "unidad" por defecto
+5. Infiere la unidad del contexto (ej: "metros", "uds", "paquetes")
+6. Sé preciso con las cantidades y precios
+
+Devuelve SOLO el JSON, sin texto adicional.`
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-5',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: prompt
+            },
+            {
+              type: 'image_url',
+              image_url: {
+                url: archivo_url,
+                detail: 'high'
+              }
+            }
+          ]
+        }
+      ],
+      max_tokens: 4000,
+      temperature: 0.1 // Baja temperatura para más precisión
+    })
+
+    const content = response.choices[0].message.content
+    if (!content) {
+      throw new Error('No se pudo extraer contenido de la IA')
+    }
+
+    // Parsear JSON (limpiando posibles marcadores de código)
+    const jsonStr = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+    const datos = JSON.parse(jsonStr)
+
+    return {
+      success: true,
+      datos
+    }
+
+  } catch (error) {
+    console.error('Error extrayendo datos con IA:', error)
+    return {
+      success: false,
+      error: error.message || 'Error al procesar factura con IA'
+    }
+  }
+}
 
 // GET /api/inventario/categorias - Obtener todas las categorías
 inventario.get('/categorias', async (c) => {
@@ -563,26 +651,25 @@ inventario.post('/importar-factura', async (c) => {
       return c.json({ success: false, error: 'Se requiere el archivo de la factura' }, 400)
     }
 
-    // TODO: Aquí iría la integración con OCR/Vision API
-    // Por ahora retornamos estructura de ejemplo
+    console.log('🤖 Procesando factura con IA Vision...')
+    console.log('📄 URL:', archivo_url)
     
-    // Simular extracción de datos de factura
-    const lineasExtraidas = [
-      {
-        codigo_proveedor: 'REF-8831',
-        descripcion: 'Cojín Aloe 45x45 cm',
-        cantidad: 10,
-        precio_unitario: 12.99,
-        unidad: 'unidad'
-      },
-      {
-        codigo_proveedor: 'REF-8839',
-        descripcion: 'Cojín Aloe 90x90 cm',
-        cantidad: 15,
-        precio_unitario: 24.99,
-        unidad: 'unidad'
-      }
-    ]
+    // Extraer datos con GPT-4o Vision
+    const extraccionResult = await extraerDatosFacturaConIA(archivo_url)
+    
+    if (!extraccionResult.success) {
+      return c.json({ 
+        success: false, 
+        error: 'Error al extraer datos de la factura: ' + extraccionResult.error 
+      }, 500)
+    }
+
+    const datosFactura = extraccionResult.datos
+    const lineasExtraidas = datosFactura.lineas || []
+    
+    console.log(`✅ Extraídas ${lineasExtraidas.length} líneas de la factura`)
+    console.log('📊 Proveedor detectado:', datosFactura.proveedor)
+    console.log('📅 Fecha:', datosFactura.fecha)
 
     // Intentar matching automático con productos existentes
     const lineasConMatching = []
@@ -658,19 +745,56 @@ inventario.post('/importar-factura', async (c) => {
         }
       }
       
-      lineasConMatching.push({
-        ...linea,
-        matching: productoEncontrado ? 'encontrado' : 'no_encontrado',
-        producto: productoEncontrado
-      })
+      // Formato esperado por el frontend
+      const lineaFormateada: any = {
+        numero_linea: linea.numero_linea || lineasConMatching.length + 1,
+        codigo_proveedor: linea.codigo_proveedor,
+        descripcion: linea.descripcion,
+        cantidad: linea.cantidad,
+        precio_unitario: linea.precio_unitario,
+        precio_total: linea.precio_total || (linea.cantidad * linea.precio_unitario),
+        coincidencia: null,
+        sugerencias: []
+      }
+      
+      if (productoEncontrado) {
+        if (productoEncontrado.sugerencias) {
+          // Tiene sugerencias pero no coincidencia exacta
+          lineaFormateada.sugerencias = productoEncontrado.sugerencias.map((sug: any, idx: number) => ({
+            producto_id: sug.producto_id,
+            variante_id: sug.variante_id,
+            nombre: `${sug.producto_nombre}${sug.variante_nombre ? ' - ' + sug.variante_nombre : ''}`,
+            similitud: 0.9 - (idx * 0.1) // Simulamos un score de similitud
+          }))
+        } else {
+          // Coincidencia exacta
+          lineaFormateada.coincidencia = {
+            tipo: 'codigo_proveedor',
+            producto_id: productoEncontrado.producto_id,
+            variante_id: productoEncontrado.variante_id,
+            nombre_producto: productoEncontrado.producto_nombre,
+            medida: productoEncontrado.variante_nombre
+          }
+        }
+      }
+      
+      lineasConMatching.push(lineaFormateada)
     }
+
+    const totalCoincidencias = lineasConMatching.filter(l => l.coincidencia !== null).length
 
     return c.json({
       success: true,
       lineas: lineasConMatching,
       total_lineas: lineasExtraidas.length,
-      encontradas: lineasConMatching.filter(l => l.matching === 'encontrado').length,
-      no_encontradas: lineasConMatching.filter(l => l.matching === 'no_encontrado').length
+      total_coincidencias: totalCoincidencias,
+      total_sin_coincidencia: lineasExtraidas.length - totalCoincidencias,
+      info_factura: {
+        proveedor: datosFactura.proveedor,
+        fecha: datosFactura.fecha,
+        numero_factura: datosFactura.numero_factura,
+        total: datosFactura.total_factura
+      }
     })
     
   } catch (error) {
