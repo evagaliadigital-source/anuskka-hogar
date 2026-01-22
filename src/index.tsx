@@ -507,55 +507,67 @@ app.get('/api/trabajos/:id', async (c) => {
 
 // Crear trabajo
 app.post('/api/trabajos', async (c) => {
-  const data = await c.req.json()
-  
-  // Obtener el último número de trabajo del año actual
-  const year = new Date().getFullYear()
-  const lastTrabajo = await c.env.DB.prepare(`
-    SELECT numero_trabajo FROM trabajos 
-    WHERE numero_trabajo LIKE ? 
-    ORDER BY id DESC LIMIT 1
-  `).bind(`T-${year}-%`).first()
-  
-  // Generar nuevo número (T-2025-0001, T-2025-0002, etc.)
-  let numeroTrabajo = `T-${year}-0001`
-  if (lastTrabajo && lastTrabajo.numero_trabajo) {
-    const lastNum = parseInt(lastTrabajo.numero_trabajo.split('-')[2])
-    numeroTrabajo = `T-${year}-${String(lastNum + 1).padStart(4, '0')}`
+  try {
+    const data = await c.req.json()
+    
+    // Obtener el último número de trabajo del año actual
+    const year = new Date().getFullYear()
+    const lastTrabajo = await c.env.DB.prepare(`
+      SELECT numero_trabajo FROM trabajos 
+      WHERE numero_trabajo LIKE ? 
+      ORDER BY id DESC LIMIT 1
+    `).bind(`T-${year}-%`).first()
+    
+    // Generar nuevo número (T-2025-0001, T-2025-0002, etc.)
+    let numeroTrabajo = `T-${year}-0001`
+    if (lastTrabajo && lastTrabajo.numero_trabajo) {
+      const lastNum = parseInt(lastTrabajo.numero_trabajo.split('-')[2])
+      numeroTrabajo = `T-${year}-${String(lastNum + 1).padStart(4, '0')}`
+    }
+    
+    const result = await c.env.DB.prepare(`
+      INSERT INTO trabajos (cliente_id, nombre_empleada, tipo_servicio, descripcion, direccion,
+                           fecha_programada, duracion_estimada, estado, prioridad, precio_cliente, notas, numero_trabajo)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      data.cliente_id, data.nombre_empleada || null, data.tipo_servicio, data.descripcion || null,
+      data.direccion, data.fecha_programada, data.duracion_estimada || 120,
+      data.estado || 'pendiente', data.prioridad || 'normal', data.precio_cliente || null, data.notas || null, numeroTrabajo
+    ).run()
+    
+    return c.json({ id: result.meta.last_row_id, numero_trabajo: numeroTrabajo, ...data })
+  } catch (error) {
+    console.error('❌ Error creando trabajo:', error)
+    console.error('❌ Error type:', error.constructor.name)
+    console.error('❌ Error message:', error.message)
+    return c.json({ error: 'Error al crear trabajo: ' + error.message }, 500)
   }
-  
-  const result = await c.env.DB.prepare(`
-    INSERT INTO trabajos (cliente_id, nombre_empleada, tipo_servicio, descripcion, direccion,
-                         fecha_programada, duracion_estimada, estado, prioridad, precio_cliente, notas, numero_trabajo)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).bind(
-    data.cliente_id, data.nombre_empleada || null, data.tipo_servicio, data.descripcion || null,
-    data.direccion, data.fecha_programada, data.duracion_estimada || 120,
-    data.estado || 'pendiente', data.prioridad || 'normal', data.precio_cliente || null, data.notas || null, numeroTrabajo
-  ).run()
-  
-  return c.json({ id: result.meta.last_row_id, numero_trabajo: numeroTrabajo, ...data })
 })
 
 // Actualizar trabajo
 app.put('/api/trabajos/:id', async (c) => {
-  const id = c.req.param('id')
-  const data = await c.req.json()
-  
-  await c.env.DB.prepare(`
-    UPDATE trabajos 
-    SET nombre_empleada = ?, tipo_servicio = ?, descripcion = ?, fecha_programada = ?,
-        duracion_estimada = ?, estado = ?, prioridad = ?, precio_cliente = ?, 
-        fecha_inicio = ?, fecha_finalizacion = ?, duracion_real = ?, satisfaccion_cliente = ?, notas = ?
-    WHERE id = ?
-  `).bind(
-    data.nombre_empleada || null, data.tipo_servicio, data.descripcion, data.fecha_programada,
-    data.duracion_estimada, data.estado, data.prioridad, data.precio_cliente || null,
-    data.fecha_inicio || null, data.fecha_finalizacion || null, data.duracion_real || null,
-    data.satisfaccion_cliente || null, data.notas, id
-  ).run()
-  
-  return c.json({ success: true })
+  try {
+    const id = c.req.param('id')
+    const data = await c.req.json()
+    
+    await c.env.DB.prepare(`
+      UPDATE trabajos 
+      SET nombre_empleada = ?, tipo_servicio = ?, descripcion = ?, fecha_programada = ?,
+          duracion_estimada = ?, estado = ?, prioridad = ?, precio_cliente = ?, 
+          fecha_inicio = ?, fecha_finalizacion = ?, duracion_real = ?, satisfaccion_cliente = ?, notas = ?
+      WHERE id = ?
+    `).bind(
+      data.nombre_empleada || null, data.tipo_servicio, data.descripcion, data.fecha_programada,
+      data.duracion_estimada, data.estado, data.prioridad, data.precio_cliente || null,
+      data.fecha_inicio || null, data.fecha_finalizacion || null, data.duracion_real || null,
+      data.satisfaccion_cliente || null, data.notas, id
+    ).run()
+    
+    return c.json({ success: true })
+  } catch (error) {
+    console.error('❌ Error actualizando trabajo:', error)
+    return c.json({ error: 'Error al actualizar trabajo: ' + error.message }, 500)
+  }
 })
 
 // Borrar trabajo
