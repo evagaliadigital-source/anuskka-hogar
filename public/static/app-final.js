@@ -13274,14 +13274,20 @@ async function procesarFactura(event) {
   btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...'
   
   try {
-    // 1. Subir archivo
-    const uploadFormData = new FormData()
-    uploadFormData.append('archivo', file)
-    uploadFormData.append('tipo', 'factura')
+    // 1. Convertir archivo a base64
+    showToast('📤 Preparando factura...', 'info')
+    const fileBase64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result)
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
     
+    // 2. Subir archivo a R2
     showToast('📤 Subiendo factura...', 'info')
-    const uploadRes = await axios.post(`${API}/uploads`, uploadFormData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+    const uploadRes = await axios.post(`${API}/uploads/factura`, {
+      archivo_base64: fileBase64,
+      nombre_archivo: file.name
     })
     
     if (!uploadRes.data.success) {
@@ -13290,7 +13296,7 @@ async function procesarFactura(event) {
     
     const archivo_url = uploadRes.data.url
     
-    // 2. Procesar con IA
+    // 3. Procesar con IA
     showToast('🧠 Extrayendo datos con IA...', 'info')
     const processRes = await axios.post(`${API}/inventario/importar-factura`, {
       archivo_url,
@@ -13301,7 +13307,7 @@ async function procesarFactura(event) {
       throw new Error('Error al procesar factura')
     }
     
-    // 3. Guardar datos y mostrar vista previa
+    // 4. Guardar datos y mostrar vista previa
     importacionData = {
       lineas: processRes.data.lineas,
       proveedor_id,
