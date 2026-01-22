@@ -549,3 +549,220 @@ inventario.post('/actualizar-stock', async (c) => {
 })
 
 export default inventario
+
+// ============================================
+// IMPORTAR FACTURA CON IA
+// ============================================
+
+// POST /api/inventario/importar-factura - Procesar factura con IA
+inventario.post('/importar-factura', async (c) => {
+  try {
+    const { archivo_url, proveedor_id } = await c.req.json()
+    
+    if (!archivo_url) {
+      return c.json({ success: false, error: 'Se requiere el archivo de la factura' }, 400)
+    }
+
+    // TODO: Aquí iría la integración con OCR/Vision API
+    // Por ahora retornamos estructura de ejemplo
+    
+    // Simular extracción de datos de factura
+    const lineasExtraidas = [
+      {
+        codigo_proveedor: 'REF-8831',
+        descripcion: 'Cojín Aloe 45x45 cm',
+        cantidad: 10,
+        precio_unitario: 12.99,
+        unidad: 'unidad'
+      },
+      {
+        codigo_proveedor: 'REF-8839',
+        descripcion: 'Cojín Aloe 90x90 cm',
+        cantidad: 15,
+        precio_unitario: 24.99,
+        unidad: 'unidad'
+      }
+    ]
+
+    // Intentar matching automático con productos existentes
+    const lineasConMatching = []
+    
+    for (const linea of lineasExtraidas) {
+      let productoEncontrado = null
+      let varianteEncontrada = null
+      
+      // Buscar por código de proveedor si existe proveedor_id
+      if (proveedor_id && linea.codigo_proveedor) {
+        const codigoResult = await c.env.DB.prepare(`
+          SELECT 
+            ce.*,
+            p.nombre as producto_nombre,
+            p.tiene_variantes,
+            v.id as variante_id,
+            v.nombre_variante,
+            v.medida_texto
+          FROM producto_codigos_externos ce
+          LEFT JOIN productos p ON ce.producto_id = p.id
+          LEFT JOIN producto_variantes v ON ce.variante_id = v.id
+          WHERE ce.proveedor_id = ? 
+            AND ce.codigo_proveedor = ?
+            AND ce.activo = 1
+        `).bind(proveedor_id, linea.codigo_proveedor).first()
+        
+        if (codigoResult) {
+          productoEncontrado = {
+            producto_id: codigoResult.producto_id,
+            producto_nombre: codigoResult.producto_nombre,
+            variante_id: codigoResult.variante_id,
+            variante_nombre: codigoResult.variante_nombre || codigoResult.medida_texto
+          }
+        }
+      }
+      
+      // Si no se encontró, buscar por similitud de nombre
+      if (!productoEncontrado) {
+        // Buscar productos con nombre similar
+        const similarResult = await c.env.DB.prepare(`
+          SELECT 
+            p.id as producto_id,
+            p.nombre as producto_nombre,
+            p.tiene_variantes,
+            v.id as variante_id,
+            v.nombre_variante,
+            v.medida_texto
+          FROM productos p
+          LEFT JOIN producto_variantes v ON p.id = v.producto_id
+          WHERE p.activo = 1
+            AND (
+              p.nombre LIKE ? 
+              OR v.nombre_variante LIKE ?
+              OR v.medida_texto LIKE ?
+            )
+          LIMIT 5
+        `).bind(
+          `%${linea.descripcion.split(' ')[0]}%`,
+          `%${linea.descripcion.split(' ')[0]}%`,
+          `%${linea.descripcion.split(' ')[0]}%`
+        ).all()
+        
+        if (similarResult.results && similarResult.results.length > 0) {
+          // Retornar sugerencias
+          productoEncontrado = {
+            sugerencias: similarResult.results.map(r => ({
+              producto_id: r.producto_id,
+              producto_nombre: r.producto_nombre,
+              variante_id: r.variante_id,
+              variante_nombre: r.variante_nombre || r.medida_texto
+            }))
+          }
+        }
+      }
+      
+      lineasConMatching.push({
+        ...linea,
+        matching: productoEncontrado ? 'encontrado' : 'no_encontrado',
+        producto: productoEncontrado
+      })
+    }
+
+    return c.json({
+      success: true,
+      lineas: lineasConMatching,
+      total_lineas: lineasExtraidas.length,
+      encontradas: lineasConMatching.filter(l => l.matching === 'encontrado').length,
+      no_encontradas: lineasConMatching.filter(l => l.matching === 'no_encontrado').length
+    })
+    
+  } catch (error) {
+    console.error('Error procesando factura:', error)
+    return c.json({ success: false, error: 'Error al procesar factura' }, 500)
+  }
+})
+
+// POST /api/inventario/confirmar-importacion - Confirmar y actualizar stock
+inventario.post('/confirmar-importacion', async (c) => {
+  try {
+    const { lineas, proveedor_id } = await c.req.json()
+    
+    if (!lineas || !Array.isArray(lineas)) {
+      return c.json({ success: false, error: 'Se requieren las líneas de la factura' }, 400)
+    }
+
+    let actualizadas = 0
+    let errores = []
+
+    for (const linea of lineas) {
+      try {
+        const { producto_id, variante_id, cantidad, precio_unitario, codigo_proveedor } = linea
+        
+        if (!producto_id && !variante_id) {
+          errores.push(`Línea sin producto asignado: ${linea.descripcion}`)
+          continue
+        }
+
+        // Actualizar stock
+        if (variante_id) {
+          await c.env.DB.prepare(`
+            UPDATE producto_variantes 
+            SET stock_actual = stock_actual + ?
+            WHERE id = ?
+          `).bind(cantidad, variante_id).run()
+        } else if (producto_id) {
+          await c.env.DB.prepare(`
+            UPDATE productos 
+            SET stock_actual = stock_actual + ?
+            WHERE id = ?
+          `).bind(cantidad, producto_id).run()
+        }
+
+        // Guardar/actualizar código de proveedor si no existe
+        if (proveedor_id && codigo_proveedor) {
+          const existeCodigo = await c.env.DB.prepare(`
+            SELECT id FROM producto_codigos_externos
+            WHERE proveedor_id = ? AND codigo_proveedor = ?
+          `).bind(proveedor_id, codigo_proveedor).first()
+
+          if (!existeCodigo) {
+            await c.env.DB.prepare(`
+              INSERT INTO producto_codigos_externos (
+                producto_id, variante_id, proveedor_id, 
+                codigo_proveedor, coste_ultima_compra, fecha_ultima_compra
+              ) VALUES (?, ?, ?, ?, ?, DATE('now'))
+            `).bind(
+              producto_id || null,
+              variante_id || null,
+              proveedor_id,
+              codigo_proveedor,
+              precio_unitario
+            ).run()
+          } else {
+            // Actualizar coste
+            await c.env.DB.prepare(`
+              UPDATE producto_codigos_externos
+              SET coste_ultima_compra = ?,
+                  fecha_ultima_compra = DATE('now')
+              WHERE proveedor_id = ? AND codigo_proveedor = ?
+            `).bind(precio_unitario, proveedor_id, codigo_proveedor).run()
+          }
+        }
+
+        actualizadas++
+        
+      } catch (error) {
+        console.error('Error procesando línea:', error)
+        errores.push(`Error en: ${linea.descripcion}`)
+      }
+    }
+
+    return c.json({
+      success: true,
+      actualizadas,
+      errores,
+      message: `Stock actualizado: ${actualizadas} productos`
+    })
+    
+  } catch (error) {
+    console.error('Error confirmando importación:', error)
+    return c.json({ success: false, error: 'Error al confirmar importación' }, 500)
+  }
+})

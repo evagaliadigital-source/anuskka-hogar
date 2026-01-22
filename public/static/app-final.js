@@ -12038,6 +12038,9 @@ function renderInventario() {
           Control de Inventario
         </h2>
         <div class="flex gap-2">
+          <button onclick="showImportarFacturaModal()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all">
+            <i class="fas fa-file-invoice mr-2"></i>Importar Factura
+          </button>
           <button onclick="showProveedoresModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all">
             <i class="fas fa-truck mr-2"></i>Proveedores
           </button>
@@ -13010,4 +13013,534 @@ window.filtrarPorCategoria = filtrarPorCategoria
 window.showProveedoresModal = showProveedoresModal
 window.showNuevoProveedorForm = showNuevoProveedorForm
 window.guardarProveedor = guardarProveedor
+
+// ============================================
+// IMPORTACIÓN DE FACTURAS CON IA
+// ============================================
+
+let importacionData = {
+  lineas: [],
+  proveedor_id: null,
+  archivo_url: null,
+  enProgreso: false
+}
+
+function showImportarFacturaModal() {
+  const proveedoresOptions = inventarioData.proveedores.map(p => 
+    `<option value="${p.id}">${p.nombre}</option>`
+  ).join('')
+  
+  showModal(`
+    <div class="space-y-6">
+      <div class="text-center">
+        <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-file-invoice text-4xl text-purple-600"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-gray-800 mb-2">Importar Factura</h3>
+        <p class="text-gray-600">Sube tu factura y deja que la IA extraiga los datos automáticamente</p>
+      </div>
+      
+      <form onsubmit="procesarFactura(event)" class="space-y-4">
+        <!-- Proveedor -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Proveedor *
+          </label>
+          <select 
+            name="proveedor_id" 
+            required
+            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+          >
+            <option value="">Seleccionar proveedor...</option>
+            ${proveedoresOptions}
+          </select>
+          <p class="text-xs text-gray-500 mt-1">
+            <i class="fas fa-info-circle mr-1"></i>
+            El proveedor ayuda a identificar los productos automáticamente
+          </p>
+        </div>
+        
+        <!-- Subir archivo -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Archivo de factura *
+          </label>
+          <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-400 transition-all">
+            <input 
+              type="file" 
+              id="factura-file-input"
+              accept=".pdf,.png,.jpg,.jpeg"
+              class="hidden"
+              onchange="mostrarArchivoSeleccionado(event)"
+            >
+            <label for="factura-file-input" class="cursor-pointer">
+              <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+              <p class="text-gray-600">Haz clic para subir tu factura</p>
+              <p class="text-xs text-gray-500 mt-1">PDF, PNG, JPG (máx. 10MB)</p>
+            </label>
+            <div id="archivo-seleccionado" class="mt-4 hidden">
+              <div class="inline-flex items-center px-4 py-2 bg-purple-50 rounded-lg">
+                <i class="fas fa-file text-purple-600 mr-2"></i>
+                <span id="nombre-archivo" class="text-sm text-gray-700"></span>
+                <button type="button" onclick="limpiarArchivoSeleccionado()" class="ml-3 text-red-500 hover:text-red-700">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex gap-3 pt-4">
+          <button 
+            type="button" 
+            onclick="closeModal()" 
+            class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+          >
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            id="btn-procesar-factura"
+            class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+          >
+            <i class="fas fa-magic mr-2"></i>Procesar con IA
+          </button>
+        </div>
+      </form>
+    </div>
+  `)
+}
+
+function mostrarArchivoSeleccionado(event) {
+  const file = event.target.files[0]
+  if (!file) return
+  
+  const container = document.getElementById('archivo-seleccionado')
+  const nombreSpan = document.getElementById('nombre-archivo')
+  
+  nombreSpan.textContent = file.name
+  container.classList.remove('hidden')
+}
+
+function limpiarArchivoSeleccionado() {
+  document.getElementById('factura-file-input').value = ''
+  document.getElementById('archivo-seleccionado').classList.add('hidden')
+}
+
+async function procesarFactura(event) {
+  event.preventDefault()
+  
+  const formData = new FormData(event.target)
+  const proveedor_id = parseInt(formData.get('proveedor_id'))
+  const file = document.getElementById('factura-file-input').files[0]
+  
+  if (!file) {
+    showToast('⚠️ Por favor selecciona un archivo', 'warning')
+    return
+  }
+  
+  // Bloquear botón
+  const btn = document.getElementById('btn-procesar-factura')
+  btn.disabled = true
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...'
+  
+  try {
+    // 1. Subir archivo
+    const uploadFormData = new FormData()
+    uploadFormData.append('archivo', file)
+    uploadFormData.append('tipo', 'factura')
+    
+    showToast('📤 Subiendo factura...', 'info')
+    const uploadRes = await axios.post(`${API}/uploads`, uploadFormData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    
+    if (!uploadRes.data.success) {
+      throw new Error('Error al subir archivo')
+    }
+    
+    const archivo_url = uploadRes.data.url
+    
+    // 2. Procesar con IA
+    showToast('🧠 Extrayendo datos con IA...', 'info')
+    const processRes = await axios.post(`${API}/inventario/importar-factura`, {
+      archivo_url,
+      proveedor_id
+    })
+    
+    if (!processRes.data.success) {
+      throw new Error('Error al procesar factura')
+    }
+    
+    // 3. Guardar datos y mostrar vista previa
+    importacionData = {
+      lineas: processRes.data.lineas,
+      proveedor_id,
+      archivo_url,
+      enProgreso: false
+    }
+    
+    closeModal()
+    mostrarVistaPreviaImportacionFactura(processRes.data)
+    
+  } catch (error) {
+    console.error('Error procesando factura:', error)
+    showToast('❌ Error al procesar factura', 'error')
+    btn.disabled = false
+    btn.innerHTML = '<i class="fas fa-magic mr-2"></i>Procesar con IA'
+  }
+}
+
+function mostrarVistaPreviaImportacionFactura(data) {
+  const proveedor = inventarioData.proveedores.find(p => p.id === importacionData.proveedor_id)
+  
+  const lineasHTML = data.lineas.map((linea, index) => {
+    const esCoincidencia = linea.coincidencia !== null
+    const esResuelto = linea.resuelto === true
+    
+    return `
+      <div class="border rounded-lg p-4 ${esCoincidencia ? 'bg-green-50 border-green-200' : esResuelto ? 'bg-blue-50 border-blue-200' : 'bg-yellow-50 border-yellow-200'}">
+        <div class="flex items-start justify-between mb-3">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-1">
+              ${esCoincidencia ? '<i class="fas fa-check-circle text-green-600"></i>' : esResuelto ? '<i class="fas fa-link text-blue-600"></i>' : '<i class="fas fa-exclamation-triangle text-yellow-600"></i>'}
+              <span class="font-semibold text-gray-800">${linea.descripcion}</span>
+            </div>
+            <div class="text-sm text-gray-600">
+              <span class="font-mono bg-gray-200 px-2 py-1 rounded">${linea.codigo_proveedor}</span>
+              <span class="mx-2">•</span>
+              <span>${linea.cantidad} unidades</span>
+              <span class="mx-2">•</span>
+              <span class="font-semibold">€${linea.precio_unitario.toFixed(2)}</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-lg font-bold text-gray-800">€${linea.precio_total.toFixed(2)}</div>
+          </div>
+        </div>
+        
+        ${esCoincidencia ? `
+          <div class="mt-2 p-3 bg-white rounded border border-green-300">
+            <div class="flex items-center text-sm text-green-700">
+              <i class="fas fa-check mr-2"></i>
+              <span class="font-semibold">${linea.coincidencia.nombre_producto}</span>
+              ${linea.coincidencia.medida ? `<span class="ml-2 text-gray-600">(${linea.coincidencia.medida})</span>` : ''}
+            </div>
+          </div>
+        ` : esResuelto ? `
+          <div class="mt-2 p-3 bg-white rounded border border-blue-300">
+            <div class="flex items-center text-sm text-blue-700">
+              <i class="fas fa-link mr-2"></i>
+              <span class="font-semibold">${linea.producto_vinculado.nombre}</span>
+            </div>
+          </div>
+        ` : `
+          <div class="mt-2 p-3 bg-white rounded border border-yellow-300">
+            <div class="text-sm text-yellow-700 mb-2">
+              <i class="fas fa-search mr-2"></i>
+              <span class="font-semibold">No encontrado - Requiere acción</span>
+            </div>
+            ${linea.sugerencias && linea.sugerencias.length > 0 ? `
+              <div class="text-xs text-gray-600 mb-2">Sugerencias:</div>
+              ${linea.sugerencias.slice(0, 3).map(sug => `
+                <button 
+                  onclick="vincularLineaProducto(${index}, ${sug.producto_id}, ${sug.variante_id || 'null'})"
+                  class="block w-full text-left px-3 py-2 mb-1 bg-gray-50 hover:bg-gray-100 rounded text-sm"
+                >
+                  <i class="fas fa-link mr-2 text-gray-400"></i>
+                  ${sug.nombre}
+                  <span class="text-gray-500">(${(sug.similitud * 100).toFixed(0)}% similar)</span>
+                </button>
+              `).join('')}
+            ` : ''}
+            <div class="flex gap-2 mt-2">
+              <button 
+                onclick="buscarProductoManual(${index})"
+                class="flex-1 px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+              >
+                <i class="fas fa-search mr-1"></i>Buscar
+              </button>
+              <button 
+                onclick="crearProductoNuevo(${index})"
+                class="flex-1 px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600"
+              >
+                <i class="fas fa-plus mr-1"></i>Crear nuevo
+              </button>
+            </div>
+          </div>
+        `}
+      </div>
+    `
+  }).join('')
+  
+  const totalCoincidencias = data.lineas.filter(l => l.coincidencia || l.resuelto).length
+  const totalLineas = data.lineas.length
+  const totalPendientes = totalLineas - totalCoincidencias
+  
+  showModal(`
+    <div class="space-y-6 max-w-4xl">
+      <!-- Header -->
+      <div class="text-center">
+        <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-file-invoice-dollar text-4xl text-purple-600"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-gray-800 mb-2">Vista Previa de Importación</h3>
+        <p class="text-gray-600">Proveedor: <span class="font-semibold">${proveedor?.nombre || 'Desconocido'}</span></p>
+      </div>
+      
+      <!-- Resumen -->
+      <div class="grid grid-cols-3 gap-4">
+        <div class="bg-blue-50 rounded-lg p-4 text-center">
+          <div class="text-3xl font-bold text-blue-600">${totalLineas}</div>
+          <div class="text-sm text-gray-600">Total líneas</div>
+        </div>
+        <div class="bg-green-50 rounded-lg p-4 text-center">
+          <div class="text-3xl font-bold text-green-600">${totalCoincidencias}</div>
+          <div class="text-sm text-gray-600">Coincidencias</div>
+        </div>
+        <div class="bg-yellow-50 rounded-lg p-4 text-center">
+          <div class="text-3xl font-bold text-yellow-600">${totalPendientes}</div>
+          <div class="text-sm text-gray-600">Pendientes</div>
+        </div>
+      </div>
+      
+      <!-- Lista de líneas -->
+      <div class="max-h-96 overflow-y-auto space-y-3">
+        ${lineasHTML}
+      </div>
+      
+      <!-- Acciones -->
+      <div class="flex gap-3 pt-4 border-t">
+        <button 
+          onclick="cancelarImportacion()" 
+          class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+        >
+          <i class="fas fa-times mr-2"></i>Cancelar
+        </button>
+        <button 
+          onclick="confirmarImportacion()"
+          ${totalPendientes > 0 ? 'disabled class="flex-1 px-4 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed"' : 'class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"'}
+        >
+          <i class="fas fa-check mr-2"></i>
+          Confirmar y Actualizar Stock
+        </button>
+      </div>
+      
+      ${totalPendientes > 0 ? `
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div class="flex items-start">
+            <i class="fas fa-exclamation-triangle text-yellow-600 mt-1 mr-3"></i>
+            <div>
+              <p class="font-semibold text-yellow-800">Acción requerida</p>
+              <p class="text-sm text-yellow-700">Debes resolver todos los productos pendientes antes de confirmar la importación.</p>
+            </div>
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `, 'max-w-5xl')
+}
+
+function vincularLineaProducto(lineaIndex, producto_id, variante_id) {
+  importacionData.lineas[lineaIndex].producto_id = producto_id
+  importacionData.lineas[lineaIndex].variante_id = variante_id
+  importacionData.lineas[lineaIndex].resuelto = true
+  
+  // Buscar nombre del producto
+  const producto = inventarioData.productos.find(p => p.id === producto_id)
+  if (producto) {
+    importacionData.lineas[lineaIndex].producto_vinculado = {
+      nombre: producto.nombre,
+      variante: variante_id ? producto.variantes?.find(v => v.id === variante_id) : null
+    }
+  }
+  
+  // Recalcular totales
+  const totalCoincidencias = importacionData.lineas.filter(l => l.coincidencia || l.resuelto).length
+  
+  mostrarVistaPreviaImportacionFactura({
+    lineas: importacionData.lineas,
+    total_lineas: importacionData.lineas.length,
+    total_coincidencias: totalCoincidencias,
+    total_sin_coincidencia: importacionData.lineas.length - totalCoincidencias
+  })
+}
+
+async function buscarProductoManual(lineaIndex) {
+  const linea = importacionData.lineas[lineaIndex]
+  
+  // Cargar todos los productos
+  await loadProductos()
+  
+  const productosOptions = inventarioData.productos.map(p => {
+    if (p.variantes && p.variantes.length > 0) {
+      return p.variantes.map(v => `
+        <option value="${p.id}-${v.id}">${p.nombre} - ${v.medida_texto || 'Sin medida'}</option>
+      `).join('')
+    } else {
+      return `<option value="${p.id}">${p.nombre}</option>`
+    }
+  }).join('')
+  
+  showModal(`
+    <div class="space-y-4">
+      <h3 class="text-xl font-bold">Buscar Producto</h3>
+      <p class="text-sm text-gray-600">Línea: <span class="font-semibold">${linea.descripcion}</span></p>
+      
+      <div>
+        <label class="block text-sm font-medium mb-2">Seleccionar producto:</label>
+        <input 
+          type="text" 
+          id="buscar-producto-input" 
+          placeholder="Buscar..." 
+          class="w-full px-4 py-2 border rounded-lg mb-2"
+          onkeyup="filtrarSelectProductos()"
+        >
+        <select 
+          id="select-producto-manual" 
+          class="w-full px-4 py-2 border rounded-lg"
+          size="10"
+        >
+          ${productosOptions}
+        </select>
+      </div>
+      
+      <div class="flex gap-3">
+        <button 
+          onclick="mostrarVistaPreviaImportacionFactura({ lineas: importacionData.lineas, total_lineas: importacionData.lineas.length, total_coincidencias: importacionData.lineas.filter(l => l.coincidencia || l.resuelto).length })" 
+          class="flex-1 px-4 py-2 border rounded-lg"
+        >
+          Cancelar
+        </button>
+        <button 
+          onclick="confirmarVinculacionManual(${lineaIndex})" 
+          class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg"
+        >
+          Vincular
+        </button>
+      </div>
+    </div>
+  `)
+}
+
+function confirmarVinculacionManual(lineaIndex) {
+  const select = document.getElementById('select-producto-manual')
+  const value = select.value
+  
+  if (!value) {
+    showToast('⚠️ Selecciona un producto', 'warning')
+    return
+  }
+  
+  const parts = value.split('-')
+  const producto_id = parseInt(parts[0])
+  const variante_id = parts[1] ? parseInt(parts[1]) : null
+  
+  vincularLineaProducto(lineaIndex, producto_id, variante_id)
+}
+
+function filtrarSelectProductos() {
+  const input = document.getElementById('buscar-producto-input')
+  const select = document.getElementById('select-producto-manual')
+  const filter = input.value.toLowerCase()
+  
+  Array.from(select.options).forEach(option => {
+    const text = option.text.toLowerCase()
+    option.style.display = text.includes(filter) ? '' : 'none'
+  })
+}
+
+async function crearProductoNuevo(lineaIndex) {
+  const linea = importacionData.lineas[lineaIndex]
+  
+  // Pre-rellenar formulario con datos de la línea
+  showProductoForm()
+  
+  // Esperar a que se renderice
+  setTimeout(() => {
+    document.getElementById('producto-nombre').value = linea.descripcion
+    document.getElementById('producto-precio').value = linea.precio_unitario
+    
+    showToast(`💡 Formulario pre-rellenado con datos de la factura`, 'info')
+  }, 100)
+}
+
+async function confirmarImportacion() {
+  if (importacionData.enProgreso) return
+  
+  const pendientes = importacionData.lineas.filter(l => !l.coincidencia && !l.resuelto).length
+  if (pendientes > 0) {
+    showToast('⚠️ Aún hay líneas pendientes de resolver', 'warning')
+    return
+  }
+  
+  importacionData.enProgreso = true
+  
+  try {
+    // Preparar datos para confirmar
+    const lineasParaActualizar = importacionData.lineas.map(linea => ({
+      codigo_proveedor: linea.codigo_proveedor,
+      producto_id: linea.coincidencia?.producto_id || linea.producto_id,
+      variante_id: linea.coincidencia?.variante_id || linea.variante_id || null,
+      cantidad: linea.cantidad,
+      coste_unitario: linea.precio_unitario
+    }))
+    
+    showToast('⏳ Actualizando stock...', 'info')
+    
+    const res = await axios.post(`${API}/inventario/confirmar-importacion`, {
+      proveedor_id: importacionData.proveedor_id,
+      lineas: lineasParaActualizar
+    })
+    
+    if (!res.data.success) {
+      throw new Error('Error al confirmar importación')
+    }
+    
+    showToast(`✅ Stock actualizado correctamente (${res.data.actualizadas} productos)`, 'success')
+    
+    // Limpiar datos
+    importacionData = {
+      lineas: [],
+      proveedor_id: null,
+      archivo_url: null,
+      enProgreso: false
+    }
+    
+    // Recargar inventario
+    await loadInventario()
+    
+    closeModal()
+    
+  } catch (error) {
+    console.error('Error confirmando importación:', error)
+    showToast('❌ Error al actualizar stock', 'error')
+    importacionData.enProgreso = false
+  }
+}
+
+function cancelarImportacion() {
+  if (confirm('¿Seguro que quieres cancelar? Se perderán todos los datos procesados.')) {
+    importacionData = {
+      lineas: [],
+      proveedor_id: null,
+      archivo_url: null,
+      enProgreso: false
+    }
+    closeModal()
+  }
+}
+
+// Exponer funciones globales de importación
+window.showImportarFacturaModal = showImportarFacturaModal
+window.procesarFactura = procesarFactura
+window.mostrarArchivoSeleccionado = mostrarArchivoSeleccionado
+window.limpiarArchivoSeleccionado = limpiarArchivoSeleccionado
+window.vincularLineaProducto = vincularLineaProducto
+window.buscarProductoManual = buscarProductoManual
+window.crearProductoNuevo = crearProductoNuevo
+window.confirmarVinculacionManual = confirmarVinculacionManual
+window.filtrarSelectProductos = filtrarSelectProductos
+window.confirmarImportacion = confirmarImportacion
+window.cancelarImportacion = cancelarImportacion
 
