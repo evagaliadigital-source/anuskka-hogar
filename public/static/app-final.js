@@ -12372,6 +12372,21 @@ function renderProductoForm(producto = null) {
                 >
                 <p class="text-xs text-gray-500 mt-1">Coste de compra (sin variantes)</p>
               </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <i class="fas fa-tags mr-1 text-green-600"></i>Precio de venta (PVP)
+                </label>
+                <input 
+                  type="number" 
+                  step="0.01" 
+                  name="precio_base" 
+                  value="${producto?.precio_base || ''}"
+                  placeholder="0.00"
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+                >
+                <p class="text-xs text-gray-500 mt-1">Precio de venta al público</p>
+              </div>
             </div>
           </div>
           
