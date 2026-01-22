@@ -1819,7 +1819,16 @@ async function showTrabajoForm(id = null) {
       showSuccess('Trabajo guardado correctamente')
     } catch (error) {
       console.error(error)
-      showError('Error al guardar trabajo')
+      
+      // Mostrar error detallado
+      let errorMsg = 'Error al guardar trabajo'
+      if (error.response?.data?.error) {
+        errorMsg = error.response.data.error
+        console.error('❌ Error del backend:', errorMsg)
+        alert('Error al guardar trabajo:\n\n' + errorMsg)
+      }
+      
+      showError(errorMsg)
     }
   })
 }
