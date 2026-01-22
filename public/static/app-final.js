@@ -13234,14 +13234,7 @@ function showImportarFacturaModal() {
             onclick="importarManualmente()"
             class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
-            <i class="fas fa-keyboard mr-2"></i>Ingresar Manualmente
-          </button>
-          <button 
-            type="submit" 
-            id="btn-procesar-factura"
-            class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-          >
-            <i class="fas fa-magic mr-2"></i>Procesar con IA
+            <i class="fas fa-keyboard mr-2"></i>Importar Factura
           </button>
         </div>
       </form>
