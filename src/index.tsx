@@ -4097,4 +4097,119 @@ app.get('/', (c) => {
   `)
 })
 
+// ============================================
+// API ENDPOINTS - ALERTAS DIARIAS
+// ============================================
+
+// Obtener alertas diarias (tareas y trabajos programados para hoy + vencidos)
+app.get('/api/alertas/diarias', async (c) => {
+  try {
+    const hoy = new Date()
+    hoy.setHours(0, 0, 0, 0)
+    const hoyStr = hoy.toISOString().split('T')[0]
+    
+    // Tareas programadas para HOY
+    const tareasProgramadasHoy = await c.env.DB.prepare(`
+      SELECT t.*, 
+             cl.nombre as cliente_nombre,
+             cl.apellidos as cliente_apellidos,
+             tr.numero_trabajo
+      FROM tareas_pendientes t
+      LEFT JOIN clientes cl ON t.cliente_id = cl.id
+      LEFT JOIN trabajos tr ON t.trabajo_id = tr.id
+      WHERE DATE(t.fecha_limite) = ?
+        AND t.completada = 0
+      ORDER BY t.prioridad ASC
+    `).bind(hoyStr).all()
+    
+    // Tareas con fecha límite HOY
+    const tareasLimiteHoy = await c.env.DB.prepare(`
+      SELECT t.*, 
+             cl.nombre as cliente_nombre,
+             cl.apellidos as cliente_apellidos,
+             tr.numero_trabajo
+      FROM tareas_pendientes t
+      LEFT JOIN clientes cl ON t.cliente_id = cl.id
+      LEFT JOIN trabajos tr ON t.trabajo_id = tr.id
+      WHERE DATE(t.fecha_limite) = ?
+        AND t.completada = 0
+      ORDER BY t.prioridad ASC
+    `).bind(hoyStr).all()
+    
+    // Tareas VENCIDAS (fecha límite pasada)
+    const tareasVencidas = await c.env.DB.prepare(`
+      SELECT t.*, 
+             cl.nombre as cliente_nombre,
+             cl.apellidos as cliente_apellidos,
+             tr.numero_trabajo
+      FROM tareas_pendientes t
+      LEFT JOIN clientes cl ON t.cliente_id = cl.id
+      LEFT JOIN trabajos tr ON t.trabajo_id = tr.id
+      WHERE DATE(t.fecha_limite) < ?
+        AND t.completada = 0
+      ORDER BY t.fecha_limite ASC
+    `).bind(hoyStr).all()
+    
+    // Trabajos programados para HOY
+    const trabajosProgramadosHoy = await c.env.DB.prepare(`
+      SELECT t.*,
+             c.nombre as cliente_nombre,
+             c.apellidos as cliente_apellidos,
+             e.nombre as empleada_nombre
+      FROM trabajos t
+      LEFT JOIN clientes c ON t.cliente_id = c.id
+      LEFT JOIN empleadas e ON t.empleada_id = e.id
+      WHERE DATE(t.fecha_programada) = ?
+        AND t.estado NOT IN ('completado', 'cancelado')
+      ORDER BY t.fecha_programada ASC
+    `).bind(hoyStr).all()
+    
+    // Trabajos con fecha límite HOY (fecha_finalizacion)
+    const trabajosLimiteHoy = await c.env.DB.prepare(`
+      SELECT t.*,
+             c.nombre as cliente_nombre,
+             c.apellidos as cliente_apellidos,
+             e.nombre as empleada_nombre
+      FROM trabajos t
+      LEFT JOIN clientes c ON t.cliente_id = c.id
+      LEFT JOIN empleadas e ON t.empleada_id = e.id
+      WHERE DATE(t.fecha_finalizacion) = ?
+        AND t.estado NOT IN ('completado', 'cancelado')
+      ORDER BY t.fecha_finalizacion ASC
+    `).bind(hoyStr).all()
+    
+    // Trabajos VENCIDOS (fecha finalizacion pasada y no completados)
+    const trabajosVencidos = await c.env.DB.prepare(`
+      SELECT t.*,
+             c.nombre as cliente_nombre,
+             c.apellidos as cliente_apellidos,
+             e.nombre as empleada_nombre
+      FROM trabajos t
+      LEFT JOIN clientes c ON t.cliente_id = c.id
+      LEFT JOIN empleadas e ON t.empleada_id = e.id
+      WHERE DATE(t.fecha_finalizacion) < ?
+        AND t.estado NOT IN ('completado', 'cancelado')
+      ORDER BY t.fecha_finalizacion ASC
+    `).bind(hoyStr).all()
+    
+    return c.json({
+      success: true,
+      fecha: hoyStr,
+      tareas: {
+        programadas_hoy: tareasProgramadasHoy.results || [],
+        limite_hoy: tareasLimiteHoy.results || [],
+        vencidas: tareasVencidas.results || []
+      },
+      trabajos: {
+        programados_hoy: trabajosProgramadosHoy.results || [],
+        limite_hoy: trabajosLimiteHoy.results || [],
+        vencidos: trabajosVencidos.results || []
+      }
+    })
+  } catch (error) {
+    console.error('Error obteniendo alertas diarias:', error)
+    return c.json({ success: false, error: error.message }, 500)
+  }
+})
+
 export default app

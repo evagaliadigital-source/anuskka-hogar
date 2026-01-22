@@ -1303,11 +1303,6 @@ async function viewTrabajo(id) {
                     year: 'numeric', month: 'long', day: 'numeric' 
                   })}
                 </div>
-                <div class="text-xs text-gray-500 mt-1">
-                  ${new Date(trabajo.fecha_programada).toLocaleTimeString('es-ES', { 
-                    hour: '2-digit', minute: '2-digit' 
-                  })}
-                </div>
               </div>
               
               ${trabajo.fecha_inicio ? `
@@ -1318,11 +1313,6 @@ async function viewTrabajo(id) {
                   <div class="font-semibold text-gray-800">
                     ${new Date(trabajo.fecha_inicio).toLocaleDateString('es-ES', { 
                       year: 'numeric', month: 'long', day: 'numeric' 
-                    })}
-                  </div>
-                  <div class="text-xs text-gray-500 mt-1">
-                    ${new Date(trabajo.fecha_inicio).toLocaleTimeString('es-ES', { 
-                      hour: '2-digit', minute: '2-digit' 
                     })}
                   </div>
                 </div>
@@ -1336,11 +1326,6 @@ async function viewTrabajo(id) {
                   <div class="font-semibold text-green-800">
                     ${new Date(trabajo.fecha_finalizacion).toLocaleDateString('es-ES', { 
                       year: 'numeric', month: 'long', day: 'numeric' 
-                    })}
-                  </div>
-                  <div class="text-xs text-green-600 mt-1">
-                    ${new Date(trabajo.fecha_finalizacion).toLocaleTimeString('es-ES', { 
-                      hour: '2-digit', minute: '2-digit' 
                     })}
                   </div>
                 </div>
@@ -2007,7 +1992,6 @@ function renderizarTrabajosTabla(trabajos) {
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
               ${new Date(t.fecha_programada).toLocaleDateString('es-ES')}
-              <div class="text-xs text-gray-500">${new Date(t.fecha_programada).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="text-sm font-medium text-gray-900">${t.cliente_nombre} ${t.cliente_apellidos}</div>
@@ -2026,8 +2010,7 @@ function renderizarTrabajosTabla(trabajos) {
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
               ${t.fecha_finalizacion ? 
-                `<div class="font-medium">${new Date(t.fecha_finalizacion).toLocaleDateString('es-ES')}</div>
-                 <div class="text-xs text-gray-500">${new Date(t.fecha_finalizacion).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</div>` 
+                `<div class="font-medium">${new Date(t.fecha_finalizacion).toLocaleDateString('es-ES')}</div>` 
                 : '<span class="text-gray-400 italic">Sin fecha de entrega</span>'}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
