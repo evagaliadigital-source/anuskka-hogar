@@ -12021,7 +12021,12 @@ async function loadProductos(categoria_id = null, buscar = null) {
 
 function renderInventario() {
   const container = document.getElementById('inventario-container')
-  if (!container) return
+  console.log('🔍 Buscando contenedor inventario-container:', container)
+  if (!container) {
+    console.error('❌ Contenedor inventario-container NO encontrado')
+    return
+  }
+  console.log('✅ Contenedor encontrado, renderizando...')
   
   const categoriasOptions = inventarioData.categorias.map(cat => `
     <option value="${cat.id}">${cat.nombre}</option>
