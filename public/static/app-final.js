@@ -13230,6 +13230,13 @@ function showImportarFacturaModal() {
             Cancelar
           </button>
           <button 
+            type="button"
+            onclick="importarManualmente()"
+            class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            <i class="fas fa-keyboard mr-2"></i>Ingresar Manualmente
+          </button>
+          <button 
             type="submit" 
             id="btn-procesar-factura"
             class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
@@ -13256,6 +13263,241 @@ function mostrarArchivoSeleccionado(event) {
 function limpiarArchivoSeleccionado() {
   document.getElementById('factura-file-input').value = ''
   document.getElementById('archivo-seleccionado').classList.add('hidden')
+}
+
+// Importar factura manualmente (sin IA)
+function importarManualmente() {
+  const proveedorSelect = document.getElementById('importar-proveedor-select')
+  const proveedor_id = parseInt(proveedorSelect.value)
+  
+  if (!proveedor_id) {
+    showToast('⚠️ Por favor selecciona un proveedor', 'warning')
+    return
+  }
+  
+  closeModal()
+  
+  // Mostrar formulario de ingreso manual
+  const proveedor = inventarioData.proveedores.find(p => p.id === proveedor_id)
+  
+  const modalContent = `
+    <div class="max-w-4xl">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800">
+            <i class="fas fa-keyboard mr-2 text-blue-600"></i>Importar Factura Manualmente
+          </h2>
+          <p class="text-sm text-gray-600 mt-1">Proveedor: ${proveedor.nombre}</p>
+        </div>
+        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+          <i class="fas fa-times text-2xl"></i>
+        </button>
+      </div>
+      
+      <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+        <p class="text-sm text-blue-800">
+          <i class="fas fa-info-circle mr-2"></i>
+          Ingresa cada producto de la factura. Luego podrás revisar y confirmar la importación.
+        </p>
+      </div>
+      
+      <div id="lineas-manuales-container" class="space-y-4 mb-6">
+        <!-- Líneas se añadirán aquí -->
+      </div>
+      
+      <button 
+        onclick="añadirLineaManual()"
+        class="w-full px-4 py-3 border-2 border-dashed border-gray-300 text-gray-600 rounded-lg hover:border-blue-500 hover:text-blue-600 transition-all mb-6"
+      >
+        <i class="fas fa-plus-circle mr-2"></i>Añadir Producto
+      </button>
+      
+      <div class="flex gap-3 pt-4 border-t">
+        <button 
+          onclick="closeModal()" 
+          class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+        >
+          Cancelar
+        </button>
+        <button 
+          onclick="procesarImportacionManual(${proveedor_id})"
+          class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          <i class="fas fa-check mr-2"></i>Continuar con Revisión
+        </button>
+      </div>
+    </div>
+  `
+  
+  showModal(modalContent, 'max-w-4xl')
+  
+  // Añadir primera línea automáticamente
+  añadirLineaManual()
+  
+  // Guardar proveedor_id para usar después
+  importacionData.proveedor_id = proveedor_id
+}
+
+let contadorLineasManuales = 0
+
+function añadirLineaManual() {
+  contadorLineasManuales++
+  const container = document.getElementById('lineas-manuales-container')
+  
+  const lineaHTML = `
+    <div class="bg-white border rounded-lg p-4" id="linea-manual-${contadorLineasManuales}">
+      <div class="flex items-center justify-between mb-3">
+        <h4 class="font-semibold text-gray-700">Producto #${contadorLineasManuales}</h4>
+        <button 
+          onclick="eliminarLineaManual(${contadorLineasManuales})"
+          class="text-red-500 hover:text-red-700"
+        >
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Código del proveedor</label>
+          <input 
+            type="text" 
+            name="codigo_proveedor_${contadorLineasManuales}"
+            placeholder="Ej: REF-8831"
+            class="w-full px-3 py-2 border rounded-lg"
+          >
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+          <input 
+            type="text" 
+            name="descripcion_${contadorLineasManuales}"
+            placeholder="Ej: Cojín Aloe 45x45 cm"
+            class="w-full px-3 py-2 border rounded-lg"
+            required
+          >
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad</label>
+          <input 
+            type="number" 
+            step="0.01"
+            name="cantidad_${contadorLineasManuales}"
+            placeholder="10"
+            class="w-full px-3 py-2 border rounded-lg"
+            required
+          >
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Precio Unitario (€)</label>
+          <input 
+            type="number" 
+            step="0.01"
+            name="precio_unitario_${contadorLineasManuales}"
+            placeholder="12.99"
+            class="w-full px-3 py-2 border rounded-lg"
+            required
+          >
+        </div>
+      </div>
+    </div>
+  `
+  
+  container.insertAdjacentHTML('beforeend', lineaHTML)
+}
+
+function eliminarLineaManual(id) {
+  const linea = document.getElementById(`linea-manual-${id}`)
+  if (linea) {
+    linea.remove()
+  }
+}
+
+function procesarImportacionManual(proveedor_id) {
+  const lineas = []
+  
+  // Recopilar todas las líneas
+  for (let i = 1; i <= contadorLineasManuales; i++) {
+    const linea = document.getElementById(`linea-manual-${i}`)
+    if (!linea) continue // Línea eliminada
+    
+    const codigo = linea.querySelector(`input[name="codigo_proveedor_${i}"]`).value
+    const descripcion = linea.querySelector(`input[name="descripcion_${i}"]`).value
+    const cantidad = parseFloat(linea.querySelector(`input[name="cantidad_${i}"]`).value)
+    const precio_unitario = parseFloat(linea.querySelector(`input[name="precio_unitario_${i}"]`).value)
+    
+    if (!descripcion || !cantidad || !precio_unitario) {
+      showToast('⚠️ Por favor completa todos los campos obligatorios', 'warning')
+      return
+    }
+    
+    lineas.push({
+      numero_linea: lineas.length + 1,
+      codigo_proveedor: codigo || null,
+      descripcion,
+      cantidad,
+      precio_unitario,
+      precio_total: cantidad * precio_unitario,
+      unidad: 'unidad',
+      coincidencia: null // Se buscará en el backend
+    })
+  }
+  
+  if (lineas.length === 0) {
+    showToast('⚠️ Añade al menos un producto', 'warning')
+    return
+  }
+  
+  closeModal()
+  
+  // Simular respuesta de IA para usar el mismo flujo
+  const datosSimulados = {
+    success: true,
+    lineas: lineas,
+    total_lineas: lineas.length,
+    total_coincidencias: 0,
+    total_sin_coincidencia: lineas.length,
+    info_factura: {
+      proveedor: inventarioData.proveedores.find(p => p.id === proveedor_id)?.nombre || 'Sin nombre',
+      fecha: new Date().toISOString().split('T')[0],
+      numero_factura: 'MANUAL-' + Date.now(),
+      total_factura: lineas.reduce((sum, l) => sum + l.precio_total, 0)
+    }
+  }
+  
+  // Guardar datos
+  importacionData = {
+    lineas: datosSimulados.lineas,
+    proveedor_id,
+    archivo_url: null,
+    enProgreso: false
+  }
+  
+  // Buscar coincidencias en el backend
+  buscarCoincidenciasManual(datosSimulados)
+}
+
+async function buscarCoincidenciasManual(datos) {
+  try {
+    showToast('🔍 Buscando productos en inventario...', 'info')
+    
+    // Hacer matching en el backend
+    const res = await axios.post(`${API}/inventario/buscar-coincidencias`, {
+      proveedor_id: importacionData.proveedor_id,
+      lineas: datos.lineas
+    })
+    
+    if (res.data.success) {
+      datos.lineas = res.data.lineas
+      mostrarVistaPreviaImportacionFactura(datos)
+    } else {
+      // Si falla, mostrar sin matching
+      mostrarVistaPreviaImportacionFactura(datos)
+    }
+  } catch (error) {
+    console.error('Error buscando coincidencias:', error)
+    // Continuar sin matching
+    mostrarVistaPreviaImportacionFactura(datos)
+  }
 }
 
 async function procesarFactura(event) {

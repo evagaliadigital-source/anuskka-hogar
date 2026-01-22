@@ -2662,7 +2662,7 @@ app.get('/', (c) => {
             <div class="bg-gradient-to-r from-orange-500 to-yellow-500 text-white px-6 py-5 flex items-center justify-between">
                 <div>
                     <h3 class="text-2xl font-bold flex items-center">
-                        <i class="fas fa-sun mr-3"></i>Buenos días, Anushka Hogar 🌅
+                        <i class="fas fa-sun mr-3"></i>Buenos días, Anushka Hogar
                     </h3>
                     <p class="text-sm text-white/90 mt-1">Resumen de tu día - <span id="resumen-fecha"></span></p>
                 </div>
