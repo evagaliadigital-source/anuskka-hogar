@@ -2657,12 +2657,12 @@ app.get('/', (c) => {
 
     <!-- Modal de Resumen Diario (Alerta 9:00 AM) -->
     <div id="resumen-diario-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden">
             <!-- Header -->
             <div class="bg-gradient-to-r from-orange-500 to-yellow-500 text-white px-6 py-5 flex items-center justify-between">
                 <div>
                     <h3 class="text-2xl font-bold flex items-center">
-                        <i class="fas fa-sun mr-3"></i>Buenos días, Eva 🌅
+                        <i class="fas fa-sun mr-3"></i>Buenos días, Anushka Hogar 🌅
                     </h3>
                     <p class="text-sm text-white/90 mt-1">Resumen de tu día - <span id="resumen-fecha"></span></p>
                 </div>
@@ -2672,7 +2672,7 @@ app.get('/', (c) => {
             </div>
             
             <!-- Content -->
-            <div class="overflow-y-auto max-h-[calc(90vh-120px)] p-6">
+            <div class="overflow-y-auto max-h-[calc(85vh-180px)] p-6">
                 <!-- Vencen Hoy -->
                 <div class="mb-6">
                     <div class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 mb-3">

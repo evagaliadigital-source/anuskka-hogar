@@ -9103,10 +9103,12 @@ function verificarResumenDiario() {
     return
   }
   
-  // Mostrar si es después de las 9:00 AM
+  // Mostrar solo después de las 9:00 AM
   if (hora >= 9) {
-    console.log('☀️ Es hora del resumen diario')
+    console.log(`☀️ Es hora del resumen diario (${hora}:00 - después de las 9:00 AM)`)
     setTimeout(mostrarResumenDiario, 2000) // Esperar 2 segundos después de cargar
+  } else {
+    console.log(`⏰ Aún no es hora del resumen diario (${hora}:00 - se mostrará después de las 9:00 AM)`)
   }
 }
 
