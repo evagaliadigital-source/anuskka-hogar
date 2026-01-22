@@ -1292,44 +1292,31 @@ async function viewTrabajo(id) {
               ` : ''}
             </div>
             
-            <!-- Fechas y Duración -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <div class="bg-white p-4 rounded-lg border border-gray-200">
-                <div class="text-xs text-gray-500 mb-1">
-                  <i class="fas fa-calendar-alt mr-1"></i>FECHA PROGRAMADA
+            <!-- Fechas -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div class="bg-white p-4 rounded-lg border border-blue-200 bg-blue-50">
+                <div class="text-xs text-blue-600 mb-1">
+                  <i class="fas fa-calendar-alt mr-1"></i>FECHA INICIO
                 </div>
-                <div class="font-semibold text-gray-800">
+                <div class="font-semibold text-blue-800">
                   ${new Date(trabajo.fecha_programada).toLocaleDateString('es-ES', { 
                     year: 'numeric', month: 'long', day: 'numeric' 
                   })}
                 </div>
               </div>
               
-              ${trabajo.fecha_inicio ? `
-                <div class="bg-white p-4 rounded-lg border border-gray-200">
-                  <div class="text-xs text-gray-500 mb-1">
-                    <i class="fas fa-play-circle mr-1"></i>FECHA INICIO
-                  </div>
-                  <div class="font-semibold text-gray-800">
-                    ${new Date(trabajo.fecha_inicio).toLocaleDateString('es-ES', { 
-                      year: 'numeric', month: 'long', day: 'numeric' 
-                    })}
-                  </div>
-                </div>
-              ` : '<div class="bg-white p-4 rounded-lg border border-gray-200"><div class="text-xs text-gray-500 mb-1"><i class="fas fa-play-circle mr-1"></i>FECHA INICIO</div><div class="text-gray-400 italic text-sm">Sin iniciar</div></div>'}
-              
               ${trabajo.fecha_finalizacion ? `
-                <div class="bg-white p-4 rounded-lg border border-green-200 bg-green-50">
-                  <div class="text-xs text-green-600 mb-1">
-                    <i class="fas fa-check-circle mr-1"></i>FECHA ENTREGA
+                <div class="bg-white p-4 rounded-lg border border-red-200 bg-red-50">
+                  <div class="text-xs text-red-600 mb-1">
+                    <i class="fas fa-flag-checkered mr-1"></i>FECHA LÍMITE
                   </div>
-                  <div class="font-semibold text-green-800">
+                  <div class="font-semibold text-red-800">
                     ${new Date(trabajo.fecha_finalizacion).toLocaleDateString('es-ES', { 
                       year: 'numeric', month: 'long', day: 'numeric' 
                     })}
                   </div>
                 </div>
-              ` : '<div class="bg-white p-4 rounded-lg border border-gray-200"><div class="text-xs text-gray-500 mb-1"><i class="fas fa-check-circle mr-1"></i>FECHA ENTREGA</div><div class="text-gray-400 italic text-sm">Pendiente</div></div>'}
+              ` : '<div class="bg-white p-4 rounded-lg border border-gray-200"><div class="text-xs text-gray-500 mb-1"><i class="fas fa-flag-checkered mr-1"></i>FECHA LÍMITE</div><div class="text-gray-400 italic text-sm">Sin fecha límite</div></div>'}
             </div>
             
             <!-- Costes y Precios -->
@@ -1561,7 +1548,7 @@ async function viewTrabajo(id) {
               ${getEstadoBadge(trabajo.estado)}
             </div>
             <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-600 mb-1">Fecha Programada</p>
+              <p class="text-sm text-gray-600 mb-1">Fecha Inicio</p>
               <p class="font-semibold text-gray-900">${new Date(trabajo.fecha_programada).toLocaleDateString('es-ES')}</p>
             </div>
             <div class="bg-gray-50 p-4 rounded-lg">
@@ -1744,13 +1731,22 @@ async function showTrabajoForm(id = null) {
                    class="w-full px-4 py-2 border rounded-lg">
           </div>
           
-          <div class="grid grid-cols-3 gap-4">
+          <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Fecha y Hora *</label>
-              <input type="datetime-local" name="fecha_programada" 
-                     value="${trabajo.fecha_programada ? new Date(trabajo.fecha_programada).toISOString().slice(0, 16) : ''}" 
+              <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio *</label>
+              <input type="date" name="fecha_programada" 
+                     value="${trabajo.fecha_programada ? trabajo.fecha_programada.split('T')[0] : ''}" 
                      required class="w-full px-4 py-2 border rounded-lg">
             </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Límite</label>
+              <input type="date" name="fecha_finalizacion" 
+                     value="${trabajo.fecha_finalizacion ? trabajo.fecha_finalizacion.split('T')[0] : ''}" 
+                     class="w-full px-4 py-2 border rounded-lg">
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Duración (horas)</label>
               <input type="number" step="0.5" name="duracion_horas" value="${trabajo.duracion_estimada ? (trabajo.duracion_estimada / 60).toFixed(1) : ''}" 
@@ -1895,7 +1891,7 @@ function exportarTrabajos() {
   }
   
   // Crear CSV
-  const headers = ['Número', 'Fecha Inicio', 'Cliente', 'Tipo', 'Empleada', 'Estado', 'Fecha Entrega']
+  const headers = ['Número', 'Fecha Inicio', 'Cliente', 'Tipo', 'Empleada', 'Estado', 'Fecha Límite']
   const rows = currentData.trabajos.map(t => [
     t.numero_trabajo || 'Sin número',
     new Date(t.fecha_programada).toLocaleDateString('es-ES'),
@@ -1977,7 +1973,7 @@ function renderizarTrabajosTabla(trabajos) {
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Empleada</th>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Entrega</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Límite</th>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
         </tr>
       </thead>
@@ -2011,7 +2007,7 @@ function renderizarTrabajosTabla(trabajos) {
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
               ${t.fecha_finalizacion ? 
                 `<div class="font-medium">${new Date(t.fecha_finalizacion).toLocaleDateString('es-ES')}</div>` 
-                : '<span class="text-gray-400 italic">Sin fecha de entrega</span>'}
+                : '<span class="text-gray-400 italic">Sin fecha límite</span>'}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
               <button onclick="viewTrabajo(${t.id})" class="text-blue-600 hover:text-blue-800" title="Ver detalles">
