@@ -221,8 +221,23 @@ inventario.get('/productos', async (c) => {
     const params = []
     
     if (categoria_id) {
-      query += ` AND p.categoria_id = ?`
-      params.push(categoria_id)
+      // Buscar si la categoría tiene subcategorías
+      const subcategorias = await c.env.DB.prepare(`
+        SELECT id FROM categorias_inventario 
+        WHERE categoria_padre_id = ? AND activo = 1
+      `).bind(categoria_id).all()
+      
+      if (subcategorias.results.length > 0) {
+        // Es categoría padre - incluir ella Y sus subcategorías
+        const ids = [categoria_id, ...subcategorias.results.map((s: any) => s.id)]
+        const placeholders = ids.map(() => '?').join(',')
+        query += ` AND p.categoria_id IN (${placeholders})`
+        params.push(...ids)
+      } else {
+        // Es subcategoría - solo esa
+        query += ` AND p.categoria_id = ?`
+        params.push(categoria_id)
+      }
     }
     
     if (buscar) {
