@@ -13231,7 +13231,7 @@ function showImportarFacturaModal() {
           </button>
           <button 
             type="button"
-            onclick="importarManualmente()"
+            onclick="event.preventDefault(); const prov = document.getElementById('importar-proveedor-select').value; if (!prov) { showToast('⚠️ Selecciona un proveedor', 'warning'); return; } importarManualmente(parseInt(prov))"
             class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             <i class="fas fa-keyboard mr-2"></i>Importar Factura
@@ -13259,10 +13259,7 @@ function limpiarArchivoSeleccionado() {
 }
 
 // Importar factura manualmente (sin IA)
-function importarManualmente() {
-  const proveedorSelect = document.getElementById('importar-proveedor-select')
-  const proveedor_id = parseInt(proveedorSelect.value)
-  
+function importarManualmente(proveedor_id) {
   if (!proveedor_id) {
     showToast('⚠️ Por favor selecciona un proveedor', 'warning')
     return
