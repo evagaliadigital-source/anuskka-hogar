@@ -13322,7 +13322,21 @@ async function procesarFactura(event) {
     
   } catch (error) {
     console.error('Error procesando factura:', error)
-    showToast('❌ Error al procesar factura', 'error')
+    
+    // Mostrar error detallado
+    let errorMsg = 'Error al procesar factura'
+    if (error.response?.data?.error) {
+      errorMsg = error.response.data.error
+      console.error('❌ Error del backend:', errorMsg)
+    }
+    
+    showToast('❌ ' + errorMsg, 'error')
+    
+    // Mostrar modal con detalles del error
+    if (error.response?.data?.error) {
+      alert('Error al procesar factura:\n\n' + error.response.data.error)
+    }
+    
     btn.disabled = false
     btn.innerHTML = '<i class="fas fa-magic mr-2"></i>Procesar con IA'
   }
