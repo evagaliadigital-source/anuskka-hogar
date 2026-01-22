@@ -12305,6 +12305,76 @@ function renderProductoForm(producto = null) {
             </div>
           </div>
           
+          <!-- INFORMACIÓN DE COMPRA -->
+          <div class="mb-6 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+            <h3 class="font-bold text-gray-700 mb-4">
+              <i class="fas fa-shopping-cart mr-2 text-blue-600"></i>Información de Compra (opcional)
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <i class="fas fa-truck mr-1"></i>Proveedor
+                </label>
+                <select 
+                  name="proveedor_id" 
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Sin proveedor</option>
+                  ${inventarioData.proveedores.map(p => `
+                    <option value="${p.id}" ${producto?.proveedor_id == p.id ? 'selected' : ''}>
+                      ${p.nombre}
+                    </option>
+                  `).join('')}
+                </select>
+                <p class="text-xs text-gray-500 mt-1">Proveedor habitual de este producto</p>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <i class="fas fa-tag mr-1"></i>Código del proveedor
+                </label>
+                <input 
+                  type="text" 
+                  name="codigo_proveedor" 
+                  value="${producto?.codigo_proveedor || ''}"
+                  placeholder="Ej: REF-8831"
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                <p class="text-xs text-gray-500 mt-1">Referencia que usa el proveedor</p>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <i class="fas fa-barcode mr-1"></i>Código de barras / EAN
+                </label>
+                <input 
+                  type="text" 
+                  name="ean" 
+                  value="${producto?.ean || ''}"
+                  placeholder="Ej: 8412345678901"
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                <p class="text-xs text-gray-500 mt-1">Para escanear con lector de códigos</p>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <i class="fas fa-euro-sign mr-1"></i>Coste base (lo que TE cuesta)
+                </label>
+                <input 
+                  type="number" 
+                  step="0.01" 
+                  name="coste_base" 
+                  value="${producto?.coste_base || ''}"
+                  placeholder="0.00"
+                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                <p class="text-xs text-gray-500 mt-1">Coste de compra (sin variantes)</p>
+              </div>
+            </div>
+          </div>
+          
           ${renderFormularioDinamico(categoriaInfo, producto)}
           
         ` : `
@@ -12578,6 +12648,22 @@ function showAddVarianteModal(varianteIndex = null) {
               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
             >
           </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              <i class="fas fa-euro-sign mr-1 text-blue-600"></i>
+              Coste unitario (lo que TE cuesta)
+            </label>
+            <input 
+              type="number" 
+              step="0.01" 
+              name="coste_unitario" 
+              value="${variante ? variante.coste_unitario : ''}"
+              placeholder="0.00"
+              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            >
+            <p class="text-xs text-gray-500 mt-1">Precio de compra de esta variante</p>
+          </div>
         </div>
         
         <div class="flex gap-3">
@@ -12618,6 +12704,7 @@ function guardarVariante(event, varianteIndex = null) {
     precio: parseFloat(formData.get('precio')),
     stock_actual: parseFloat(formData.get('stock_actual')) || 0,
     stock_minimo: parseFloat(formData.get('stock_minimo')) || 0,
+    coste_unitario: formData.get('coste_unitario') ? parseFloat(formData.get('coste_unitario')) : null,
     unidad: formData.get('unidad')
   }
   
@@ -12669,7 +12756,12 @@ async function guardarProducto(event) {
     categoria_id: inventarioData.categoriaSeleccionada,
     descripcion: formData.get('descripcion') || null,
     notas: formData.get('notas') || null,
-    tiene_variantes: categoriaInfo.permite_variantes === 1 && inventarioData.variantesTemporales.length > 0
+    tiene_variantes: categoriaInfo.permite_variantes === 1 && inventarioData.variantesTemporales.length > 0,
+    // Información de compra
+    proveedor_id: formData.get('proveedor_id') ? parseInt(formData.get('proveedor_id')) : null,
+    codigo_proveedor: formData.get('codigo_proveedor') || null,
+    ean: formData.get('ean') || null,
+    coste_base: formData.get('coste_base') ? parseFloat(formData.get('coste_base')) : null
   }
   
   if (data.tiene_variantes) {

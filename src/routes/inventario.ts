@@ -334,7 +334,12 @@ inventario.post('/productos', async (c) => {
       imagen_url,
       notas,
       tiene_variantes,
-      variantes // Array de variantes si tiene_variantes = 1
+      variantes, // Array de variantes si tiene_variantes = 1
+      // Nuevos campos de compra
+      proveedor_id,
+      codigo_proveedor,
+      ean,
+      coste_base
     } = data
 
     // Validaciones básicas
@@ -363,12 +368,29 @@ inventario.post('/productos', async (c) => {
 
     const producto_id = productoResult.meta.last_row_id
 
+    // Si tiene código de proveedor, guardarlo
+    if (proveedor_id && codigo_proveedor) {
+      await c.env.DB.prepare(`
+        INSERT INTO producto_codigos_externos (
+          producto_id, variante_id, proveedor_id, codigo_proveedor, 
+          ean, coste_ultima_compra, fecha_ultima_compra
+        ) VALUES (?, ?, ?, ?, ?, ?, DATE('now'))
+      `).bind(
+        producto_id,
+        null, // Es del producto, no de variante
+        proveedor_id,
+        codigo_proveedor,
+        ean || null,
+        coste_base || null
+      ).run()
+    }
+
     // Si tiene variantes, insertarlas
     if (tiene_variantes && variantes && variantes.length > 0) {
       for (const variante of variantes) {
         const sku = variante.sku_interno || `SKU-${producto_id}-${Date.now()}`
         
-        await c.env.DB.prepare(`
+        const varianteResult = await c.env.DB.prepare(`
           INSERT INTO producto_variantes (
             producto_id, sku_interno, nombre_variante, 
             medida_ancho, medida_alto, medida_texto,
@@ -388,6 +410,25 @@ inventario.post('/productos', async (c) => {
           variante.stock_minimo || 0,
           variante.unidad
         ).run()
+        
+        const variante_id = varianteResult.meta.last_row_id
+        
+        // Si la variante tiene coste_unitario, guardarlo
+        if (proveedor_id && variante.coste_unitario) {
+          await c.env.DB.prepare(`
+            INSERT INTO producto_codigos_externos (
+              producto_id, variante_id, proveedor_id, codigo_proveedor, 
+              ean, coste_ultima_compra, fecha_ultima_compra
+            ) VALUES (?, ?, ?, ?, ?, ?, DATE('now'))
+          `).bind(
+            producto_id,
+            variante_id,
+            proveedor_id,
+            codigo_proveedor || `${codigo_proveedor}-${variante.medida_texto}`,
+            ean || null,
+            variante.coste_unitario
+          ).run()
+        }
       }
     }
 
