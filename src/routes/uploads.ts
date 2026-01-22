@@ -230,29 +230,20 @@ uploads.post('/factura', async (c) => {
         }
       })
       
-      // URL pública (temporalmente usando R2 dev URL)
-      const publicUrl = `https://pub-BUCKET_ID.r2.dev/${key}` // TODO: Reemplazar con custom domain
-      
-      return c.json({
-        success: true,
-        url: publicUrl,
-        key: key,
-        size: bytes.length,
-        contentType: contentType,
-        message: 'Factura subida correctamente a R2'
-      })
-    } else {
-      // Fallback: Devolver base64 (desarrollo sin R2)
-      console.warn('⚠️ R2 no disponible, usando base64 temporal')
-      return c.json({
-        success: true,
-        url: archivo_base64, // Devolver base64 original
-        key: key,
-        size: bytes.length,
-        message: '⚠️ Factura guardada como base64 (R2 no disponible)',
-        temporal: true
-      })
+      console.log('✅ Factura subida a R2:', key)
     }
+    
+    // IMPORTANTE: Devolver base64 siempre porque GPT-4o Vision lo soporta directamente
+    // En producción con R2 público, se puede cambiar a URL pública
+    return c.json({
+      success: true,
+      url: archivo_base64, // Devolver base64 para GPT-4o Vision
+      key: key,
+      size: bytes.length,
+      contentType: contentType,
+      message: c.env.IMAGES ? 'Factura subida a R2 y lista para procesamiento' : 'Factura lista para procesamiento',
+      r2_enabled: !!c.env.IMAGES
+    })
     
   } catch (error) {
     console.error('Error subiendo factura:', error)

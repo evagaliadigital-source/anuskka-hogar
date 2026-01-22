@@ -53,7 +53,7 @@ REGLAS IMPORTANTES:
 Devuelve SOLO el JSON, sin texto adicional.`
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-5',
+      model: 'gpt-4o', // Modelo correcto con visión
       messages: [
         {
           role: 'user',
