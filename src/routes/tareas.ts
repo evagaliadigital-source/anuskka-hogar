@@ -109,44 +109,6 @@ tareas.get('/contador', async (c) => {
   }
 })
 
-// GET - Obtener tarea por ID
-tareas.get('/:id', async (c) => {
-  try {
-    const id = c.req.param('id')
-    const tarea = await c.env.DB.prepare(`
-      SELECT t.*,
-             p.nombre_proyecto,
-             cl.nombre as cliente_nombre,
-             cl.apellidos as cliente_apellidos,
-             tr.tipo_servicio as trabajo_tipo,
-             tr.estado as trabajo_estado
-      FROM tareas_pendientes t
-      LEFT JOIN proyectos_diseno p ON t.proyecto_id = p.id
-      LEFT JOIN clientes cl ON t.cliente_id = cl.id
-      LEFT JOIN trabajos tr ON t.trabajo_id = tr.id
-      WHERE t.id = ?
-    `).bind(id).first()
-    
-    if (!tarea) {
-      return c.json({ error: 'Tarea no encontrada' }, 404)
-    }
-    
-    const tareaCompleta = {
-      ...tarea,
-      datos_tarea: tarea.datos_tarea ? JSON.parse(tarea.datos_tarea) : null
-    }
-    
-    return c.json(tareaCompleta, 200, {
-      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-      'Pragma': 'no-cache',
-      'Expires': '0'
-    })
-  } catch (error) {
-    console.error('Error obteniendo tarea:', error)
-    return c.json({ error: 'Error al obtener tarea' }, 500)
-  }
-})
-
 // POST - Crear nueva tarea
 tareas.post('/', async (c) => {
   try {
@@ -866,6 +828,44 @@ tareas.get('/resumen-diario', async (c) => {
   } catch (error) {
     console.error('Error obteniendo resumen diario:', error)
     return c.json({ error: 'Error al obtener resumen diario' }, 500)
+  }
+})
+
+// GET - Obtener tarea por ID (AL FINAL para no capturar rutas específicas)
+tareas.get('/:id', async (c) => {
+  try {
+    const id = c.req.param('id')
+    const tarea = await c.env.DB.prepare(`
+      SELECT t.*,
+             p.nombre_proyecto,
+             cl.nombre as cliente_nombre,
+             cl.apellidos as cliente_apellidos,
+             tr.tipo_servicio as trabajo_tipo,
+             tr.estado as trabajo_estado
+      FROM tareas_pendientes t
+      LEFT JOIN proyectos_diseno p ON t.proyecto_id = p.id
+      LEFT JOIN clientes cl ON t.cliente_id = cl.id
+      LEFT JOIN trabajos tr ON t.trabajo_id = tr.id
+      WHERE t.id = ?
+    `).bind(id).first()
+    
+    if (!tarea) {
+      return c.json({ error: 'Tarea no encontrada' }, 404)
+    }
+    
+    const tareaCompleta = {
+      ...tarea,
+      datos_tarea: tarea.datos_tarea ? JSON.parse(tarea.datos_tarea) : null
+    }
+    
+    return c.json(tareaCompleta, 200, {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    })
+  } catch (error) {
+    console.error('Error obteniendo tarea:', error)
+    return c.json({ error: 'Error al obtener tarea' }, 500)
   }
 })
 
