@@ -14,6 +14,9 @@ const inventario = new Hono<{ Bindings: Bindings }>()
 
 async function extraerDatosFacturaConIA(archivo_url: string, apiKey: string) {
   try {
+    console.log('🔑 API Key presente:', !!apiKey)
+    console.log('📄 Tipo de archivo_url:', archivo_url.substring(0, 50))
+    
     // Inicializar cliente OpenAI
     const openai = new OpenAI({
       apiKey: apiKey,
@@ -76,10 +79,15 @@ Devuelve SOLO el JSON, sin texto adicional.`
       temperature: 0.1 // Baja temperatura para más precisión
     })
 
+    console.log('✅ Respuesta de IA recibida')
+    console.log('📊 Tokens usados:', response.usage)
+
     const content = response.choices[0].message.content
     if (!content) {
       throw new Error('No se pudo extraer contenido de la IA')
     }
+
+    console.log('📝 Contenido extraído (primeros 200 chars):', content.substring(0, 200))
 
     // Parsear JSON (limpiando posibles marcadores de código)
     const jsonStr = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
@@ -91,7 +99,11 @@ Devuelve SOLO el JSON, sin texto adicional.`
     }
 
   } catch (error) {
-    console.error('Error extrayendo datos con IA:', error)
+    console.error('❌ Error extrayendo datos con IA:', error)
+    console.error('❌ Error type:', error.constructor.name)
+    console.error('❌ Error message:', error.message)
+    console.error('❌ Error stack:', error.stack)
+    
     return {
       success: false,
       error: error.message || 'Error al procesar factura con IA'
