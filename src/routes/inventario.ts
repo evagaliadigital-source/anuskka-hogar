@@ -198,6 +198,28 @@ inventario.post('/proveedores', async (c) => {
   }
 })
 
+// DELETE /api/inventario/proveedores/:id - Eliminar proveedor (soft delete)
+inventario.delete('/proveedores/:id', async (c) => {
+  try {
+    const id = c.req.param('id')
+    
+    // Soft delete
+    await c.env.DB.prepare(`
+      UPDATE proveedores 
+      SET activo = 0 
+      WHERE id = ?
+    `).bind(id).run()
+
+    return c.json({
+      success: true,
+      message: 'Proveedor eliminado correctamente'
+    })
+  } catch (error) {
+    console.error('Error al eliminar proveedor:', error)
+    return c.json({ success: false, error: 'Error al eliminar proveedor' }, 500)
+  }
+})
+
 // ============================================
 // PRODUCTOS
 // ============================================

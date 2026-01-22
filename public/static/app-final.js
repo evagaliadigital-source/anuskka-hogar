@@ -13097,6 +13097,29 @@ function findCategoriaById(id) {
   return null
 }
 
+async function deleteProveedor(proveedorId) {
+  if (!confirm('¿Seguro que quieres eliminar este proveedor?\n\nSe mantendrán los productos asociados.')) {
+    return
+  }
+  
+  try {
+    await axios.delete(`${API}/inventario/proveedores/${proveedorId}`)
+    showToast('✅ Proveedor eliminado correctamente', 'success')
+    
+    // Recargar proveedores
+    const res = await axios.get(`${API}/inventario/proveedores`)
+    if (res.data.success) {
+      inventarioData.proveedores = res.data.proveedores
+    }
+    
+    // Recargar modal
+    showProveedoresModal()
+  } catch (error) {
+    console.error('Error eliminando proveedor:', error)
+    showToast('❌ Error al eliminar proveedor', 'error')
+  }
+}
+
 // ============================================
 // EXPONER FUNCIONES GLOBALES
 // ============================================
@@ -13118,6 +13141,7 @@ window.filtrarPorCategoria = filtrarPorCategoria
 window.showProveedoresModal = showProveedoresModal
 window.showNuevoProveedorForm = showNuevoProveedorForm
 window.guardarProveedor = guardarProveedor
+window.deleteProveedor = deleteProveedor
 
 // ============================================
 // IMPORTACIÓN DE FACTURAS CON IA
