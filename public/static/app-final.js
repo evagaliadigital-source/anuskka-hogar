@@ -1529,7 +1529,7 @@ async function viewTrabajo(id) {
                       ${fase.fecha_completado ? `
                         <p class="text-xs text-gray-500 mb-2">
                           <i class="far fa-calendar-check mr-1"></i>
-                          Completado: ${new Date(fase.fecha_completado).toLocaleDateString('es-ES')} a las ${new Date(fase.fecha_completado).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}
+                          Completado: ${new Date(fase.fecha_completado).toLocaleDateString('es-ES')}
                         </p>
                       ` : ''}
                       
@@ -1562,7 +1562,7 @@ async function viewTrabajo(id) {
             </div>
             <div class="bg-gray-50 p-4 rounded-lg">
               <p class="text-sm text-gray-600 mb-1">Fecha Programada</p>
-              <p class="font-semibold text-gray-900">${new Date(trabajo.fecha_programada).toLocaleString('es-ES')}</p>
+              <p class="font-semibold text-gray-900">${new Date(trabajo.fecha_programada).toLocaleDateString('es-ES')}</p>
             </div>
             <div class="bg-gray-50 p-4 rounded-lg">
               <p class="text-sm text-gray-600 mb-1">Empleada Asignada</p>
@@ -7576,8 +7576,8 @@ async function verDetallesTarea(tareaId) {
             
             <!-- Fechas -->
             <div class="text-xs text-gray-500 space-y-1 border-t pt-4">
-              <p><i class="far fa-calendar mr-2"></i>Creada: ${new Date(tarea.created_at).toLocaleString('es-ES')}</p>
-              ${tarea.completada_en ? `<p><i class="fas fa-check-circle mr-2"></i>Finalizada: ${new Date(tarea.completada_en).toLocaleString('es-ES')}</p>` : ''}
+              <p><i class="far fa-calendar mr-2"></i>Creada: ${new Date(tarea.created_at).toLocaleDateString('es-ES')}</p>
+              ${tarea.completada_en ? `<p><i class="fas fa-check-circle mr-2"></i>Finalizada: ${new Date(tarea.completada_en).toLocaleDateString('es-ES')}</p>` : ''}
             </div>
           </div>
           
@@ -10987,8 +10987,8 @@ async function cargarDiarioDia(fechaStr) {
             <!-- Información detallada -->
             <div class="grid grid-cols-2 gap-3 text-sm mb-3">
               <div class="flex items-center gap-2 text-gray-700">
-                <i class="fas fa-clock text-gray-500"></i>
-                <span><strong>Hora:</strong> ${new Date(t.fecha_programada).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}</span>
+                <i class="fas fa-calendar text-gray-500"></i>
+                <span><strong>Fecha:</strong> ${new Date(t.fecha_programada).toLocaleDateString('es-ES')}</span>
               </div>
               
               ${t.duracion_estimada ? `
