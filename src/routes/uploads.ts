@@ -171,4 +171,93 @@ uploads.get('/imagenes/:carpeta', async (c) => {
   }
 })
 
+// ============================================
+// UPLOAD DE FACTURAS (PDF, PNG, JPG)
+// ============================================
+
+// POST - Upload factura (base64 o multipart/form-data)
+uploads.post('/factura', async (c) => {
+  try {
+    const { archivo_base64, nombre_archivo } = await c.req.json()
+    
+    if (!archivo_base64) {
+      return c.json({ error: 'Archivo no proporcionado' }, 400)
+    }
+    
+    // Extraer el base64 real y el tipo de archivo
+    let extension = 'pdf'
+    let contentType = 'application/pdf'
+    let base64Data = archivo_base64
+    
+    // Si viene con prefijo data:..., extraerlo
+    const dataUrlMatch = archivo_base64.match(/^data:([^;]+);base64,(.+)$/)
+    if (dataUrlMatch) {
+      const mimeType = dataUrlMatch[1]
+      base64Data = dataUrlMatch[2]
+      
+      // Determinar extensión por MIME type
+      if (mimeType === 'application/pdf') {
+        extension = 'pdf'
+        contentType = 'application/pdf'
+      } else if (mimeType.startsWith('image/')) {
+        extension = mimeType.split('/')[1] // png, jpg, jpeg
+        contentType = mimeType
+      }
+    }
+    
+    // Convertir base64 a ArrayBuffer
+    const binaryString = atob(base64Data)
+    const bytes = new Uint8Array(binaryString.length)
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i)
+    }
+    
+    // Generar nombre único
+    const timestamp = Date.now()
+    const random = Math.random().toString(36).substring(7)
+    const fileName = nombre_archivo || `factura-${timestamp}-${random}.${extension}`
+    const key = `facturas/${fileName}`
+    
+    // Subir a R2
+    if (c.env.IMAGES) {
+      await c.env.IMAGES.put(key, bytes, {
+        httpMetadata: {
+          contentType: contentType
+        },
+        customMetadata: {
+          uploadedAt: new Date().toISOString(),
+          tipo: 'factura'
+        }
+      })
+      
+      // URL pública (temporalmente usando R2 dev URL)
+      const publicUrl = `https://pub-BUCKET_ID.r2.dev/${key}` // TODO: Reemplazar con custom domain
+      
+      return c.json({
+        success: true,
+        url: publicUrl,
+        key: key,
+        size: bytes.length,
+        contentType: contentType,
+        message: 'Factura subida correctamente a R2'
+      })
+    } else {
+      // Fallback: Devolver base64 (desarrollo sin R2)
+      console.warn('⚠️ R2 no disponible, usando base64 temporal')
+      return c.json({
+        success: true,
+        url: archivo_base64, // Devolver base64 original
+        key: key,
+        size: bytes.length,
+        message: '⚠️ Factura guardada como base64 (R2 no disponible)',
+        temporal: true
+      })
+    }
+    
+  } catch (error) {
+    console.error('Error subiendo factura:', error)
+    return c.json({ error: 'Error al subir factura' }, 500)
+  }
+})
+
 export default uploads
