@@ -289,7 +289,7 @@ function showTab(tabName) {
       loadPersonal()
       break
     case 'stock':
-      loadStock()
+      loadInventario()
       break
     case 'facturas':
       loadFacturas()
@@ -11949,4 +11949,1065 @@ window.borrarArchivoCliente = borrarArchivoCliente
 // ============================================
 
 
+
+
+// ============================================
+// MÓDULO DE INVENTARIO - SISTEMA COMPLETO
+// ============================================
+
+let inventarioData = {
+  categorias: [],
+  productos: [],
+  proveedores: [],
+  categoriaSeleccionada: null,
+  productoActual: null,
+  variantesTemporales: []
+}
+
+// ============================================
+// CARGAR DATOS INICIALES
+// ============================================
+
+async function loadInventario() {
+  try {
+    console.log('📦 Cargando inventario...')
+    
+    // Cargar categorías
+    const categoriasRes = await axios.get(`${API}/inventario/categorias`)
+    if (categoriasRes.data.success) {
+      inventarioData.categorias = categoriasRes.data.categorias
+    }
+    
+    // Cargar proveedores
+    const proveedoresRes = await axios.get(`${API}/inventario/proveedores`)
+    if (proveedoresRes.data.success) {
+      inventarioData.proveedores = proveedoresRes.data.proveedores
+    }
+    
+    // Cargar productos
+    await loadProductos()
+    
+    // Renderizar
+    renderInventario()
+    
+  } catch (error) {
+    console.error('Error cargando inventario:', error)
+    showToast('❌ Error al cargar inventario', 'error')
+  }
+}
+
+async function loadProductos(categoria_id = null, buscar = null) {
+  try {
+    let url = `${API}/inventario/productos`
+    const params = []
+    
+    if (categoria_id) params.push(`categoria_id=${categoria_id}`)
+    if (buscar) params.push(`buscar=${encodeURIComponent(buscar)}`)
+    
+    if (params.length > 0) url += '?' + params.join('&')
+    
+    const res = await axios.get(url)
+    if (res.data.success) {
+      inventarioData.productos = res.data.productos
+    }
+  } catch (error) {
+    console.error('Error cargando productos:', error)
+  }
+}
+
+// ============================================
+// RENDERIZAR INTERFAZ PRINCIPAL
+// ============================================
+
+function renderInventario() {
+  const container = document.getElementById('inventario-container')
+  if (!container) return
+  
+  const categoriasOptions = inventarioData.categorias.map(cat => `
+    <option value="${cat.id}">${cat.nombre}</option>
+    ${cat.subcategorias.map(sub => `
+      <option value="${sub.id}">↳ ${sub.nombre}</option>
+    `).join('')}
+  `).join('')
+  
+  container.innerHTML = `
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">
+          <i class="fas fa-boxes mr-2 text-orange-500"></i>
+          Control de Inventario
+        </h2>
+        <div class="flex gap-2">
+          <button onclick="showProveedoresModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all">
+            <i class="fas fa-truck mr-2"></i>Proveedores
+          </button>
+          <button onclick="showProductoForm()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all">
+            <i class="fas fa-plus mr-2"></i>Nuevo Producto
+          </button>
+        </div>
+      </div>
+      
+      <!-- Filtros -->
+      <div class="flex gap-4 mb-6">
+        <div class="flex-1">
+          <input 
+            type="text" 
+            id="buscar-producto" 
+            placeholder="🔍 Buscar por nombre..." 
+            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500"
+            onkeyup="buscarProductos()"
+          >
+        </div>
+        <div class="w-64">
+          <select 
+            id="filtro-categoria" 
+            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500"
+            onchange="filtrarPorCategoria()"
+          >
+            <option value="">Todas las categorías</option>
+            ${categoriasOptions}
+          </select>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Lista de productos -->
+    <div id="productos-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      ${renderProductosGrid()}
+    </div>
+  `
+}
+
+function renderProductosGrid() {
+  if (inventarioData.productos.length === 0) {
+    return `
+      <div class="col-span-full text-center py-12">
+        <i class="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
+        <p class="text-gray-500 text-lg">No hay productos en el inventario</p>
+        <button onclick="showProductoForm()" class="mt-4 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+          <i class="fas fa-plus mr-2"></i>Crear primer producto
+        </button>
+      </div>
+    `
+  }
+  
+  return inventarioData.productos.map(producto => `
+    <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-all overflow-hidden">
+      <div class="p-4">
+        <div class="flex items-start justify-between mb-2">
+          <h3 class="font-bold text-gray-800 text-lg leading-tight">${producto.nombre}</h3>
+          ${producto.num_variantes > 0 ? `
+            <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
+              ${producto.num_variantes} var.
+            </span>
+          ` : ''}
+        </div>
+        
+        <p class="text-sm text-gray-600 mb-3">
+          <i class="fas fa-tag mr-1"></i>${producto.categoria_nombre || 'Sin categoría'}
+        </p>
+        
+        ${producto.tiene_variantes ? `
+          <div class="bg-purple-50 rounded-lg p-2 mb-3">
+            <p class="text-xs text-purple-800 font-semibold mb-1">
+              <i class="fas fa-cubes mr-1"></i>Producto con variantes
+            </p>
+            <p class="text-xs text-purple-600">Haz clic para ver detalles</p>
+          </div>
+        ` : `
+          <div class="grid grid-cols-2 gap-2 mb-3">
+            <div class="bg-gray-50 rounded-lg p-2">
+              <p class="text-xs text-gray-600">Stock</p>
+              <p class="font-bold text-gray-900">${producto.stock_actual || 0} ${producto.unidad || ''}</p>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-2">
+              <p class="text-xs text-gray-600">Precio</p>
+              <p class="font-bold text-green-600">${producto.precio_base ? producto.precio_base.toFixed(2) + '€' : '-'}</p>
+            </div>
+          </div>
+        `}
+        
+        <div class="flex gap-2 pt-3 border-t">
+          <button onclick="viewProducto(${producto.id})" class="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-all">
+            <i class="fas fa-eye"></i>
+          </button>
+          <button onclick="editProducto(${producto.id})" class="flex-1 px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-all">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button onclick="deleteProducto(${producto.id})" class="flex-1 px-3 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-all">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('')
+}
+
+// ============================================
+// FILTROS Y BÚSQUEDA
+// ============================================
+
+let busquedaTimeout = null
+
+function buscarProductos() {
+  clearTimeout(busquedaTimeout)
+  busquedaTimeout = setTimeout(async () => {
+    const buscar = document.getElementById('buscar-producto').value
+    const categoria_id = document.getElementById('filtro-categoria').value
+    await loadProductos(categoria_id || null, buscar || null)
+    document.getElementById('productos-grid').innerHTML = renderProductosGrid()
+  }, 300)
+}
+
+async function filtrarPorCategoria() {
+  const categoria_id = document.getElementById('filtro-categoria').value
+  const buscar = document.getElementById('buscar-producto').value
+  await loadProductos(categoria_id || null, buscar || null)
+  document.getElementById('productos-grid').innerHTML = renderProductosGrid()
+}
+
+// ============================================
+// FORMULARIO DE PRODUCTO (ADAPTATIVO)
+// ============================================
+
+function showProductoForm(productoId = null) {
+  inventarioData.productoActual = productoId
+  inventarioData.variantesTemporales = []
+  inventarioData.categoriaSeleccionada = null
+  
+  const modal = document.getElementById('modal-overlay')
+  const modalContent = document.getElementById('modal-content')
+  
+  if (productoId) {
+    // Modo edición - cargar producto
+    loadProductoForEdit(productoId)
+  } else {
+    // Modo creación
+    renderProductoForm()
+  }
+  
+  modal.classList.remove('hidden')
+}
+
+async function loadProductoForEdit(productoId) {
+  try {
+    const res = await axios.get(`${API}/inventario/productos/${productoId}`)
+    if (res.data.success) {
+      const producto = res.data.producto
+      inventarioData.productoActual = producto
+      inventarioData.categoriaSeleccionada = producto.categoria_id
+      inventarioData.variantesTemporales = producto.variantes || []
+      renderProductoForm(producto)
+    }
+  } catch (error) {
+    console.error('Error cargando producto:', error)
+    showToast('❌ Error al cargar producto', 'error')
+  }
+}
+
+function renderProductoForm(producto = null) {
+  const modalContent = document.getElementById('modal-content')
+  const isEdit = producto !== null
+  
+  const categoriasOptions = inventarioData.categorias.map(cat => `
+    <optgroup label="${cat.nombre}">
+      <option value="${cat.id}" ${inventarioData.categoriaSeleccionada == cat.id ? 'selected' : ''}>
+        ${cat.nombre}
+      </option>
+      ${cat.subcategorias.map(sub => `
+        <option value="${sub.id}" ${inventarioData.categoriaSeleccionada == sub.id ? 'selected' : ''}>
+          ${sub.nombre}
+        </option>
+      `).join('')}
+    </optgroup>
+  `).join('')
+  
+  // Obtener info de la categoría seleccionada
+  let categoriaInfo = null
+  if (inventarioData.categoriaSeleccionada) {
+    categoriaInfo = findCategoriaById(inventarioData.categoriaSeleccionada)
+  }
+  
+  modalContent.innerHTML = `
+    <div class="max-w-4xl mx-auto">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">
+          <i class="fas fa-${isEdit ? 'edit' : 'plus-circle'} mr-2 text-orange-500"></i>
+          ${isEdit ? 'Editar Producto' : 'Nuevo Producto'}
+        </h2>
+        <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times text-2xl"></i>
+        </button>
+      </div>
+      
+      <form id="form-producto" onsubmit="guardarProducto(event)">
+        <!-- PASO 1: Categoría -->
+        <div class="mb-6 p-4 bg-orange-50 rounded-lg border-2 border-orange-200">
+          <label class="block text-sm font-bold text-gray-700 mb-2">
+            <i class="fas fa-tag mr-2"></i>1. Selecciona la categoría *
+          </label>
+          <select 
+            name="categoria_id" 
+            required 
+            class="w-full px-4 py-3 border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 font-medium"
+            onchange="onCategoriaChange(this.value)"
+          >
+            <option value="">-- Selecciona una categoría --</option>
+            ${categoriasOptions}
+          </select>
+          ${categoriaInfo ? `
+            <p class="text-xs text-gray-600 mt-2">
+              <i class="fas fa-info-circle mr-1"></i>
+              Unidades permitidas: ${JSON.parse(categoriaInfo.unidades_permitidas).join(', ')}
+            </p>
+          ` : ''}
+        </div>
+        
+        ${inventarioData.categoriaSeleccionada ? `
+          <!-- PASO 2: Datos básicos -->
+          <div class="mb-6">
+            <h3 class="font-bold text-gray-700 mb-4">
+              <i class="fas fa-clipboard mr-2"></i>2. Datos básicos
+            </h3>
+            
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del producto *</label>
+              <input 
+                type="text" 
+                name="nombre" 
+                value="${producto ? producto.nombre : ''}"
+                required 
+                placeholder="Ej: Cojín Aloe"
+                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500"
+              >
+            </div>
+            
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+              <textarea 
+                name="descripcion" 
+                rows="3"
+                placeholder="Descripción del producto..."
+                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500"
+              >${producto ? (producto.descripcion || '') : ''}</textarea>
+            </div>
+            
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Notas internas</label>
+              <textarea 
+                name="notas" 
+                rows="2"
+                placeholder="Notas para uso interno..."
+                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500"
+              >${producto ? (producto.notas || '') : ''}</textarea>
+            </div>
+          </div>
+          
+          ${renderFormularioDinamico(categoriaInfo, producto)}
+          
+        ` : `
+          <div class="text-center py-8 text-gray-500">
+            <i class="fas fa-arrow-up text-4xl mb-2"></i>
+            <p>Selecciona una categoría para continuar</p>
+          </div>
+        `}
+        
+        ${inventarioData.categoriaSeleccionada ? `
+          <div class="flex gap-4 pt-6 border-t">
+            <button 
+              type="button" 
+              onclick="closeModal()" 
+              class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+            >
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+            >
+              <i class="fas fa-save mr-2"></i>
+              ${isEdit ? 'Actualizar Producto' : 'Crear Producto'}
+            </button>
+          </div>
+        ` : ''}
+      </form>
+    </div>
+  `
+}
+
+function renderFormularioDinamico(categoriaInfo, producto = null) {
+  if (!categoriaInfo) return ''
+  
+  const unidadesPermitidas = JSON.parse(categoriaInfo.unidades_permitidas)
+  const permiteVariantes = categoriaInfo.permite_variantes === 1
+  
+  // Si permite variantes, mostrar sección de variantes
+  if (permiteVariantes) {
+    return `
+      <div class="mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-gray-700">
+            <i class="fas fa-cubes mr-2"></i>3. Variantes del producto
+          </h3>
+          <button 
+            type="button" 
+            onclick="showAddVarianteModal()" 
+            class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm"
+          >
+            <i class="fas fa-plus mr-2"></i>Añadir variante
+          </button>
+        </div>
+        
+        <div id="variantes-list" class="space-y-2">
+          ${renderVariantesList()}
+        </div>
+        
+        ${inventarioData.variantesTemporales.length === 0 ? `
+          <div class="text-center py-8 bg-purple-50 rounded-lg border-2 border-dashed border-purple-300">
+            <i class="fas fa-cubes text-4xl text-purple-300 mb-2"></i>
+            <p class="text-purple-600 font-medium">Sin variantes</p>
+            <p class="text-sm text-purple-500">Añade variantes por medida, color, etc.</p>
+          </div>
+        ` : ''}
+      </div>
+    `
+  } else {
+    // Si NO permite variantes, mostrar campos directos
+    return `
+      <div class="mb-6">
+        <h3 class="font-bold text-gray-700 mb-4">
+          <i class="fas fa-dollar-sign mr-2"></i>3. Precio y stock
+        </h3>
+        
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Precio unitario *</label>
+            <input 
+              type="number" 
+              step="0.01" 
+              name="precio_base" 
+              value="${producto ? (producto.precio_base || '') : ''}"
+              required 
+              placeholder="0.00"
+              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500"
+            >
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Unidad *</label>
+            <select 
+              name="unidad" 
+              required 
+              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500"
+            >
+              ${unidadesPermitidas.map(u => `
+                <option value="${u}" ${producto && producto.unidad === u ? 'selected' : ''}>
+                  ${u.charAt(0).toUpperCase() + u.slice(1)}
+                </option>
+              `).join('')}
+            </select>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Stock actual</label>
+            <input 
+              type="number" 
+              step="0.01" 
+              name="stock_actual" 
+              value="${producto ? (producto.stock_actual || 0) : 0}"
+              placeholder="0"
+              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500"
+            >
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Stock mínimo</label>
+            <input 
+              type="number" 
+              step="0.01" 
+              name="stock_minimo" 
+              value="${producto ? (producto.stock_minimo || 0) : 0}"
+              placeholder="0"
+              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500"
+            >
+          </div>
+        </div>
+      </div>
+    `
+  }
+}
+
+function renderVariantesList() {
+  return inventarioData.variantesTemporales.map((variante, index) => `
+    <div class="flex items-center gap-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+      <div class="flex-1">
+        <p class="font-medium text-gray-800">${variante.medida_texto || variante.nombre_variante || 'Variante ' + (index + 1)}</p>
+        <p class="text-sm text-gray-600">
+          Precio: <span class="font-semibold">${variante.precio}€</span> | 
+          Stock: <span class="font-semibold">${variante.stock_actual} ${variante.unidad}</span>
+        </p>
+      </div>
+      <button 
+        type="button" 
+        onclick="editVariante(${index})" 
+        class="px-3 py-1 text-blue-600 hover:bg-blue-100 rounded"
+      >
+        <i class="fas fa-edit"></i>
+      </button>
+      <button 
+        type="button" 
+        onclick="removeVariante(${index})" 
+        class="px-3 py-1 text-red-600 hover:bg-red-100 rounded"
+      >
+        <i class="fas fa-trash"></i>
+      </button>
+    </div>
+  `).join('')
+}
+
+// ============================================
+// GESTIÓN DE VARIANTES
+// ============================================
+
+function showAddVarianteModal(varianteIndex = null) {
+  const isEdit = varianteIndex !== null
+  const variante = isEdit ? inventarioData.variantesTemporales[varianteIndex] : null
+  
+  const categoriaInfo = findCategoriaById(inventarioData.categoriaSeleccionada)
+  const unidadesPermitidas = JSON.parse(categoriaInfo.unidades_permitidas)
+  
+  const modalOverlay = document.createElement('div')
+  modalOverlay.id = 'modal-variante-overlay'
+  modalOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4'
+  modalOverlay.innerHTML = `
+    <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+      <h3 class="text-xl font-bold text-gray-800 mb-4">
+        <i class="fas fa-cube mr-2 text-purple-600"></i>
+        ${isEdit ? 'Editar Variante' : 'Nueva Variante'}
+      </h3>
+      
+      <form id="form-variante" onsubmit="guardarVariante(event, ${varianteIndex})">
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Medida (ancho x alto)</label>
+          <div class="grid grid-cols-2 gap-2">
+            <input 
+              type="number" 
+              name="medida_ancho" 
+              placeholder="Ancho (cm)"
+              value="${variante ? (variante.medida_ancho || '') : ''}"
+              class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+            >
+            <input 
+              type="number" 
+              name="medida_alto" 
+              placeholder="Alto (cm)"
+              value="${variante ? (variante.medida_alto || '') : ''}"
+              class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+            >
+          </div>
+        </div>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">o Descripción personalizada</label>
+          <input 
+            type="text" 
+            name="nombre_variante" 
+            placeholder="Ej: Tamaño grande"
+            value="${variante ? (variante.nombre_variante || '') : ''}"
+            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+          >
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Precio *</label>
+            <input 
+              type="number" 
+              step="0.01" 
+              name="precio" 
+              required
+              value="${variante ? variante.precio : ''}"
+              placeholder="0.00"
+              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+            >
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Unidad *</label>
+            <select 
+              name="unidad" 
+              required 
+              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+            >
+              ${unidadesPermitidas.map(u => `
+                <option value="${u}" ${variante && variante.unidad === u ? 'selected' : ''}>
+                  ${u.charAt(0).toUpperCase() + u.slice(1)}
+                </option>
+              `).join('')}
+            </select>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Stock actual</label>
+            <input 
+              type="number" 
+              step="0.01" 
+              name="stock_actual" 
+              value="${variante ? variante.stock_actual : 0}"
+              placeholder="0"
+              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+            >
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Stock mínimo</label>
+            <input 
+              type="number" 
+              step="0.01" 
+              name="stock_minimo" 
+              value="${variante ? variante.stock_minimo : 0}"
+              placeholder="0"
+              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+            >
+          </div>
+        </div>
+        
+        <div class="flex gap-3">
+          <button 
+            type="button" 
+            onclick="closeVarianteModal()" 
+            class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+          >
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+          >
+            <i class="fas fa-save mr-2"></i>
+            ${isEdit ? 'Actualizar' : 'Añadir'}
+          </button>
+        </div>
+      </form>
+    </div>
+  `
+  
+  document.body.appendChild(modalOverlay)
+}
+
+function guardarVariante(event, varianteIndex = null) {
+  event.preventDefault()
+  
+  const formData = new FormData(event.target)
+  const medida_ancho = formData.get('medida_ancho')
+  const medida_alto = formData.get('medida_alto')
+  
+  const variante = {
+    nombre_variante: formData.get('nombre_variante') || null,
+    medida_ancho: medida_ancho ? parseFloat(medida_ancho) : null,
+    medida_alto: medida_alto ? parseFloat(medida_alto) : null,
+    medida_texto: (medida_ancho && medida_alto) ? `${medida_ancho}x${medida_alto} cm` : null,
+    precio: parseFloat(formData.get('precio')),
+    stock_actual: parseFloat(formData.get('stock_actual')) || 0,
+    stock_minimo: parseFloat(formData.get('stock_minimo')) || 0,
+    unidad: formData.get('unidad')
+  }
+  
+  if (varianteIndex !== null) {
+    // Editar existente
+    inventarioData.variantesTemporales[varianteIndex] = variante
+  } else {
+    // Añadir nueva
+    inventarioData.variantesTemporales.push(variante)
+  }
+  
+  closeVarianteModal()
+  
+  // Actualizar lista en el formulario principal
+  document.getElementById('variantes-list').innerHTML = renderVariantesList()
+  
+  showToast('✅ Variante guardada', 'success')
+}
+
+function editVariante(index) {
+  showAddVarianteModal(index)
+}
+
+function removeVariante(index) {
+  if (confirm('¿Eliminar esta variante?')) {
+    inventarioData.variantesTemporales.splice(index, 1)
+    document.getElementById('variantes-list').innerHTML = renderVariantesList()
+    showToast('✅ Variante eliminada', 'success')
+  }
+}
+
+function closeVarianteModal() {
+  const modal = document.getElementById('modal-variante-overlay')
+  if (modal) modal.remove()
+}
+
+// ============================================
+// GUARDAR PRODUCTO
+// ============================================
+
+async function guardarProducto(event) {
+  event.preventDefault()
+  
+  const formData = new FormData(event.target)
+  const categoriaInfo = findCategoriaById(inventarioData.categoriaSeleccionada)
+  
+  const data = {
+    nombre: formData.get('nombre'),
+    categoria_id: inventarioData.categoriaSeleccionada,
+    descripcion: formData.get('descripcion') || null,
+    notas: formData.get('notas') || null,
+    tiene_variantes: categoriaInfo.permite_variantes === 1 && inventarioData.variantesTemporales.length > 0
+  }
+  
+  if (data.tiene_variantes) {
+    data.variantes = inventarioData.variantesTemporales
+  } else {
+    data.precio_base = parseFloat(formData.get('precio_base'))
+    data.stock_actual = parseFloat(formData.get('stock_actual')) || 0
+    data.stock_minimo = parseFloat(formData.get('stock_minimo')) || 0
+    data.unidad = formData.get('unidad')
+  }
+  
+  try {
+    const isEdit = typeof inventarioData.productoActual === 'object' && inventarioData.productoActual !== null
+    
+    if (isEdit) {
+      // Actualizar
+      await axios.put(`${API}/inventario/productos/${inventarioData.productoActual.id}`, data)
+      showToast('✅ Producto actualizado correctamente', 'success')
+    } else {
+      // Crear
+      await axios.post(`${API}/inventario/productos`, data)
+      showToast('✅ Producto creado correctamente', 'success')
+    }
+    
+    closeModal()
+    await loadProductos()
+    document.getElementById('productos-grid').innerHTML = renderProductosGrid()
+    
+  } catch (error) {
+    console.error('Error guardando producto:', error)
+    showToast('❌ Error al guardar producto', 'error')
+  }
+}
+
+// ============================================
+// VER / EDITAR / ELIMINAR PRODUCTO
+// ============================================
+
+async function viewProducto(productoId) {
+  try {
+    const res = await axios.get(`${API}/inventario/productos/${productoId}`)
+    if (res.data.success) {
+      const producto = res.data.producto
+      
+      const modal = document.getElementById('modal-overlay')
+      const modalContent = document.getElementById('modal-content')
+      
+      modalContent.innerHTML = `
+        <div class="max-w-3xl mx-auto">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">
+              <i class="fas fa-eye mr-2 text-blue-600"></i>
+              ${producto.nombre}
+            </h2>
+            <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+              <i class="fas fa-times text-2xl"></i>
+            </button>
+          </div>
+          
+          <div class="space-y-4">
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <p class="text-sm text-gray-600 mb-1">Categoría</p>
+              <p class="font-semibold text-gray-900">${producto.categoria_nombre}</p>
+            </div>
+            
+            ${producto.descripcion ? `
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-sm text-gray-600 mb-1">Descripción</p>
+                <p class="text-gray-900">${producto.descripcion}</p>
+              </div>
+            ` : ''}
+            
+            ${producto.tiene_variantes ? `
+              <div class="bg-purple-50 p-4 rounded-lg border-2 border-purple-200">
+                <p class="font-bold text-purple-800 mb-3">
+                  <i class="fas fa-cubes mr-2"></i>
+                  Variantes (${producto.variantes.length})
+                </p>
+                <div class="space-y-2">
+                  ${producto.variantes.map(v => `
+                    <div class="flex items-center justify-between bg-white p-3 rounded-lg">
+                      <div>
+                        <p class="font-medium text-gray-900">${v.medida_texto || v.nombre_variante}</p>
+                        <p class="text-sm text-gray-600">Stock: ${v.stock_actual} ${v.unidad}</p>
+                      </div>
+                      <p class="font-bold text-green-600">${v.precio}€</p>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : `
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <p class="text-sm text-gray-600 mb-1">Stock actual</p>
+                  <p class="font-bold text-gray-900">${producto.stock_actual} ${producto.unidad}</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <p class="text-sm text-gray-600 mb-1">Precio</p>
+                  <p class="font-bold text-green-600">${producto.precio_base}€</p>
+                </div>
+              </div>
+            `}
+          </div>
+          
+          <div class="flex gap-3 mt-6 pt-6 border-t">
+            <button 
+              onclick="editProducto(${productoId})" 
+              class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            >
+              <i class="fas fa-edit mr-2"></i>Editar
+            </button>
+            <button 
+              onclick="closeModal()" 
+              class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      `
+      
+      modal.classList.remove('hidden')
+    }
+  } catch (error) {
+    console.error('Error cargando producto:', error)
+    showToast('❌ Error al cargar producto', 'error')
+  }
+}
+
+async function editProducto(productoId) {
+  showProductoForm(productoId)
+}
+
+async function deleteProducto(productoId) {
+  if (!confirm('¿Estás segura de eliminar este producto?\n\nEsta acción no se puede deshacer.')) {
+    return
+  }
+  
+  try {
+    await axios.delete(`${API}/inventario/productos/${productoId}`)
+    showToast('✅ Producto eliminado correctamente', 'success')
+    await loadProductos()
+    document.getElementById('productos-grid').innerHTML = renderProductosGrid()
+  } catch (error) {
+    console.error('Error eliminando producto:', error)
+    showToast('❌ Error al eliminar producto', 'error')
+  }
+}
+
+// ============================================
+// MODAL DE PROVEEDORES
+// ============================================
+
+function showProveedoresModal() {
+  const modal = document.getElementById('modal-overlay')
+  const modalContent = document.getElementById('modal-content')
+  
+  modalContent.innerHTML = `
+    <div class="max-w-2xl mx-auto">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">
+          <i class="fas fa-truck mr-2 text-blue-600"></i>
+          Gestión de Proveedores
+        </h2>
+        <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times text-2xl"></i>
+        </button>
+      </div>
+      
+      <button 
+        onclick="showNuevoProveedorForm()" 
+        class="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mb-4"
+      >
+        <i class="fas fa-plus mr-2"></i>Añadir Proveedor
+      </button>
+      
+      <div class="space-y-2">
+        ${inventarioData.proveedores.map(p => `
+          <div class="bg-gray-50 p-4 rounded-lg flex items-center justify-between">
+            <div>
+              <p class="font-semibold text-gray-900">${p.nombre}</p>
+              <p class="text-sm text-gray-600">${p.contacto || 'Sin contacto'} ${p.telefono ? '• ' + p.telefono : ''}</p>
+            </div>
+            <button 
+              onclick="deleteProveedor(${p.id})" 
+              class="px-3 py-2 text-red-600 hover:bg-red-100 rounded"
+            >
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `
+  
+  modal.classList.remove('hidden')
+}
+
+function showNuevoProveedorForm() {
+  const modalContent = document.getElementById('modal-content')
+  
+  modalContent.innerHTML = `
+    <div class="max-w-md mx-auto">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-800">
+          <i class="fas fa-truck mr-2 text-blue-600"></i>
+          Nuevo Proveedor
+        </h2>
+        <button onclick="showProveedoresModal()" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-arrow-left text-xl"></i>
+        </button>
+      </div>
+      
+      <form onsubmit="guardarProveedor(event)">
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
+          <input 
+            type="text" 
+            name="nombre" 
+            required 
+            placeholder="Ej: Textiles Pepe"
+            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+          >
+        </div>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Persona de contacto</label>
+          <input 
+            type="text" 
+            name="contacto" 
+            placeholder="Nombre del contacto"
+            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+          >
+        </div>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+          <input 
+            type="tel" 
+            name="telefono" 
+            placeholder="600 000 000"
+            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+          >
+        </div>
+        
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+          <input 
+            type="email" 
+            name="email" 
+            placeholder="contacto@proveedor.com"
+            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+          >
+        </div>
+        
+        <div class="flex gap-3">
+          <button 
+            type="button" 
+            onclick="showProveedoresModal()" 
+            class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+          >
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            <i class="fas fa-save mr-2"></i>Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  `
+}
+
+async function guardarProveedor(event) {
+  event.preventDefault()
+  
+  const formData = new FormData(event.target)
+  const data = {
+    nombre: formData.get('nombre'),
+    contacto: formData.get('contacto') || null,
+    telefono: formData.get('telefono') || null,
+    email: formData.get('email') || null
+  }
+  
+  try {
+    await axios.post(`${API}/inventario/proveedores`, data)
+    showToast('✅ Proveedor creado correctamente', 'success')
+    
+    // Recargar proveedores
+    const res = await axios.get(`${API}/inventario/proveedores`)
+    if (res.data.success) {
+      inventarioData.proveedores = res.data.proveedores
+    }
+    
+    showProveedoresModal()
+  } catch (error) {
+    console.error('Error guardando proveedor:', error)
+    showToast('❌ Error al guardar proveedor', 'error')
+  }
+}
+
+// ============================================
+// UTILIDADES
+// ============================================
+
+function onCategoriaChange(categoria_id) {
+  inventarioData.categoriaSeleccionada = categoria_id ? parseInt(categoria_id) : null
+  inventarioData.variantesTemporales = []
+  renderProductoForm(typeof inventarioData.productoActual === 'object' ? inventarioData.productoActual : null)
+}
+
+function findCategoriaById(id) {
+  for (const cat of inventarioData.categorias) {
+    if (cat.id === id) return cat
+    for (const sub of cat.subcategorias) {
+      if (sub.id === id) return sub
+    }
+  }
+  return null
+}
+
+// ============================================
+// EXPONER FUNCIONES GLOBALES
+// ============================================
+
+window.loadInventario = loadInventario
+window.showProductoForm = showProductoForm
+window.guardarProducto = guardarProducto
+window.viewProducto = viewProducto
+window.editProducto = editProducto
+window.deleteProducto = deleteProducto
+window.showAddVarianteModal = showAddVarianteModal
+window.guardarVariante = guardarVariante
+window.editVariante = editVariante
+window.removeVariante = removeVariante
+window.closeVarianteModal = closeVarianteModal
+window.onCategoriaChange = onCategoriaChange
+window.buscarProductos = buscarProductos
+window.filtrarPorCategoria = filtrarPorCategoria
+window.showProveedoresModal = showProveedoresModal
+window.showNuevoProveedorForm = showNuevoProveedorForm
+window.guardarProveedor = guardarProveedor
 

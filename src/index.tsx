@@ -2729,7 +2729,7 @@ app.get('/', (c) => {
                 <i class="fas fa-calendar-alt mr-2"></i>Calendario
             </button>
             <button onclick="showTab('stock')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
-                <i class="fas fa-boxes mr-2"></i>Stock
+                <i class="fas fa-boxes mr-2"></i>Inventario
             </button>
             <button onclick="showTab('presupuestos')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
                 <i class="fas fa-file-alt mr-2"></i>Presupuestos
@@ -3069,38 +3069,7 @@ app.get('/', (c) => {
 
         <!-- STOCK TAB -->
         <div id="stock-tab" class="tab-content">
-            <div class="bg-white rounded-xl shadow-md p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">
-                        <i class="fas fa-boxes text-brand-orange mr-2"></i>
-                        Control de Inventario
-                    </h2>
-                    <div class="flex gap-3">
-                        <button onclick="showGestionCategorias()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
-                            <i class="fas fa-tags mr-2"></i>Categorías
-                        </button>
-                        <button onclick="loadStock(true)" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
-                            <i class="fas fa-exclamation-circle mr-2"></i>Bajo Stock
-                        </button>
-                        <button onclick="showImportarStock()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all">
-                            <i class="fas fa-file-upload mr-2"></i>Importar Masivo
-                        </button>
-                        <button onclick="showStockForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
-                            <i class="fas fa-plus mr-2"></i>Nuevo Artículo
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Filtro por categoría -->
-                <div class="mb-4">
-                    <label class="text-sm font-medium text-gray-700 mr-3">Filtrar por categoría:</label>
-                    <select id="filter-categoria" onchange="loadStock(false)" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-teal-500">
-                        <option value="">Todas las categorías</option>
-                    </select>
-                </div>
-                
-                <div id="stock-lista" class="overflow-x-auto"></div>
-            </div>
+            <div id="inventario-container"></div>
         </div>
 
         <!-- FACTURAS TAB -->
