@@ -12176,7 +12176,10 @@ function buscarProductos() {
     const buscar = document.getElementById('buscar-producto').value
     const categoria_id = document.getElementById('filtro-categoria').value
     await loadProductos(categoria_id || null, buscar || null)
-    document.getElementById('productos-grid').innerHTML = renderProductosGrid()
+    const grid = document.getElementById('productos-grid')
+    if (grid) {
+      grid.innerHTML = renderProductosGrid()
+    }
   }, 300)
 }
 
@@ -12184,7 +12187,10 @@ async function filtrarPorCategoria() {
   const categoria_id = document.getElementById('filtro-categoria').value
   const buscar = document.getElementById('buscar-producto').value
   await loadProductos(categoria_id || null, buscar || null)
-  document.getElementById('productos-grid').innerHTML = renderProductosGrid()
+  const grid = document.getElementById('productos-grid')
+  if (grid) {
+    grid.innerHTML = renderProductosGrid()
+  }
 }
 
 // ============================================
@@ -12816,7 +12822,10 @@ async function guardarProducto(event) {
     
     closeModal()
     await loadProductos()
-    document.getElementById('productos-grid').innerHTML = renderProductosGrid()
+    const grid = document.getElementById('productos-grid')
+    if (grid) {
+      grid.innerHTML = renderProductosGrid()
+    }
     
   } catch (error) {
     console.error('Error guardando producto:', error)
@@ -12949,7 +12958,10 @@ async function deleteProducto(productoId) {
     await axios.delete(`${API}/inventario/productos/${productoId}`)
     showToast('✅ Producto eliminado correctamente', 'success')
     await loadProductos()
-    document.getElementById('productos-grid').innerHTML = renderProductosGrid()
+    const grid = document.getElementById('productos-grid')
+    if (grid) {
+      grid.innerHTML = renderProductosGrid()
+    }
   } catch (error) {
     console.error('Error eliminando producto:', error)
     showToast('❌ Error al eliminar producto', 'error')
