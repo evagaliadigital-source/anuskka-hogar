@@ -9112,12 +9112,14 @@ function verificarResumenDiario() {
     return
   }
   
-  // Mostrar solo después de las 9:00 AM
-  if (hora >= 9) {
-    console.log(`☀️ Es hora del resumen diario (${hora}:00 - después de las 9:00 AM)`)
+  // Mostrar solo entre las 9:00 AM y 10:00 AM (ventana de 1 hora)
+  if (hora === 9) {
+    console.log(`☀️ Es hora del resumen diario (${hora}:00 - ventana 9-10 AM)`)
     setTimeout(mostrarResumenDiario, 2000) // Esperar 2 segundos después de cargar
+  } else if (hora < 9) {
+    console.log(`⏰ Aún no es hora del resumen diario (${hora}:00 - se mostrará a las 9:00 AM)`)
   } else {
-    console.log(`⏰ Aún no es hora del resumen diario (${hora}:00 - se mostrará después de las 9:00 AM)`)
+    console.log(`⏰ Ya pasó la hora del resumen diario (${hora}:00 - se mostró a las 9:00 AM)`)
   }
 }
 
