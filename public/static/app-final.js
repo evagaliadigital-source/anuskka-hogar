@@ -12830,9 +12830,13 @@ async function guardarProducto(event) {
 
 async function viewProducto(productoId) {
   try {
+    console.log('🔍 Cargando producto:', productoId)
     const res = await axios.get(`${API}/inventario/productos/${productoId}`)
+    console.log('📦 Respuesta del servidor:', res.data)
+    
     if (res.data.success) {
       const producto = res.data.producto
+      console.log('✅ Producto cargado:', producto)
       
       const modal = document.getElementById('modal-overlay')
       const modalContent = document.getElementById('modal-content')
@@ -12912,10 +12916,23 @@ async function viewProducto(productoId) {
       `
       
       modal.classList.remove('hidden')
+    } else {
+      console.error('❌ Error en respuesta:', res.data)
+      showToast('❌ Error al cargar producto: ' + (res.data.error || 'Error desconocido'), 'error')
     }
   } catch (error) {
-    console.error('Error cargando producto:', error)
-    showToast('❌ Error al cargar producto', 'error')
+    console.error('❌ Error cargando producto:', error)
+    console.error('📋 Detalles del error:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    })
+    
+    const errorMsg = error.response?.data?.error || error.message || 'Error desconocido'
+    showToast('❌ Error al cargar producto: ' + errorMsg, 'error')
+    
+    // Mostrar alert con error detallado
+    alert(`Error al cargar producto:\n\n${errorMsg}\n\nRevisa la consola (F12) para más detalles.`)
   }
 }
 
