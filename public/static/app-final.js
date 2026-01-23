@@ -12847,84 +12847,76 @@ async function viewProducto(productoId) {
       const producto = res.data.producto
       console.log('✅ Producto cargado:', producto)
       
-      const modal = document.getElementById('modal-overlay')
-      const modalContent = document.getElementById('modal-content')
-      
-      modalContent.innerHTML = `
-        <div class="max-w-3xl mx-auto">
-          <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">
-              <i class="fas fa-eye mr-2 text-blue-600"></i>
-              ${producto.nombre}
-            </h2>
-            <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
-              <i class="fas fa-times text-2xl"></i>
-            </button>
+      const content = `
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-gray-800">
+            <i class="fas fa-eye mr-2 text-blue-600"></i>
+            ${producto.nombre}
+          </h2>
+        </div>
+        
+        <div class="space-y-4">
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600 mb-1">Categoría</p>
+            <p class="font-semibold text-gray-900">${producto.categoria_nombre}</p>
           </div>
           
-          <div class="space-y-4">
+          ${producto.descripcion ? `
             <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-600 mb-1">Categoría</p>
-              <p class="font-semibold text-gray-900">${producto.categoria_nombre}</p>
+              <p class="text-sm text-gray-600 mb-1">Descripción</p>
+              <p class="text-gray-900">${producto.descripcion}</p>
             </div>
-            
-            ${producto.descripcion ? `
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <p class="text-sm text-gray-600 mb-1">Descripción</p>
-                <p class="text-gray-900">${producto.descripcion}</p>
-              </div>
-            ` : ''}
-            
-            ${producto.tiene_variantes ? `
-              <div class="bg-purple-50 p-4 rounded-lg border-2 border-purple-200">
-                <p class="font-bold text-purple-800 mb-3">
-                  <i class="fas fa-cubes mr-2"></i>
-                  Variantes (${producto.variantes.length})
-                </p>
-                <div class="space-y-2">
-                  ${producto.variantes.map(v => `
-                    <div class="flex items-center justify-between bg-white p-3 rounded-lg">
-                      <div>
-                        <p class="font-medium text-gray-900">${v.medida_texto || v.nombre_variante}</p>
-                        <p class="text-sm text-gray-600">Stock: ${v.stock_actual} ${v.unidad}</p>
-                      </div>
-                      <p class="font-bold text-green-600">${v.precio}€</p>
-                    </div>
-                  `).join('')}
-                </div>
-              </div>
-            ` : `
-              <div class="grid grid-cols-2 gap-4">
-                <div class="bg-gray-50 p-4 rounded-lg">
-                  <p class="text-sm text-gray-600 mb-1">Stock actual</p>
-                  <p class="font-bold text-gray-900">${producto.stock_actual} ${producto.unidad}</p>
-                </div>
-                <div class="bg-gray-50 p-4 rounded-lg">
-                  <p class="text-sm text-gray-600 mb-1">Precio</p>
-                  <p class="font-bold text-green-600">${producto.precio_base}€</p>
-                </div>
-              </div>
-            `}
-          </div>
+          ` : ''}
           
-          <div class="flex gap-3 mt-6 pt-6 border-t">
-            <button 
-              onclick="editProducto(${productoId})" 
-              class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
-            >
-              <i class="fas fa-edit mr-2"></i>Editar
-            </button>
-            <button 
-              onclick="closeModal()" 
-              class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
-            >
-              Cerrar
-            </button>
-          </div>
+          ${producto.tiene_variantes ? `
+            <div class="bg-purple-50 p-4 rounded-lg border-2 border-purple-200">
+              <p class="font-bold text-purple-800 mb-3">
+                <i class="fas fa-cubes mr-2"></i>
+                Variantes (${producto.variantes.length})
+              </p>
+              <div class="space-y-2">
+                ${producto.variantes.map(v => `
+                  <div class="flex items-center justify-between bg-white p-3 rounded-lg">
+                    <div>
+                      <p class="font-medium text-gray-900">${v.medida_texto || v.nombre_variante}</p>
+                      <p class="text-sm text-gray-600">Stock: ${v.stock_actual} ${v.unidad}</p>
+                    </div>
+                    <p class="font-bold text-green-600">${v.precio}€</p>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : `
+            <div class="grid grid-cols-2 gap-4">
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-sm text-gray-600 mb-1">Stock actual</p>
+                <p class="font-bold text-gray-900">${producto.stock_actual} ${producto.unidad}</p>
+              </div>
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-sm text-gray-600 mb-1">Precio</p>
+                <p class="font-bold text-green-600">${producto.precio_base}€</p>
+              </div>
+            </div>
+          `}
+        </div>
+        
+        <div class="flex gap-3 mt-6 pt-6 border-t">
+          <button 
+            onclick="editProducto(${productoId})" 
+            class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          >
+            <i class="fas fa-edit mr-2"></i>Editar
+          </button>
+          <button 
+            onclick="closeModal()" 
+            class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+          >
+            Cerrar
+          </button>
         </div>
       `
       
-      modal.classList.remove('hidden')
+      showModal(content, 'max-w-3xl')
     } else {
       console.error('❌ Error en respuesta:', res.data)
       showToast('❌ Error al cargar producto: ' + (res.data.error || 'Error desconocido'), 'error')
