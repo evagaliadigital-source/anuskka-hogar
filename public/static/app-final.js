@@ -12116,9 +12116,14 @@ function renderProductosGrid() {
     <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-all overflow-hidden">
       <div class="p-4">
         <div class="flex items-start justify-between mb-2">
-          <h3 class="font-bold text-gray-800 text-lg leading-tight">${producto.nombre}</h3>
+          <div class="flex-1">
+            <h3 class="font-bold text-gray-800 text-lg leading-tight">${producto.nombre}</h3>
+            ${producto.codigo_producto ? `
+              <p class="text-xs font-mono text-blue-600 mt-1">${producto.codigo_producto}</p>
+            ` : ''}
+          </div>
           ${producto.num_variantes > 0 ? `
-            <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
+            <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full ml-2">
               ${producto.num_variantes} var.
             </span>
           ` : ''}
@@ -12853,54 +12858,97 @@ async function viewProducto(productoId) {
             <i class="fas fa-eye mr-2 text-blue-600"></i>
             ${producto.nombre}
           </h2>
+          ${producto.codigo_producto ? `
+            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-lg font-mono font-bold text-sm">
+              ${producto.codigo_producto}
+            </span>
+          ` : ''}
         </div>
         
-        <div class="space-y-4">
-          <div class="bg-gray-50 p-4 rounded-lg">
-            <p class="text-sm text-gray-600 mb-1">Categoría</p>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="bg-gray-50 p-3 rounded-lg">
+            <p class="text-xs text-gray-600 mb-1">Categoría</p>
             <p class="font-semibold text-gray-900">${producto.categoria_nombre}</p>
           </div>
-          
-          ${producto.descripcion ? `
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-sm text-gray-600 mb-1">Descripción</p>
-              <p class="text-gray-900">${producto.descripcion}</p>
-            </div>
-          ` : ''}
-          
-          ${producto.tiene_variantes ? `
-            <div class="bg-purple-50 p-4 rounded-lg border-2 border-purple-200">
-              <p class="font-bold text-purple-800 mb-3">
-                <i class="fas fa-cubes mr-2"></i>
-                Variantes (${producto.variantes.length})
-              </p>
-              <div class="space-y-2">
-                ${producto.variantes.map(v => `
-                  <div class="flex items-center justify-between bg-white p-3 rounded-lg">
-                    <div>
-                      <p class="font-medium text-gray-900">${v.medida_texto || v.nombre_variante}</p>
-                      <p class="text-sm text-gray-600">Stock: ${v.stock_actual} ${v.unidad}</p>
-                    </div>
-                    <p class="font-bold text-green-600">${v.precio}€</p>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          ` : `
-            <div class="grid grid-cols-2 gap-4">
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <p class="text-sm text-gray-600 mb-1">Stock actual</p>
-                <p class="font-bold text-gray-900">${producto.stock_actual} ${producto.unidad}</p>
-              </div>
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <p class="text-sm text-gray-600 mb-1">Precio</p>
-                <p class="font-bold text-green-600">${producto.precio_base}€</p>
-              </div>
-            </div>
-          `}
+          <div class="bg-gray-50 p-3 rounded-lg">
+            <p class="text-xs text-gray-600 mb-1">Unidad</p>
+            <p class="font-semibold text-gray-900">${producto.unidad || 'No especificada'}</p>
+          </div>
         </div>
         
-        <div class="flex gap-3 mt-6 pt-6 border-t">
+        ${producto.descripcion ? `
+          <div class="bg-gray-50 p-3 rounded-lg mb-4">
+            <p class="text-xs text-gray-600 mb-1">Descripción</p>
+            <p class="text-gray-900 text-sm">${producto.descripcion}</p>
+          </div>
+        ` : ''}
+        
+        ${producto.tiene_variantes ? `
+          <div class="bg-purple-50 p-4 rounded-lg border-2 border-purple-200 mb-4">
+            <p class="font-bold text-purple-800 mb-3">
+              <i class="fas fa-cubes mr-2"></i>
+              Variantes (${producto.variantes.length})
+            </p>
+            <div class="space-y-2">
+              ${producto.variantes.map(v => `
+                <div class="flex items-center justify-between bg-white p-3 rounded-lg">
+                  <div>
+                    <p class="font-medium text-gray-900">${v.medida_texto || v.nombre_variante}</p>
+                    <p class="text-xs text-gray-600">
+                      Stock: ${v.stock_actual} ${v.unidad}
+                      ${v.stock_minimo > 0 ? ` • Mín: ${v.stock_minimo}` : ''}
+                    </p>
+                    ${v.color ? `<p class="text-xs text-gray-500">Color: ${v.color}</p>` : ''}
+                  </div>
+                  <p class="font-bold text-green-600">${v.precio}€</p>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : `
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="bg-green-50 p-3 rounded-lg border border-green-200">
+              <p class="text-xs text-gray-600 mb-1">Stock actual</p>
+              <p class="font-bold text-gray-900 text-lg">${producto.stock_actual || 0} ${producto.unidad || ''}</p>
+              ${producto.stock_minimo > 0 ? `<p class="text-xs text-gray-500 mt-1">Mínimo: ${producto.stock_minimo}</p>` : ''}
+            </div>
+            <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
+              <p class="text-xs text-gray-600 mb-1">Precio base</p>
+              <p class="font-bold text-green-600 text-lg">${producto.precio_base || 0}€</p>
+            </div>
+          </div>
+        `}
+        
+        ${producto.notas ? `
+          <div class="bg-yellow-50 p-3 rounded-lg mb-4 border border-yellow-200">
+            <p class="text-xs text-gray-600 mb-1">
+              <i class="fas fa-sticky-note mr-1"></i>Notas
+            </p>
+            <p class="text-gray-900 text-sm">${producto.notas}</p>
+          </div>
+        ` : ''}
+        
+        ${producto.codigos_externos && producto.codigos_externos.length > 0 ? `
+          <div class="bg-gray-50 p-3 rounded-lg mb-4">
+            <p class="text-xs text-gray-600 mb-2">
+              <i class="fas fa-barcode mr-1"></i>Códigos de proveedor
+            </p>
+            ${producto.codigos_externos.map(ce => `
+              <div class="flex items-center justify-between text-sm py-1">
+                <span class="text-gray-700">${ce.proveedor_nombre}</span>
+                <span class="font-mono font-semibold text-gray-900">${ce.codigo_proveedor}</span>
+              </div>
+              ${ce.ean ? `<p class="text-xs text-gray-500">EAN: ${ce.ean}</p>` : ''}
+            `).join('')}
+          </div>
+        ` : ''}
+        
+        <div class="text-xs text-gray-500 mb-4">
+          <p>Creado: ${new Date(producto.fecha_creacion).toLocaleDateString('es-ES')}</p>
+          ${producto.fecha_actualizacion ? `<p>Actualizado: ${new Date(producto.fecha_actualizacion).toLocaleDateString('es-ES')}</p>` : ''}
+        </div>
+        
+        <div class="flex gap-3 pt-4 border-t">
           <button 
             onclick="editProducto(${productoId})" 
             class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700"

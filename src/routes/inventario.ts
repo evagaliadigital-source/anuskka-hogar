@@ -382,12 +382,32 @@ inventario.post('/productos', async (c) => {
       return c.json({ success: false, error: 'Nombre y categoría son obligatorios' }, 400)
     }
 
+    // Generar código automático basado en categoría
+    // 1. Obtener prefijo de la categoría (primeras 3 letras del nombre)
+    const categoriaResult = await c.env.DB.prepare(`
+      SELECT nombre FROM categorias_inventario WHERE id = ?
+    `).bind(categoria_id).first()
+    
+    const prefijo = categoriaResult?.nombre 
+      ? categoriaResult.nombre.substring(0, 3).toUpperCase()
+      : 'PRO'
+    
+    // 2. Contar productos existentes de esa categoría para generar el número
+    const countResult = await c.env.DB.prepare(`
+      SELECT COUNT(*) as total FROM productos WHERE categoria_id = ?
+    `).bind(categoria_id).first()
+    
+    const numeroSecuencial = (countResult?.total || 0) + 1
+    const codigo_producto = `${prefijo}-${String(numeroSecuencial).padStart(3, '0')}`
+    
+    console.log(`🔢 Generando código: ${codigo_producto} (categoría: ${categoriaResult?.nombre}, secuencial: ${numeroSecuencial})`)
+
     // Insertar producto base
     const productoResult = await c.env.DB.prepare(`
       INSERT INTO productos (
         nombre, categoria_id, descripcion, precio_base, stock_actual, 
-        stock_minimo, unidad, imagen_url, notas, tiene_variantes
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        stock_minimo, unidad, imagen_url, notas, tiene_variantes, codigo_producto
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       nombre,
       categoria_id,
@@ -398,7 +418,8 @@ inventario.post('/productos', async (c) => {
       unidad || null,
       imagen_url || null,
       notas || null,
-      tiene_variantes ? 1 : 0
+      tiene_variantes ? 1 : 0,
+      codigo_producto
     ).run()
 
     const producto_id = productoResult.meta.last_row_id
