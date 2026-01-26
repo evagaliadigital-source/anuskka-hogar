@@ -510,29 +510,37 @@ app.post('/api/trabajos', async (c) => {
   try {
     const data = await c.req.json()
     
-    // Obtener el último número de trabajo del año actual
-    const year = new Date().getFullYear()
+    // Determinar categoría (tienda o externo)
+    const categoria = data.categoria || 'tienda'
+    
+    // Generar código según categoría
+    // TT-0001 para tienda, TE-0001 para externo
+    const prefijo = categoria === 'externo' ? 'TE' : 'TT'
+    
+    // Obtener el último número de la categoría
     const lastTrabajo = await c.env.DB.prepare(`
       SELECT numero_trabajo FROM trabajos 
-      WHERE numero_trabajo LIKE ? 
+      WHERE categoria = ? AND numero_trabajo LIKE ?
       ORDER BY id DESC LIMIT 1
-    `).bind(`T-${year}-%`).first()
+    `).bind(categoria, `${prefijo}-%`).first()
     
-    // Generar nuevo número (T-2025-0001, T-2025-0002, etc.)
-    let numeroTrabajo = `T-${year}-0001`
+    // Generar nuevo número (TT-0001, TT-0002, TE-0001, etc.)
+    let numeroTrabajo = `${prefijo}-0001`
     if (lastTrabajo && lastTrabajo.numero_trabajo) {
-      const lastNum = parseInt(lastTrabajo.numero_trabajo.split('-')[2])
-      numeroTrabajo = `T-${year}-${String(lastNum + 1).padStart(4, '0')}`
+      const lastNum = parseInt(lastTrabajo.numero_trabajo.split('-')[1])
+      numeroTrabajo = `${prefijo}-${String(lastNum + 1).padStart(4, '0')}`
     }
+    
+    console.log(`🔢 Generando número trabajo: ${numeroTrabajo} (categoría: ${categoria})`)
     
     const result = await c.env.DB.prepare(`
       INSERT INTO trabajos (cliente_id, nombre_empleada, tipo_servicio, descripcion, direccion,
-                           fecha_programada, duracion_estimada, estado, prioridad, precio_cliente, notas, numero_trabajo)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                           fecha_programada, duracion_estimada, estado, prioridad, precio_cliente, notas, numero_trabajo, categoria)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       data.cliente_id, data.nombre_empleada || null, data.tipo_servicio, data.descripcion || null,
       data.direccion, data.fecha_programada, data.duracion_estimada || 120,
-      data.estado || 'pendiente', data.prioridad || 'normal', data.precio_cliente || null, data.notas || null, numeroTrabajo
+      data.estado || 'pendiente', data.prioridad || 'normal', data.precio_cliente || null, data.notas || null, numeroTrabajo, categoria
     ).run()
     
     return c.json({ id: result.meta.last_row_id, numero_trabajo: numeroTrabajo, ...data })
