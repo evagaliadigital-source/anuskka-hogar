@@ -1970,6 +1970,9 @@ function renderizarTrabajosTabla(trabajos) {
   const container = document.getElementById('trabajos-lista')
   if (!container) return
   
+  // Verificar si es usuario tienda (solo puede VER)
+  const esTienda = getUserRole() === 'tienda'
+  
   // Si no hay trabajos, mostrar mensaje vacío
   if (!trabajos || trabajos.length === 0) {
     container.innerHTML = `
@@ -2040,12 +2043,14 @@ function renderizarTrabajosTabla(trabajos) {
               <button onclick="viewTrabajo(${t.id})" class="text-blue-600 hover:text-blue-800" title="Ver detalles">
                 <i class="fas fa-eye"></i>
               </button>
+              ${!esTienda ? `
               <button onclick="editTrabajo(${t.id})" class="text-green-600 hover:text-green-800" title="Editar">
                 <i class="fas fa-edit"></i>
               </button>
               <button onclick="deleteTrabajo(${t.id})" class="text-red-600 hover:text-red-800" title="Borrar">
                 <i class="fas fa-trash"></i>
               </button>
+              ` : ''}
             </td>
           </tr>
         `).join('')}
@@ -10788,6 +10793,10 @@ function cambiarDiaDiario(direccion) {
 // Función principal del diario
 async function cargarDiarioDia(fechaStr) {
   console.log('📖 cargarDiarioDia iniciada con fecha:', fechaStr)
+  
+  // Verificar si es usuario tienda (solo puede VER)
+  const esTienda = getUserRole() === 'tienda'
+  
   try {
     // Parsear fecha sin conversión de zona horaria
     const [year, month, day] = fechaStr.split('-').map(Number)
@@ -11038,12 +11047,14 @@ async function cargarDiarioDia(fechaStr) {
             
             <!-- Acciones -->
             <div class="flex items-center gap-2 pt-3 border-t border-gray-300/50">
+              ${!esTienda ? `
               <button onclick="editTrabajo(${t.id})" 
                       class="flex-1 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg transition-all text-sm font-medium border border-gray-300">
                 <i class="fas fa-edit mr-2"></i>Editar
               </button>
+              ` : ''}
               <button onclick="viewTrabajo(${t.id})" 
-                      class="flex-1 bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition-all text-sm font-medium">
+                      class="${esTienda ? 'w-full' : 'flex-1'} bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition-all text-sm font-medium">
                 <i class="fas fa-eye mr-2"></i>Ver Completo
               </button>
             </div>
