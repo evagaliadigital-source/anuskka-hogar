@@ -11488,12 +11488,10 @@ async function viewCliente(id) {
                                 class="flex-1 text-xs bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200">
                           <i class="fas fa-download"></i>
                         </button>
-                        ${esAdmin ? `
-                          <button onclick="borrarArchivo(${id}, ${archivo.id})" 
-                                  class="flex-1 text-xs bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200">
-                            <i class="fas fa-trash"></i>
-                          </button>
-                        ` : ''}
+                        <button onclick="borrarArchivo(${id}, ${archivo.id})" 
+                                class="flex-1 text-xs bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200">
+                          <i class="fas fa-trash"></i>
+                        </button>
                       </div>
                       
                       <!-- Info adicional -->
