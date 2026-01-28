@@ -843,6 +843,9 @@ function renderizarTablaClientes(clientes) {
   const container = document.getElementById('clientes-tabla-container')
   if (!container) return
   
+  // Verificar rol del usuario
+  const esTienda = getUserRole() === 'tienda'
+  
   // Si no hay clientes, mostrar mensaje vacío
   if (!clientes || clientes.length === 0) {
     container.innerHTML = `
