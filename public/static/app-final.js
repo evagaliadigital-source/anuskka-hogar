@@ -12164,30 +12164,30 @@ function renderProductosGrid() {
             <p class="text-xs text-purple-600">Haz clic para ver detalles</p>
           </div>
         ` : `
-          <div class="grid ${esTienda ? 'grid-cols-1' : 'grid-cols-2'} gap-2 mb-3">
+          <div class="grid grid-cols-2 gap-2 mb-3">
             <div class="bg-gray-50 rounded-lg p-2">
               <p class="text-xs text-gray-600">Stock</p>
               <p class="font-bold text-gray-900">${producto.stock_actual || 0} ${producto.unidad || ''}</p>
             </div>
-            ${!esTienda ? `
-              <div class="bg-gray-50 rounded-lg p-2">
-                <p class="text-xs text-gray-600">Precio</p>
-                <p class="font-bold text-green-600">${producto.precio_base ? producto.precio_base.toFixed(2) + '€' : '-'}</p>
-              </div>
-            ` : ''}
+            <div class="bg-gray-50 rounded-lg p-2">
+              <p class="text-xs text-gray-600">Precio</p>
+              <p class="font-bold text-green-600">${producto.precio_base ? producto.precio_base.toFixed(2) + '€' : '-'}</p>
+            </div>
           </div>
         `}
         
         <div class="flex gap-2 pt-3 border-t">
           <button onclick="viewProducto(${producto.id})" class="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-all">
-            <i class="fas fa-eye"></i>
+            <i class="fas fa-eye mr-1"></i>Ver
           </button>
-          <button onclick="editProducto(${producto.id})" class="flex-1 px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-all">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button onclick="deleteProducto(${producto.id})" class="flex-1 px-3 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-all">
-            <i class="fas fa-trash"></i>
-          </button>
+          ${!esTienda ? `
+            <button onclick="editProducto(${producto.id})" class="flex-1 px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-all">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button onclick="deleteProducto(${producto.id})" class="flex-1 px-3 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-all">
+              <i class="fas fa-trash"></i>
+            </button>
+          ` : ''}
         </div>
       </div>
     </div>
@@ -12928,24 +12928,22 @@ async function viewProducto(productoId) {
                     </p>
                     ${v.color ? `<p class="text-xs text-gray-500">Color: ${v.color}</p>` : ''}
                   </div>
-                  ${!esTienda ? `<p class="font-bold text-green-600">${v.precio}€</p>` : ''}
+                  <p class="font-bold text-green-600">${v.precio}€</p>
                 </div>
               `).join('')}
             </div>
           </div>
         ` : `
-          <div class="grid grid-cols-${esTienda ? '1' : '2'} gap-3 mb-4">
+          <div class="grid grid-cols-2 gap-3 mb-4">
             <div class="bg-green-50 p-3 rounded-lg border border-green-200">
               <p class="text-xs text-gray-600 mb-1">Stock actual</p>
               <p class="font-bold text-gray-900 text-lg">${producto.stock_actual || 0} ${producto.unidad || ''}</p>
               ${producto.stock_minimo > 0 ? `<p class="text-xs text-gray-500 mt-1">Mínimo: ${producto.stock_minimo}</p>` : ''}
             </div>
-            ${!esTienda ? `
-              <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                <p class="text-xs text-gray-600 mb-1">Precio base</p>
-                <p class="font-bold text-green-600 text-lg">${producto.precio_base || 0}€</p>
-              </div>
-            ` : ''}
+            <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
+              <p class="text-xs text-gray-600 mb-1">Precio base</p>
+              <p class="font-bold text-green-600 text-lg">${producto.precio_base || 0}€</p>
+            </div>
           </div>
         `}
         
@@ -12979,12 +12977,14 @@ async function viewProducto(productoId) {
         </div>
         
         <div class="flex gap-3 pt-4 border-t">
-          <button 
-            onclick="editProducto(${productoId})" 
-            class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
-          >
-            <i class="fas fa-edit mr-2"></i>Editar
-          </button>
+          ${!esTienda ? `
+            <button 
+              onclick="editProducto(${productoId})" 
+              class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            >
+              <i class="fas fa-edit mr-2"></i>Editar
+            </button>
+          ` : ''}
           <button 
             onclick="closeModal()" 
             class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
