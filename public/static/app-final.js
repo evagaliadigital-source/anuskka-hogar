@@ -1185,6 +1185,9 @@ async function viewTrabajo(id) {
     const { data: personalList } = await axios.get(`${API}/personal`)
     const { data: tareasDelTrabajo } = await axios.get(`${API}/trabajos/${id}/tareas`)
     
+    const userRole = getUserRole()
+    const esTienda = userRole === 'tienda'
+    
     // Calcular progreso
     const fasesCompletadas = fases.filter(f => f.estado === 'completado').length
     const progresoPercent = (fasesCompletadas / fases.length) * 100
@@ -1327,7 +1330,7 @@ async function viewTrabajo(id) {
             </div>
             
             <!-- Costes y Precios -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 ${esTienda ? '' : 'md:grid-cols-3'} gap-4">
               <div class="bg-white p-4 rounded-lg border border-gray-200">
                 <div class="text-xs text-gray-500 mb-1">
                   <i class="fas fa-euro-sign mr-1"></i>PRECIO CLIENTE
@@ -1337,23 +1340,25 @@ async function viewTrabajo(id) {
                 </div>
               </div>
               
-              <div class="bg-white p-4 rounded-lg border border-gray-200">
-                <div class="text-xs text-gray-500 mb-1">
-                  <i class="fas fa-tools mr-1"></i>COSTE MATERIALES
+              ${!esTienda ? `
+                <div class="bg-white p-4 rounded-lg border border-gray-200">
+                  <div class="text-xs text-gray-500 mb-1">
+                    <i class="fas fa-tools mr-1"></i>COSTE MATERIALES
+                  </div>
+                  <div class="font-semibold text-gray-800">
+                    €${trabajo.coste_materiales ? trabajo.coste_materiales.toFixed(2) : '0.00'}
+                  </div>
                 </div>
-                <div class="font-semibold text-gray-800">
-                  €${trabajo.coste_materiales ? trabajo.coste_materiales.toFixed(2) : '0.00'}
+                
+                <div class="bg-white p-4 rounded-lg border border-gray-200">
+                  <div class="text-xs text-gray-500 mb-1">
+                    <i class="fas fa-user-clock mr-1"></i>COSTE MANO DE OBRA
+                  </div>
+                  <div class="font-semibold text-gray-800">
+                    €${trabajo.coste_mano_obra ? trabajo.coste_mano_obra.toFixed(2) : '0.00'}
+                  </div>
                 </div>
-              </div>
-              
-              <div class="bg-white p-4 rounded-lg border border-gray-200">
-                <div class="text-xs text-gray-500 mb-1">
-                  <i class="fas fa-user-clock mr-1"></i>COSTE MANO DE OBRA
-                </div>
-                <div class="font-semibold text-gray-800">
-                  €${trabajo.coste_mano_obra ? trabajo.coste_mano_obra.toFixed(2) : '0.00'}
-                </div>
-              </div>
+              ` : ''}
             </div>
             
             ${trabajo.notas ? `
