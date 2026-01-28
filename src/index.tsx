@@ -87,7 +87,7 @@ app.post('/api/login', async (c) => {
 // Obtener todos los clientes
 app.get('/api/clientes', async (c) => {
   const { results } = await c.env.DB.prepare(`
-    SELECT * FROM clientes WHERE activo = 1 ORDER BY id
+    SELECT * FROM clientes WHERE activo = 1 ORDER BY id DESC
   `).all()
   
   // Agregar número de cliente automáticamente (formato: C-0001, C-0002, etc.)

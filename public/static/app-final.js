@@ -11393,9 +11393,26 @@ async function viewCliente(id) {
             <div class="bg-gray-50 p-4 rounded-lg mb-6">
               <h4 class="font-semibold text-gray-700 mb-3 flex items-center border-b pb-2">
                 <i class="fas fa-sticky-note text-gray-500 mr-2"></i>Notas
+                <button onclick="toggleEditarNotas(${id})" class="ml-auto text-blue-600 hover:text-blue-800 text-sm">
+                  <i class="fas fa-edit mr-1"></i>Editar
+                </button>
               </h4>
-              <p class="text-sm text-gray-600">${cliente.notas || 'Sin notas'}</p>
-              ${cliente.notas_comerciales ? `<p class="text-sm text-gray-600 mt-2"><span class="font-medium">Notas comerciales:</span> ${cliente.notas_comerciales}</p>` : ''}
+              <div id="notas-view-${id}">
+                <p class="text-sm text-gray-600">${cliente.notas || 'Sin notas'}</p>
+                ${cliente.notas_comerciales ? `<p class="text-sm text-gray-600 mt-2"><span class="font-medium">Notas comerciales:</span> ${cliente.notas_comerciales}</p>` : ''}
+              </div>
+              <div id="notas-edit-${id}" style="display: none;">
+                <textarea id="notas-textarea-${id}" class="w-full px-3 py-2 border rounded-lg text-sm" rows="3" placeholder="Notas generales...">${cliente.notas || ''}</textarea>
+                <textarea id="notas-comerciales-textarea-${id}" class="w-full px-3 py-2 border rounded-lg text-sm mt-2" rows="2" placeholder="Notas comerciales...">${cliente.notas_comerciales || ''}</textarea>
+                <div class="flex gap-2 mt-2">
+                  <button onclick="guardarNotasCliente(${id})" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">
+                    <i class="fas fa-save mr-1"></i>Guardar
+                  </button>
+                  <button onclick="toggleEditarNotas(${id})" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 text-sm">
+                    Cancelar
+                  </button>
+                </div>
+              </div>
             </div>
             
             <!-- Trabajos -->
@@ -12134,6 +12151,15 @@ function renderInventario() {
             ${categoriasOptions}
           </select>
         </div>
+        <div class="flex gap-1">
+          <button id="btn-vista-grid" onclick="cambiarVistaInventario('grid')" class="px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700" title="Vista en tarjetas">
+            <i class="fas fa-th"></i>
+          </button>
+          <button id="btn-vista-lista" onclick="cambiarVistaInventario('lista')" class="px-3 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400" title="Vista en lista">
+            <i class="fas fa-list"></i>
+          </button>
+        </div>
+        </div>
       </div>
     </div>
     
@@ -12219,6 +12245,74 @@ function renderProductosGrid() {
   `).join('')
 }
 
+function renderProductosLista() {
+  const userRole = getUserRole()
+  const esTienda = userRole === 'tienda'
+  
+  if (inventarioData.productos.length === 0) {
+    return `
+      <div class="text-center py-12">
+        <i class="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
+        <p class="text-gray-500 text-lg">No hay productos en el inventario</p>
+        <button onclick="showProductoForm()" class="mt-4 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+          <i class="fas fa-plus mr-2"></i>Crear primer producto
+        </button>
+      </div>
+    `
+  }
+  
+  return inventarioData.productos.map(producto => {
+    const stockBajo = producto.variantes?.some(v => v.stock_actual <= v.stock_minimo) || producto.stock_actual <= producto.stock_minimo
+    
+    return `
+      <div class="bg-white rounded-lg shadow hover:shadow-md transition-all p-4 flex items-center gap-4">
+        <!-- Nombre y categoría -->
+        <div class="flex-1">
+          <h4 class="font-semibold text-gray-800">${producto.nombre}</h4>
+          <p class="text-sm text-gray-500">${producto.categoria}</p>
+          ${producto.codigo_producto ? `<p class="text-xs text-gray-400">Código: ${producto.codigo_producto}</p>` : ''}
+        </div>
+        
+        <!-- Stock -->
+        <div class="text-center w-24">
+          <p class="text-xs text-gray-500">Stock</p>
+          <p class="font-semibold ${stockBajo ? 'text-red-600' : 'text-green-600'}">
+            ${producto.stock_actual || 0}
+          </p>
+        </div>
+        
+        <!-- Precio -->
+        ${!esTienda ? `
+          <div class="text-center w-32">
+            <p class="text-xs text-gray-500">Precio Venta</p>
+            <p class="font-semibold text-blue-600">${parseFloat(producto.precio_base || 0).toFixed(2)}€</p>
+          </div>
+        ` : `
+          <div class="text-center w-32">
+            <p class="text-xs text-gray-500">Precio</p>
+            <p class="font-semibold text-blue-600">${parseFloat(producto.precio_base || 0).toFixed(2)}€</p>
+          </div>
+        `}
+        
+        <!-- Acciones -->
+        <div class="flex gap-2">
+          <button onclick="viewProducto(${producto.id})" class="px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700" title="Ver detalles">
+            <i class="fas fa-eye"></i>
+          </button>
+          ${!esTienda ? `
+            <button onclick="editProducto(${producto.id})" class="px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700" title="Editar">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button onclick="deleteProducto(${producto.id})" class="px-3 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700" title="Eliminar">
+              <i class="fas fa-trash"></i>
+            </button>
+          ` : ''}
+        </div>
+      </div>
+    `
+  }).join('')
+}
+
 // ============================================
 // FILTROS Y BÚSQUEDA
 // ============================================
@@ -12233,7 +12327,13 @@ function buscarProductos() {
     await loadProductos(categoria_id || null, buscar || null)
     const grid = document.getElementById('productos-grid')
     if (grid) {
-      grid.innerHTML = renderProductosGrid()
+      if (vistaInventario === 'grid') {
+        grid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'
+        grid.innerHTML = renderProductosGrid()
+      } else {
+        grid.className = 'space-y-2'
+        grid.innerHTML = renderProductosLista()
+      }
     }
   }, 300)
 }
@@ -12244,7 +12344,13 @@ async function filtrarPorCategoria() {
   await loadProductos(categoria_id || null, buscar || null)
   const grid = document.getElementById('productos-grid')
   if (grid) {
-    grid.innerHTML = renderProductosGrid()
+    if (vistaInventario === 'grid') {
+      grid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'
+      grid.innerHTML = renderProductosGrid()
+    } else {
+      grid.className = 'space-y-2'
+      grid.innerHTML = renderProductosLista()
+    }
   }
 }
 
@@ -14222,4 +14328,68 @@ window.confirmarVinculacionManual = confirmarVinculacionManual
 window.filtrarSelectProductos = filtrarSelectProductos
 window.confirmarImportacion = confirmarImportacion
 window.cancelarImportacion = cancelarImportacion
+
+// Funciones para editar notas de cliente
+window.toggleEditarNotas = function(clienteId) {
+  const viewDiv = document.getElementById(`notas-view-${clienteId}`)
+  const editDiv = document.getElementById(`notas-edit-${clienteId}`)
+  
+  if (viewDiv.style.display === 'none') {
+    viewDiv.style.display = 'block'
+    editDiv.style.display = 'none'
+  } else {
+    viewDiv.style.display = 'none'
+    editDiv.style.display = 'block'
+  }
+}
+
+window.guardarNotasCliente = async function(clienteId) {
+  try {
+    const notas = document.getElementById(`notas-textarea-${clienteId}`).value
+    const notas_comerciales = document.getElementById(`notas-comerciales-textarea-${clienteId}`).value
+    
+    await axios.put(`${API}/clientes/${clienteId}`, {
+      notas,
+      notas_comerciales
+    })
+    
+    showToast('✅ Notas guardadas correctamente', 'success')
+    closeModal()
+    loadClientes() // Recargar lista de clientes
+  } catch (error) {
+    console.error('Error guardando notas:', error)
+    showToast('❌ Error al guardar notas', 'error')
+  }
+}
+
+// Variable global para vista de inventario
+let vistaInventario = 'grid' // 'grid' o 'lista'
+
+window.cambiarVistaInventario = function(vista) {
+  vistaInventario = vista
+  
+  // Actualizar botones
+  const btnGrid = document.getElementById('btn-vista-grid')
+  const btnLista = document.getElementById('btn-vista-lista')
+  
+  if (vista === 'grid') {
+    btnGrid.className = 'px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700'
+    btnLista.className = 'px-3 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400'
+  } else {
+    btnGrid.className = 'px-3 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400'
+    btnLista.className = 'px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700'
+  }
+  
+  // Renderizar productos
+  const grid = document.getElementById('productos-grid')
+  if (grid) {
+    if (vista === 'grid') {
+      grid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'
+      grid.innerHTML = renderProductosGrid()
+    } else {
+      grid.className = 'space-y-2'
+      grid.innerHTML = renderProductosLista()
+    }
+  }
+}
 
