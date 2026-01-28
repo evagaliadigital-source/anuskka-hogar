@@ -121,11 +121,8 @@ app.get('/api/clientes/:id', async (c) => {
     ORDER BY t.fecha_programada DESC
   `).bind(id).all()
   
-  // Agregar números a trabajos
-  const trabajosConNumero = trabajos.results.map((trabajo: any) => ({
-    ...trabajo,
-    numero_trabajo: `T-${String(trabajo.id).padStart(4, '0')}`
-  }))
+  // Los trabajos ya tienen numero_trabajo en la BD
+  const trabajosConNumero = trabajos.results
   
   const facturas = await c.env.DB.prepare(`
     SELECT * FROM facturas WHERE cliente_id = ? ORDER BY fecha_emision DESC
@@ -476,13 +473,8 @@ app.get('/api/trabajos', async (c) => {
   
   const { results } = await c.env.DB.prepare(query).bind(...bindings).all()
   
-  // Agregar números a trabajos
-  const trabajosConNumero = results.map((trabajo: any) => ({
-    ...trabajo,
-    numero_trabajo: `T-${String(trabajo.id).padStart(4, '0')}`
-  }))
-  
-  return c.json(trabajosConNumero)
+  // Los trabajos ya tienen numero_trabajo en la BD
+  return c.json(results)
 })
 
 // Obtener un trabajo específico
