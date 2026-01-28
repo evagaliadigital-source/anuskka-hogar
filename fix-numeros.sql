@@ -1,0 +1,12 @@
+UPDATE trabajos SET numero_trabajo = 'TT-26-001' WHERE id = 1;
+UPDATE trabajos SET numero_trabajo = 'TT-26-002' WHERE id = 2;
+UPDATE trabajos SET numero_trabajo = 'TT-26-003' WHERE id = 3;
+UPDATE trabajos SET numero_trabajo = 'TT-26-004' WHERE id = 4;
+UPDATE trabajos SET numero_trabajo = 'TT-26-005' WHERE id = 5;
+UPDATE trabajos SET numero_trabajo = 'TT-26-006' WHERE id = 6;
+UPDATE trabajos SET numero_trabajo = 'TT-26-007' WHERE id = 7;
+UPDATE trabajos SET numero_trabajo = 'TT-26-008' WHERE id = 8;
+UPDATE trabajos SET numero_trabajo = 'TT-26-009' WHERE id = 9;
+UPDATE trabajos SET numero_trabajo = 'TT-26-010' WHERE id = 10;
+UPDATE trabajos SET numero_trabajo = 'TT-26-011' WHERE id = 11;
+UPDATE trabajos SET numero_trabajo = 'TT-26-012' WHERE id = 12;
