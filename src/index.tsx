@@ -513,7 +513,7 @@ app.post('/api/trabajos', async (c) => {
     const categoria = data.categoria || 'tienda'
     
     // Generar código según categoría
-    // TT-26-001 para tienda, TE-26-001 para externo
+    // TT-26001 para tienda, TE-26001 para externo
     const prefijo = categoria === 'externo' ? 'TE' : 'TT'
     
     // Obtener el último número de la categoría
@@ -521,15 +521,17 @@ app.post('/api/trabajos', async (c) => {
       SELECT numero_trabajo FROM trabajos 
       WHERE categoria = ? AND numero_trabajo LIKE ?
       ORDER BY id DESC LIMIT 1
-    `).bind(categoria, `${prefijo}-26-%`).first()
+    `).bind(categoria, `${prefijo}-26%`).first()
     
-    // Generar nuevo número (TT-26-001, TT-26-002, TE-26-001, etc.)
-    let numeroTrabajo = `${prefijo}-26-001`
+    // Generar nuevo número (TT-26001, TT-26002, TE-26001, etc.)
+    let numeroTrabajo = `${prefijo}-26001`
     if (lastTrabajo && lastTrabajo.numero_trabajo) {
-      // Extraer último número (del formato TT-26-001)
-      const parts = lastTrabajo.numero_trabajo.split('-')
-      const lastNum = parseInt(parts[parts.length - 1])
-      numeroTrabajo = `${prefijo}-26-${String(lastNum + 1).padStart(3, '0')}`
+      // Extraer último número (del formato TT-26001)
+      const match = lastTrabajo.numero_trabajo.match(/\d+$/)
+      if (match) {
+        const lastNum = parseInt(match[0])
+        numeroTrabajo = `${prefijo}-26${String(lastNum + 1).padStart(3, '0')}`
+      }
     }
     
     console.log(`🔢 Generando número trabajo: ${numeroTrabajo} (categoría: ${categoria})`)
