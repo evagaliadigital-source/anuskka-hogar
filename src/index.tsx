@@ -568,10 +568,20 @@ app.put('/api/trabajos/:id', async (c) => {
           fecha_inicio = ?, fecha_finalizacion = ?, duracion_real = ?, satisfaccion_cliente = ?, notas = ?
       WHERE id = ?
     `).bind(
-      data.nombre_empleada || null, data.tipo_servicio, data.descripcion, data.fecha_programada,
-      data.duracion_estimada, data.estado, data.prioridad, data.precio_cliente || null,
-      data.fecha_inicio || null, data.fecha_finalizacion || null, data.duracion_real || null,
-      data.satisfaccion_cliente || null, data.notas, id
+      data.nombre_empleada || null, 
+      data.tipo_servicio || null, 
+      data.descripcion || null, 
+      data.fecha_programada || null,
+      data.duracion_estimada || null, 
+      data.estado || null, 
+      data.prioridad || null, 
+      data.precio_cliente || null,
+      data.fecha_inicio || null, 
+      data.fecha_finalizacion || null, 
+      data.duracion_real || null,
+      data.satisfaccion_cliente || null, 
+      data.notas || null, 
+      id
     ).run()
     
     return c.json({ success: true })
