@@ -2930,6 +2930,12 @@ app.get('/', (c) => {
                 <div class="flex flex-wrap gap-3 items-center justify-between border-t pt-4">
                     <!-- Filtros -->
                     <div class="flex gap-3 items-center flex-wrap">
+                        <select id="filtro-categoria-trabajos" onchange="aplicarFiltrosTrabajos()" class="px-3 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-gray-500" title="Filtrar por categoría">
+                            <option value="">📦 Todas las categorías</option>
+                            <option value="tienda">🏪 Tienda (TT)</option>
+                            <option value="externo">🚚 Externos (TE)</option>
+                        </select>
+                        
                         <select id="filtro-estado-trabajos" onchange="aplicarFiltrosTrabajos()" class="px-3 py-1.5 text-sm border rounded-lg focus:ring-2 focus:ring-gray-500" title="Filtrar por estado del trabajo">
                             <option value="">📋 Todos los estados</option>
                             <option value="pendiente">⏳ Pendientes</option>
