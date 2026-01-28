@@ -476,7 +476,7 @@ app.get('/api/trabajos', async (c) => {
     bindings.push(fecha)
   }
   
-  query += ' ORDER BY t.fecha_programada DESC'
+  query += ' ORDER BY t.id DESC'
   
   const { results } = await c.env.DB.prepare(query).bind(...bindings).all()
   

@@ -898,9 +898,11 @@ function renderizarTablaClientes(clientes) {
               <button onclick="viewCliente(${c.id})" class="text-blue-600 hover:text-blue-800 mr-3" title="Ver detalles">
                 <i class="fas fa-eye"></i>
               </button>
+              ${!esTienda ? `
               <button onclick="editCliente(${c.id})" class="text-green-600 hover:text-green-800 mr-3" title="Editar">
                 <i class="fas fa-edit"></i>
               </button>
+              ` : ''}
               <button onclick="showClientePresupuestos(${c.id})" class="text-purple-600 hover:text-purple-800" title="Ver presupuestos">
                 <i class="fas fa-file-alt"></i>
               </button>
@@ -11480,10 +11482,12 @@ async function viewCliente(id) {
             
             <!-- Botones de acción -->
             <div class="flex gap-3 mt-6 pt-6 border-t">
+              ${!esTienda ? `
               <button onclick="editCliente(${id}); closeModal();" class="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
                 <i class="fas fa-edit mr-2"></i>Editar Cliente
               </button>
-              <button onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
+              ` : ''}
+              <button onclick="closeModal()" class="${esTienda ? 'w-full' : 'px-6 py-3'} border rounded-lg hover:bg-gray-50">
                 Cerrar
               </button>
             </div>
