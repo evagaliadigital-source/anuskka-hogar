@@ -11284,6 +11284,7 @@ async function viewCliente(id) {
     // Obtener rol del usuario logueado
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
     const esAdmin = usuario.rol === 'duena'
+    const esTienda = usuario.rol === 'tienda'
     
     // Formatear fechas
     const formatFecha = (fecha) => fecha ? new Date(fecha).toLocaleDateString('es-ES') : '-'
