@@ -1570,7 +1570,7 @@ async function viewTrabajo(id) {
             </div>
             <div class="bg-gray-50 p-4 rounded-lg">
               <p class="text-sm text-gray-600 mb-1">Precio Cliente</p>
-              <p class="font-semibold text-green-600 text-xl">€${trabajo.precio_cliente.toFixed(2)}</p>
+              <p class="font-semibold text-green-600 text-xl">€${trabajo.precio_cliente ? trabajo.precio_cliente.toFixed(2) : '0.00'}</p>
             </div>
           </div>
           
