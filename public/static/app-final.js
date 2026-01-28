@@ -7744,6 +7744,7 @@ async function showNuevaTarea() {
                 <option value="medir">📏 Medir</option>
                 <option value="presupuesto">💰 Presupuesto</option>
                 <option value="pedidos">📦 Pedidos</option>
+                <option value="confeccion">✂️ Confección</option>
                 <option value="varios">📋 Varios</option>
               </select>
             </div>
@@ -8455,6 +8456,7 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
                 <option value="medir">📏 Medir</option>
                 <option value="presupuesto">💰 Presupuesto</option>
                 <option value="pedidos">📦 Pedidos</option>
+                <option value="confeccion">✂️ Confección</option>
                 <option value="varios">📋 Varios</option>
               </select>
             </div>
@@ -8986,6 +8988,7 @@ function getTipoIcon(tipo) {
     'medir': '📏 Medir',
     'presupuesto': '💰 Presup.',
     'pedidos': '📦 Pedido',
+    'confeccion': '✂️ Confección',
     'varios': '📋 Varios'
   }
   return iconos[tipo] || '📋 Tarea'
