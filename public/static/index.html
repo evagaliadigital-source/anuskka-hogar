@@ -225,6 +225,11 @@
                 
                 <!-- Filtros -->
                 <div class="mb-6 flex gap-4 flex-wrap">
+                    <select id="filter-categoria" onchange="loadTrabajos()" class="px-4 py-2 border rounded-lg">
+                        <option value="">Todas las categorías</option>
+                        <option value="tienda">🏪 Tienda (TT)</option>
+                        <option value="externo">🚚 Externos (TE)</option>
+                    </select>
                     <select id="filter-estado" onchange="loadTrabajos()" class="px-4 py-2 border rounded-lg">
                         <option value="">Todos los estados</option>
                         <option value="pendiente">Pendiente</option>

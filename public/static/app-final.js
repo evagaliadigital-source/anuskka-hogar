@@ -1120,13 +1120,15 @@ function agregarCheckboxTrabajos() {
 
 async function loadTrabajos() {
   try {
+    const categoria = document.getElementById('filter-categoria')?.value || ''
     const estado = document.getElementById('filter-estado')?.value || ''
     const fecha = document.getElementById('filter-fecha')?.value || ''
     const excluirFinalizados = document.getElementById('excluir-finalizados-trabajos')?.checked || false
     
-    console.log('🔍 Filtros trabajos:', { estado, fecha, excluirFinalizados })
+    console.log('🔍 Filtros trabajos:', { categoria, estado, fecha, excluirFinalizados })
     
     const params = new URLSearchParams()
+    if (categoria) params.append('categoria', categoria)
     if (estado) params.append('estado', estado)
     if (fecha) params.append('fecha', fecha)
     if (excluirFinalizados) params.append('excluir_finalizados', 'true')
