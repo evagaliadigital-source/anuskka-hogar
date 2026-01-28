@@ -11286,6 +11286,12 @@ async function viewCliente(id) {
     const esAdmin = usuario.rol === 'admin' || usuario.rol === 'duena'
     const esTienda = usuario.rol === 'tienda'
     
+    console.log('🔍 DEBUG viewCliente:')
+    console.log('  Usuario:', usuario)
+    console.log('  Rol:', usuario.rol)
+    console.log('  esAdmin:', esAdmin)
+    console.log('  esTienda:', esTienda)
+    
     // Formatear fechas
     const formatFecha = (fecha) => fecha ? new Date(fecha).toLocaleDateString('es-ES') : '-'
     const formatMoneda = (valor) => valor ? `${parseFloat(valor).toFixed(2)}€` : '-'
@@ -11451,7 +11457,9 @@ async function viewCliente(id) {
               <div id="archivos-grid" class="grid grid-cols-4 gap-4">
                 ${archivos.length === 0 ? 
                   '<p class="col-span-4 text-center text-gray-500 py-8">No hay archivos adjuntos</p>' :
-                  archivos.map(archivo => `
+                  archivos.map(archivo => {
+                    console.log('🗂️ Renderizando archivo:', archivo.nombre_archivo, '| esAdmin:', esAdmin)
+                    return `
                     <div class="border rounded-lg p-3 hover:shadow-md transition-shadow">
                       <!-- Miniatura -->
                       <div class="h-24 flex items-center justify-center bg-gray-100 rounded mb-2">
@@ -11496,7 +11504,8 @@ async function viewCliente(id) {
                         ${new Date(archivo.fecha_subida).toLocaleDateString('es-ES')}
                       </p>
                     </div>
-                  `).join('')
+                  `
+                  }).join('')
                 }
               </div>
             </div>
