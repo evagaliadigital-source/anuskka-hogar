@@ -73,8 +73,8 @@ async function logAccion(accion, seccion, entidadTipo = null, entidadId = null, 
 function tienePermiso(seccion) {
   const rol = getUserRole()
   
-  // Ana Ramos (dueña) tiene acceso a TODO
-  if (rol === 'duena') {
+  // Ana Ramos (admin/dueña) tiene acceso a TODO
+  if (rol === 'admin' || rol === 'duena') {
     return true
   }
   
@@ -212,7 +212,7 @@ function loadUserInfo() {
   if (user) {
     const userNameElement = document.querySelector('header p.font-semibold')
     if (userNameElement) {
-      if (user.rol === 'duena') {
+      if (user.rol === 'admin' || user.rol === 'duena') {
         // Para Ana Ramos: solo mostrar "Ana Ramos 👑"
         userNameElement.textContent = 'Ana Ramos 👑'
       } else {
@@ -679,7 +679,7 @@ function renderizarBuscadorClientes() {
   
   // Verificar rol del usuario (solo admin/duena puede exportar CSV)
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
-  const esAdmin = usuario.rol === 'duena'
+  const esAdmin = usuario.rol === 'admin' || usuario.rol === 'duena'
   
   const buscadorHTML = `
     <div id="clientes-buscador" class="mb-6 bg-gray-50 p-4 rounded-lg">
@@ -4021,7 +4021,7 @@ function ocultarPestanasSegunRol() {
     })
     
     console.log('🏪 Modo Tienda: Pestañas sensibles ocultas (Historial VISIBLE para Ana Ramos)')
-  } else if (rol === 'duena') {
+  } else if (rol === 'admin' || rol === 'duena') {
     console.log('👑 Modo Ana Ramos: Acceso completo')
   }
 }
@@ -8155,7 +8155,7 @@ async function loadHistorial() {
       }[m.accion] || `<span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">${m.accion}</span>`
       
       // Badge de rol
-      const rolBadge = m.usuario_rol === 'duena' 
+      const rolBadge = (m.usuario_rol === 'admin' || m.usuario_rol === 'duena')
         ? '<span class="text-xs text-amber-600 font-semibold">👑 Dueña</span>'
         : '<span class="text-xs text-gray-600">🏪 Tienda</span>'
       
@@ -11283,7 +11283,7 @@ async function viewCliente(id) {
     
     // Obtener rol del usuario logueado
     const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
-    const esAdmin = usuario.rol === 'duena'
+    const esAdmin = usuario.rol === 'admin' || usuario.rol === 'duena'
     const esTienda = usuario.rol === 'tienda'
     
     // Formatear fechas
