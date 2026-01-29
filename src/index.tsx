@@ -2418,6 +2418,43 @@ app.post('/api/test-email', async (c) => {
 })
 
 // ============================================
+// ENDPOINT: ACTUALIZAR STOCK RÁPIDO (Modo Tienda)
+// ============================================
+app.put('/api/inventario/productos/:id/stock', async (c) => {
+  try {
+    const { env } = c
+    const productoId = c.req.param('id')
+    const { stock_actual } = await c.req.json()
+    
+    if (stock_actual === undefined || stock_actual < 0) {
+      return c.json({ 
+        success: false, 
+        message: 'Stock inválido' 
+      }, 400)
+    }
+    
+    // Actualizar stock del producto
+    await env.DB.prepare(`
+      UPDATE productos 
+      SET stock_actual = ? 
+      WHERE id = ?
+    `).bind(stock_actual, productoId).run()
+    
+    return c.json({ 
+      success: true, 
+      message: 'Stock actualizado correctamente' 
+    })
+    
+  } catch (error) {
+    console.error('Error actualizando stock:', error)
+    return c.json({ 
+      success: false, 
+      message: 'Error al actualizar stock' 
+    }, 500)
+  }
+})
+
+// ============================================
 // MOUNT EXTERNAL ROUTES
 // ============================================
 app.route('/api/presupuestos', presupuestos)

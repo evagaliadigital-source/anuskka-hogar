@@ -12285,11 +12285,30 @@ function renderProductosLista() {
         </div>
         
         <!-- Stock -->
-        <div class="text-center w-24">
-          <p class="text-xs text-gray-500">Stock</p>
-          <p class="font-semibold ${stockBajo ? 'text-red-600' : 'text-green-600'}">
-            ${producto.stock_actual || 0}
-          </p>
+        <div class="text-center w-32">
+          <p class="text-xs text-gray-500 mb-1">Stock</p>
+          ${esTienda ? `
+            <div class="flex items-center gap-1">
+              <input 
+                type="number" 
+                id="stock-${producto.id}" 
+                value="${producto.stock_actual || 0}" 
+                class="w-16 px-2 py-1 text-center border rounded ${stockBajo ? 'border-red-400 text-red-600' : 'border-green-400 text-green-600'} font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400"
+                min="0"
+              />
+              <button 
+                onclick="actualizarStockRapido(${producto.id}, document.getElementById('stock-${producto.id}').value)"
+                class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                title="Guardar stock"
+              >
+                <i class="fas fa-save"></i>
+              </button>
+            </div>
+          ` : `
+            <p class="font-semibold ${stockBajo ? 'text-red-600' : 'text-green-600'}">
+              ${producto.stock_actual || 0}
+            </p>
+          `}
         </div>
         
         <!-- Precio -->
@@ -14374,7 +14393,41 @@ window.guardarNotasCliente = async function(clienteId) {
 }
 
 // Variable global para vista de inventario
-let vistaInventario = 'grid' // 'grid' o 'lista'
+let vistaInventario = 'lista' // 'grid' o 'lista' (predeterminado: lista)
+
+// Función para actualizar stock rápido (Modo Tienda)
+window.actualizarStockRapido = async function(productoId, nuevoStock) {
+  try {
+    const stock = parseInt(nuevoStock)
+    if (isNaN(stock) || stock < 0) {
+      showToast('❌ Cantidad inválida', 'error')
+      return
+    }
+    
+    showLoading('Actualizando stock...')
+    
+    const response = await axios.put(`${API}/inventario/productos/${productoId}/stock`, {
+      stock_actual: stock
+    })
+    
+    if (response.data.success) {
+      showToast('✅ Stock actualizado', 'success')
+      // Actualizar el producto en memoria
+      const producto = inventarioData.productos.find(p => p.id === productoId)
+      if (producto) {
+        producto.stock_actual = stock
+      }
+      loadInventario() // Recargar lista
+    } else {
+      showToast('❌ Error al actualizar stock', 'error')
+    }
+  } catch (error) {
+    console.error('Error actualizando stock:', error)
+    showToast('❌ Error al actualizar stock', 'error')
+  } finally {
+    hideLoading()
+  }
+}
 
 window.cambiarVistaInventario = function(vista) {
   vistaInventario = vista
