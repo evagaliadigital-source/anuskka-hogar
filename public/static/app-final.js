@@ -12280,7 +12280,7 @@ function renderProductosLista() {
         <!-- Nombre y categoría -->
         <div class="flex-1">
           <h4 class="font-semibold text-gray-800">${producto.nombre}</h4>
-          <p class="text-sm text-gray-500">${producto.categoria}</p>
+          <p class="text-sm text-gray-500">${producto.categoria_nombre || 'Sin categoría'}</p>
           ${producto.codigo_producto ? `<p class="text-xs text-gray-400">Código: ${producto.codigo_producto}</p>` : ''}
         </div>
         
