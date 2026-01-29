@@ -13068,7 +13068,7 @@ async function viewProducto(productoId) {
                       Stock: ${v.stock_actual} ${v.unidad}
                       ${v.stock_minimo > 0 ? ` • Mín: ${v.stock_minimo}` : ''}
                     </p>
-                    ${v.color ? `<p class="text-xs text-gray-500">Color: ${v.color}</p>` : ''}
+                    ${v.color && v.color !== 'undefined' ? `<p class="text-xs text-gray-500">Color: ${v.color}</p>` : ''}
                   </div>
                   <p class="font-bold text-green-600">${v.precio}€</p>
                 </div>
