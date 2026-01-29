@@ -12163,10 +12163,10 @@ function renderInventario() {
           </select>
         </div>
         <div class="flex gap-1">
-          <button id="btn-vista-grid" onclick="cambiarVistaInventario('grid')" class="px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700" title="Vista en tarjetas">
+          <button id="btn-vista-grid" onclick="cambiarVistaInventario('grid')" class="px-3 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400" title="Vista en tarjetas">
             <i class="fas fa-th"></i>
           </button>
-          <button id="btn-vista-lista" onclick="cambiarVistaInventario('lista')" class="px-3 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400" title="Vista en lista">
+          <button id="btn-vista-lista" onclick="cambiarVistaInventario('lista')" class="px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700" title="Vista en lista">
             <i class="fas fa-list"></i>
           </button>
         </div>
@@ -12175,8 +12175,8 @@ function renderInventario() {
     </div>
     
     <!-- Lista de productos -->
-    <div id="productos-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      ${renderProductosGrid()}
+    <div id="productos-grid" class="space-y-2">
+      ${renderProductosLista()}
     </div>
   `
 }
