@@ -1741,13 +1741,7 @@ async function showTrabajoForm(id = null) {
               <select name="tipo_servicio" required class="w-full px-4 py-2 border rounded-lg">
                 <option value="">Seleccionar tipo</option>
                 <option value="confeccion" ${trabajo.tipo_servicio === 'confeccion' ? 'selected' : ''}>Confección</option>
-                <option value="screen" ${trabajo.tipo_servicio === 'screen' ? 'selected' : ''}>Screen</option>
-                <option value="onda_perfecta" ${trabajo.tipo_servicio === 'onda_perfecta' ? 'selected' : ''}>Onda Perfecta</option>
-                <option value="estor" ${trabajo.tipo_servicio === 'estor' ? 'selected' : ''}>Estor</option>
-                <option value="veneciana" ${trabajo.tipo_servicio === 'veneciana' ? 'selected' : ''}>Veneciana</option>
-                <option value="vertical" ${trabajo.tipo_servicio === 'vertical' ? 'selected' : ''}>Vertical</option>
-                <option value="plisada" ${trabajo.tipo_servicio === 'plisada' ? 'selected' : ''}>Plisada</option>
-                <option value="mosquitera" ${trabajo.tipo_servicio === 'mosquitera' ? 'selected' : ''}>Mosquitera</option>
+                <option value="instalacion" ${trabajo.tipo_servicio === 'instalacion' ? 'selected' : ''}>Instalación</option>
               </select>
             </div>
             <div>
