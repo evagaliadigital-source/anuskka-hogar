@@ -13145,6 +13145,12 @@ async function viewProducto(productoId) {
             >
               <i class="fas fa-edit mr-2"></i>Editar
             </button>
+            <button 
+              onclick="verHistorialProducto(${productoId})" 
+              class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              <i class="fas fa-history mr-2"></i>Historial
+            </button>
           ` : ''}
           <button 
             onclick="closeModal()" 
@@ -14406,12 +14412,21 @@ window.actualizarStockRapido = async function(productoId, nuevoStock) {
     
     showLoading('Actualizando stock...')
     
+    // Obtener datos del usuario
+    const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
+    
     const response = await axios.put(`${API}/inventario/productos/${productoId}/stock`, {
-      stock_actual: stock
+      stock_actual: stock,
+      usuario_id: usuario.id,
+      usuario_nombre: usuario.nombre || 'Usuario',
+      usuario_rol: usuario.rol || 'desconocido'
     })
     
     if (response.data.success) {
-      showToast('✅ Stock actualizado', 'success')
+      const mensaje = response.data.stock_anterior !== undefined 
+        ? `✅ Stock actualizado: ${response.data.stock_anterior} → ${response.data.stock_nuevo}`
+        : '✅ Stock actualizado'
+      showToast(mensaje, 'success')
       // Actualizar el producto en memoria
       const producto = inventarioData.productos.find(p => p.id === productoId)
       if (producto) {
@@ -14454,6 +14469,101 @@ window.cambiarVistaInventario = function(vista) {
       grid.className = 'space-y-2'
       grid.innerHTML = renderProductosLista()
     }
+  }
+}
+
+// Función para ver historial de modificaciones del producto
+window.verHistorialProducto = async function(productoId) {
+  try {
+    showLoading('Cargando historial...')
+    
+    const response = await axios.get(`${API}/inventario/productos/${productoId}/historial`)
+    
+    hideLoading()
+    
+    if (response.data.success) {
+      const historial = response.data.historial
+      
+      let content = `
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-history mr-2 text-blue-600"></i>
+            Historial de Modificaciones
+          </h2>
+          
+          ${historial.length === 0 ? `
+            <div class="text-center py-12 bg-gray-50 rounded-lg">
+              <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+              <p class="text-gray-500 text-lg">No hay modificaciones registradas</p>
+              <p class="text-gray-400 text-sm mt-2">Los cambios de stock se registrarán a partir de ahora</p>
+            </div>
+          ` : `
+            <div class="space-y-3 max-h-96 overflow-y-auto">
+              ${historial.map(h => {
+                const fecha = new Date(h.fecha_modificacion)
+                const diferencia = h.diferencia || 0
+                const diferenciaIcon = diferencia > 0 ? '📈' : diferencia < 0 ? '📉' : '➡️'
+                const diferenciaColor = diferencia > 0 ? 'text-green-600' : diferencia < 0 ? 'text-red-600' : 'text-gray-600'
+                
+                return `
+                  <div class="bg-white p-4 rounded-lg border shadow-sm">
+                    <div class="flex items-start justify-between mb-2">
+                      <div class="flex-1">
+                        <p class="font-semibold text-gray-900">
+                          ${diferenciaIcon} ${h.usuario_nombre}
+                          <span class="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">
+                            ${h.usuario_rol}
+                          </span>
+                        </p>
+                        <p class="text-sm text-gray-500 mt-1">
+                          ${fecha.toLocaleDateString('es-ES', { 
+                            day: '2-digit', 
+                            month: '2-digit', 
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
+                      <div class="text-right">
+                        <p class="text-sm text-gray-600">Stock</p>
+                        <p class="text-lg font-bold">
+                          <span class="text-gray-400">${h.stock_anterior || 0}</span>
+                          <i class="fas fa-arrow-right mx-2 text-gray-400"></i>
+                          <span class="text-gray-900">${h.stock_nuevo || 0}</span>
+                        </p>
+                        ${diferencia !== 0 ? `
+                          <p class="text-sm ${diferenciaColor} font-semibold">
+                            ${diferencia > 0 ? '+' : ''}${diferencia}
+                          </p>
+                        ` : ''}
+                      </div>
+                    </div>
+                  </div>
+                `
+              }).join('')}
+            </div>
+          `}
+          
+          <div class="flex gap-3 pt-4 mt-4 border-t">
+            <button 
+              onclick="closeModal()" 
+              class="flex-1 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      `
+      
+      showModal(content, 'max-w-2xl')
+    } else {
+      showToast('❌ Error al cargar historial', 'error')
+    }
+  } catch (error) {
+    console.error('Error cargando historial:', error)
+    hideLoading()
+    showToast('❌ Error al cargar historial', 'error')
   }
 }
 

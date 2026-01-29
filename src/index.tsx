@@ -2424,7 +2424,7 @@ app.put('/api/inventario/productos/:id/stock', async (c) => {
   try {
     const { env } = c
     const productoId = c.req.param('id')
-    const { stock_actual } = await c.req.json()
+    const { stock_actual, usuario_id, usuario_nombre, usuario_rol } = await c.req.json()
     
     if (stock_actual === undefined || stock_actual < 0) {
       return c.json({ 
@@ -2433,6 +2433,20 @@ app.put('/api/inventario/productos/:id/stock', async (c) => {
       }, 400)
     }
     
+    // Obtener stock anterior
+    const productoAnterior = await env.DB.prepare(`
+      SELECT stock_actual, nombre FROM productos WHERE id = ?
+    `).bind(productoId).first()
+    
+    if (!productoAnterior) {
+      return c.json({ 
+        success: false, 
+        message: 'Producto no encontrado' 
+      }, 404)
+    }
+    
+    const stockAnterior = productoAnterior.stock_actual || 0
+    
     // Actualizar stock del producto
     await env.DB.prepare(`
       UPDATE productos 
@@ -2440,16 +2454,102 @@ app.put('/api/inventario/productos/:id/stock', async (c) => {
       WHERE id = ?
     `).bind(stock_actual, productoId).run()
     
+    // Registrar en historial (crear tabla si no existe)
+    await env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS inventario_historial (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        producto_id INTEGER NOT NULL,
+        producto_nombre TEXT,
+        usuario_id INTEGER,
+        usuario_nombre TEXT NOT NULL,
+        usuario_rol TEXT NOT NULL,
+        accion TEXT NOT NULL,
+        stock_anterior REAL,
+        stock_nuevo REAL,
+        diferencia REAL,
+        fecha_modificacion DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run()
+    
+    // Insertar registro de cambio
+    await env.DB.prepare(`
+      INSERT INTO inventario_historial (
+        producto_id, producto_nombre, usuario_id, usuario_nombre, usuario_rol,
+        accion, stock_anterior, stock_nuevo, diferencia
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      productoId,
+      productoAnterior.nombre,
+      usuario_id || null,
+      usuario_nombre || 'Usuario',
+      usuario_rol || 'desconocido',
+      'actualizar_stock',
+      stockAnterior,
+      stock_actual,
+      stock_actual - stockAnterior
+    ).run()
+    
     return c.json({ 
       success: true, 
-      message: 'Stock actualizado correctamente' 
+      message: 'Stock actualizado correctamente',
+      stock_anterior: stockAnterior,
+      stock_nuevo: stock_actual
     })
     
   } catch (error) {
     console.error('Error actualizando stock:', error)
     return c.json({ 
       success: false, 
-      message: 'Error al actualizar stock' 
+      message: 'Error al actualizar stock',
+      error: String(error)
+    }, 500)
+  }
+})
+
+// ============================================
+// ENDPOINT: OBTENER HISTORIAL DE PRODUCTO
+// ============================================
+app.get('/api/inventario/productos/:id/historial', async (c) => {
+  try {
+    const { env } = c
+    const productoId = c.req.param('id')
+    
+    // Crear tabla si no existe
+    await env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS inventario_historial (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        producto_id INTEGER NOT NULL,
+        producto_nombre TEXT,
+        usuario_id INTEGER,
+        usuario_nombre TEXT NOT NULL,
+        usuario_rol TEXT NOT NULL,
+        accion TEXT NOT NULL,
+        stock_anterior REAL,
+        stock_nuevo REAL,
+        diferencia REAL,
+        fecha_modificacion DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run()
+    
+    // Obtener historial
+    const { results } = await env.DB.prepare(`
+      SELECT * FROM inventario_historial
+      WHERE producto_id = ?
+      ORDER BY fecha_modificacion DESC
+      LIMIT 50
+    `).bind(productoId).all()
+    
+    return c.json({ 
+      success: true, 
+      historial: results || []
+    })
+    
+  } catch (error) {
+    console.error('Error obteniendo historial:', error)
+    return c.json({ 
+      success: false, 
+      message: 'Error al obtener historial',
+      historial: []
     }, 500)
   }
 })
