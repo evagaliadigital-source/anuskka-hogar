@@ -14504,39 +14504,68 @@ window.verHistorialProducto = async function(productoId) {
                 const diferencia = h.diferencia || 0
                 const diferenciaIcon = diferencia > 0 ? '📈' : diferencia < 0 ? '📉' : '➡️'
                 const diferenciaColor = diferencia > 0 ? 'text-green-600' : diferencia < 0 ? 'text-red-600' : 'text-gray-600'
+                const diferenciaLabel = diferencia > 0 ? 'Incremento' : diferencia < 0 ? 'Disminución' : 'Sin cambio'
+                
+                // Determinar icono de usuario por rol
+                const userIcon = h.usuario_rol === 'admin' || h.usuario_rol === 'duena' ? '👑' : '🏪'
                 
                 return `
-                  <div class="bg-white p-4 rounded-lg border shadow-sm">
-                    <div class="flex items-start justify-between mb-2">
+                  <div class="bg-gradient-to-r from-white to-gray-50 p-4 rounded-lg border-l-4 ${diferencia > 0 ? 'border-green-500' : diferencia < 0 ? 'border-red-500' : 'border-gray-400'} shadow-sm hover:shadow-md transition-shadow">
+                    <!-- Header: Usuario y Fecha -->
+                    <div class="flex items-start justify-between mb-3">
                       <div class="flex-1">
-                        <p class="font-semibold text-gray-900">
-                          ${diferenciaIcon} ${h.usuario_nombre}
-                          <span class="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">
+                        <div class="flex items-center gap-2 mb-1">
+                          <span class="text-xl">${userIcon}</span>
+                          <p class="font-bold text-gray-900 text-lg">
+                            ${h.usuario_nombre}
+                          </p>
+                          <span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full uppercase">
                             ${h.usuario_rol}
                           </span>
-                        </p>
-                        <p class="text-sm text-gray-500 mt-1">
+                        </div>
+                        <p class="text-sm text-gray-500 flex items-center gap-2">
+                          <i class="far fa-clock"></i>
                           ${fecha.toLocaleDateString('es-ES', { 
                             day: '2-digit', 
-                            month: '2-digit', 
-                            year: 'numeric',
+                            month: 'short', 
+                            year: 'numeric'
+                          })} a las ${fecha.toLocaleTimeString('es-ES', {
                             hour: '2-digit',
                             minute: '2-digit'
                           })}
                         </p>
                       </div>
-                      <div class="text-right">
-                        <p class="text-sm text-gray-600">Stock</p>
-                        <p class="text-lg font-bold">
-                          <span class="text-gray-400">${h.stock_anterior || 0}</span>
-                          <i class="fas fa-arrow-right mx-2 text-gray-400"></i>
-                          <span class="text-gray-900">${h.stock_nuevo || 0}</span>
-                        </p>
-                        ${diferencia !== 0 ? `
-                          <p class="text-sm ${diferenciaColor} font-semibold">
-                            ${diferencia > 0 ? '+' : ''}${diferencia}
+                    </div>
+                    
+                    <!-- Cambio de Stock -->
+                    <div class="bg-white p-3 rounded-lg border">
+                      <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                          <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Modificación</p>
+                          <p class="text-sm font-medium text-gray-700">
+                            <i class="fas fa-box mr-1"></i>
+                            Actualización de Stock
                           </p>
-                        ` : ''}
+                        </div>
+                        <div class="text-right">
+                          <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Cambio</p>
+                          <div class="flex items-center gap-2">
+                            <span class="text-base font-bold text-gray-500">${h.stock_anterior || 0}</span>
+                            <i class="fas fa-long-arrow-alt-right text-gray-400"></i>
+                            <span class="text-xl font-bold ${diferencia > 0 ? 'text-green-600' : diferencia < 0 ? 'text-red-600' : 'text-gray-900'}">${h.stock_nuevo || 0}</span>
+                          </div>
+                          ${diferencia !== 0 ? `
+                            <div class="mt-1 flex items-center justify-end gap-1">
+                              <span class="text-2xl">${diferenciaIcon}</span>
+                              <span class="text-sm ${diferenciaColor} font-bold">
+                                ${diferencia > 0 ? '+' : ''}${diferencia}
+                              </span>
+                              <span class="text-xs text-gray-500">
+                                (${diferenciaLabel})
+                              </span>
+                            </div>
+                          ` : ''}
+                        </div>
                       </div>
                     </div>
                   </div>
