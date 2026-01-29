@@ -12976,6 +12976,9 @@ async function guardarProducto(event) {
   const formData = new FormData(event.target)
   const categoriaInfo = findCategoriaById(inventarioData.categoriaSeleccionada)
   
+  // Obtener datos del usuario
+  const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
+  
   const data = {
     nombre: formData.get('nombre'),
     categoria_id: inventarioData.categoriaSeleccionada,
@@ -12986,7 +12989,11 @@ async function guardarProducto(event) {
     proveedor_id: formData.get('proveedor_id') ? parseInt(formData.get('proveedor_id')) : null,
     codigo_proveedor: formData.get('codigo_proveedor') || null,
     ean: formData.get('ean') || null,
-    coste_base: formData.get('coste_base') ? parseFloat(formData.get('coste_base')) : null
+    coste_base: formData.get('coste_base') ? parseFloat(formData.get('coste_base')) : null,
+    // Información del usuario para historial
+    usuario_id: usuario.id,
+    usuario_nombre: usuario.nombre || 'Admin',
+    usuario_rol: usuario.rol || 'admin'
   }
   
   if (data.tiene_variantes) {
@@ -13003,8 +13010,15 @@ async function guardarProducto(event) {
     
     if (isEdit) {
       // Actualizar
-      await axios.put(`${API}/inventario/productos/${inventarioData.productoActual.id}`, data)
-      showToast('✅ Producto actualizado correctamente', 'success')
+      const response = await axios.put(`${API}/inventario/productos/${inventarioData.productoActual.id}`, data)
+      
+      // Mostrar mensaje con información de cambio de stock si hubo
+      if (response.data.cambio_stock) {
+        const cambio = response.data.cambio_stock
+        showToast(`✅ Producto actualizado | Stock: ${cambio.anterior} → ${cambio.nuevo} (${cambio.diferencia > 0 ? '+' : ''}${cambio.diferencia})`, 'success')
+      } else {
+        showToast('✅ Producto actualizado correctamente', 'success')
+      }
     } else {
       // Crear
       await axios.post(`${API}/inventario/productos`, data)
@@ -13015,7 +13029,13 @@ async function guardarProducto(event) {
     await loadProductos()
     const grid = document.getElementById('productos-grid')
     if (grid) {
-      grid.innerHTML = renderProductosGrid()
+      if (vistaInventario === 'grid') {
+        grid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'
+        grid.innerHTML = renderProductosGrid()
+      } else {
+        grid.className = 'space-y-2'
+        grid.innerHTML = renderProductosLista()
+      }
     }
     
   } catch (error) {

@@ -514,8 +514,20 @@ inventario.put('/productos/:id', async (c) => {
       stock_minimo, 
       unidad,
       imagen_url,
-      notas
+      notas,
+      usuario_id,
+      usuario_nombre,
+      usuario_rol
     } = data
+    
+    // Obtener stock anterior para comparar
+    const productoAnterior = await c.env.DB.prepare(`
+      SELECT stock_actual, nombre FROM productos WHERE id = ?
+    `).bind(id).first()
+    
+    const stockAnterior = productoAnterior?.stock_actual || 0
+    const stockNuevo = stock_actual || 0
+    const huboCambioStock = stockAnterior !== stockNuevo
 
     await c.env.DB.prepare(`
       UPDATE productos
@@ -529,17 +541,60 @@ inventario.put('/productos/:id', async (c) => {
       categoria_id,
       descripcion || null,
       precio_base || null,
-      stock_actual || 0,
+      stockNuevo,
       stock_minimo || 0,
       unidad || null,
       imagen_url || null,
       notas || null,
       id
     ).run()
+    
+    // Si hubo cambio de stock, registrar en historial
+    if (huboCambioStock && usuario_nombre) {
+      // Crear tabla si no existe
+      await c.env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS inventario_historial (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          producto_id INTEGER NOT NULL,
+          producto_nombre TEXT,
+          usuario_id INTEGER,
+          usuario_nombre TEXT NOT NULL,
+          usuario_rol TEXT NOT NULL,
+          accion TEXT NOT NULL,
+          stock_anterior REAL,
+          stock_nuevo REAL,
+          diferencia REAL,
+          fecha_modificacion DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `).run()
+      
+      // Insertar registro de cambio
+      await c.env.DB.prepare(`
+        INSERT INTO inventario_historial (
+          producto_id, producto_nombre, usuario_id, usuario_nombre, usuario_rol,
+          accion, stock_anterior, stock_nuevo, diferencia
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).bind(
+        id,
+        nombre,
+        usuario_id || null,
+        usuario_nombre,
+        usuario_rol || 'admin',
+        'editar_producto',
+        stockAnterior,
+        stockNuevo,
+        stockNuevo - stockAnterior
+      ).run()
+    }
 
     return c.json({
       success: true,
-      message: 'Producto actualizado correctamente'
+      message: 'Producto actualizado correctamente',
+      cambio_stock: huboCambioStock ? {
+        anterior: stockAnterior,
+        nuevo: stockNuevo,
+        diferencia: stockNuevo - stockAnterior
+      } : null
     })
   } catch (error) {
     console.error('Error al actualizar producto:', error)
