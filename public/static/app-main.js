@@ -1014,7 +1014,7 @@ async function showClienteForm(id = null) {
           </div>
           
           <div class="flex gap-3 pt-4">
-            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
               <i class="fas fa-save mr-2"></i>Guardar
             </button>
             <button type="button" onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -1823,7 +1823,7 @@ async function showTrabajoForm(id = null) {
           </div>
           
           <div class="flex gap-3 pt-4">
-            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
               <i class="fas fa-save mr-2"></i>Guardar
             </button>
             <button type="button" onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -2522,7 +2522,7 @@ async function showPersonalForm(id = null) {
           </div>
           
           <div class="flex gap-3 pt-4">
-            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
               <i class="fas fa-save mr-2"></i>Guardar
             </button>
             <button type="button" onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -2789,7 +2789,7 @@ async function showStockForm(id = null, preselectedCategoriaId = null) {
           </div>
           
           <div class="flex gap-3 pt-4">
-            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
               <i class="fas fa-save mr-2"></i>Guardar
             </button>
             <button type="button" onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -3700,7 +3700,7 @@ async function showFacturaForm() {
           </div>
           
           <div class="flex gap-3 pt-4">
-            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
               <i class="fas fa-save mr-2"></i>Guardar
             </button>
             <button type="button" onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
