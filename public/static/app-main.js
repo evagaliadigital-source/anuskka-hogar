@@ -2363,10 +2363,10 @@ async function loadPersonalLista() {
               </div>
               
               <div class="flex gap-3">
-                <button onclick="viewPersonal(${e.id})" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white border border-yellow-600 px-4 py-2.5 rounded-lg font-medium hover:shadow-lg hover:shadow-yellow-500/30 transition-all duration-300">
+                <button onclick="viewPersonal(${e.id})" class="flex-1 bg-gray-100 text-gray-700 border border-gray-300 px-4 py-2.5 rounded-lg font-medium hover:bg-gray-200 hover:border-gray-400 transition-all duration-300">
                   <i class="fas fa-eye mr-2"></i>Ver
                 </button>
-                <button onclick="showPersonalForm(${e.id})" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white border border-yellow-600 px-4 py-2.5 rounded-lg font-medium hover:shadow-lg hover:shadow-yellow-500/30 transition-all duration-300">
+                <button onclick="showPersonalForm(${e.id})" class="flex-1 bg-white text-gray-700 border border-yellow-600 px-4 py-2.5 rounded-lg font-medium hover:bg-yellow-50 hover:border-yellow-700 transition-all duration-300">
                   <i class="fas fa-edit mr-2"></i>Editar
                 </button>
               </div>
