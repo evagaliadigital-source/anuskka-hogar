@@ -4324,7 +4324,7 @@ app.get('/', (c) => {
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <!-- SheetJS para parsear Excel -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="/static/app-final.js?v=${Date.now()}"></script>
+    <script src="/static/app-main.js?v=${Date.now()}"></script>
 </body>
 </html>
   `)
