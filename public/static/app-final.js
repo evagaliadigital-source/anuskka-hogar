@@ -3864,7 +3864,15 @@ window.viewPersonal = async (id) => {
       ? especialidadesArray.map(esp => `<span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium"><i class="fas fa-check mr-1"></i>${esp}</span>`).join('')
       : '<span class="text-gray-400 italic">Sin especialidades registradas</span>'
     
-    const modalContainer = document.getElementById('modal-container')
+    // Buscar o crear modal-container
+    let modalContainer = document.getElementById('modal-container')
+    if (!modalContainer) {
+      console.warn('⚠️ modal-container no encontrado, creando...')
+      modalContainer = document.createElement('div')
+      modalContainer.id = 'modal-container'
+      document.body.appendChild(modalContainer)
+    }
+    
     modalContainer.innerHTML = `
       <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onclick="closeModal()">
         <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
