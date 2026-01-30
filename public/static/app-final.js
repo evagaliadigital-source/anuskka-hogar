@@ -2273,7 +2273,7 @@ async function loadPersonalLista() {
     const { data } = await axios.get(`${API}/personal`)
     currentData.personal = data
     
-    const container = document.getElementById('personal-lista')
+    const container = document.getElementById('empleadas-lista')
     
     // Encabezado con título y botón
     let html = `
