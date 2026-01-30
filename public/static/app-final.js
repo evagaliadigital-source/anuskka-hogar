@@ -3861,7 +3861,7 @@ window.viewPersonal = async (id) => {
     }
     
     const especialidadesHTML = especialidadesArray.length > 0 
-      ? especialidadesArray.map(esp => `<span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium"><i class="fas fa-check mr-1"></i>${esp}</span>`).join('')
+      ? especialidadesArray.map(esp => `<span class="bg-white border-2 border-gray-300 text-gray-700 px-3 py-1 rounded-full text-sm font-medium"><i class="fas fa-check mr-1"></i>${esp}</span>`).join('')
       : '<span class="text-gray-400 italic">Sin especialidades registradas</span>'
     
     // Buscar o crear modal-container
@@ -3966,9 +3966,9 @@ window.viewPersonal = async (id) => {
             </div>
             
             <!-- Especialidades -->
-            <div class="bg-purple-50 rounded-xl p-6 mb-6">
+            <div class="bg-gray-50 border border-gray-300 rounded-xl p-6 mb-6">
               <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <i class="fas fa-certificate text-black"></i>
+                <i class="fas fa-certificate text-gray-700"></i>
                 Especialidades
               </h3>
               <div class="flex flex-wrap gap-2">
@@ -3978,42 +3978,42 @@ window.viewPersonal = async (id) => {
             
             <!-- Estadísticas -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div class="bg-gradient-to-br from-gray-700 to-gray-900 border-2 border-gray-600 rounded-xl p-6 text-black">
+              <div class="bg-white border-2 border-gray-300 rounded-xl p-6 shadow-md">
                 <div class="flex items-center justify-between">
                   <div>
-                    <p class="text-gray-300 text-sm mb-1">Trabajos Activos</p>
-                    <p class="text-4xl font-bold">${trabajosActivos}</p>
+                    <p class="text-gray-600 text-sm mb-1">Trabajos Activos</p>
+                    <p class="text-4xl font-bold text-gray-800">${trabajosActivos}</p>
                   </div>
-                  <i class="fas fa-tasks text-5xl text-black/30"></i>
+                  <i class="fas fa-tasks text-5xl text-gray-300"></i>
                 </div>
               </div>
               
-              <div class="bg-gradient-to-br from-gray-700 to-gray-900 border-2 border-gray-600 rounded-xl p-6 text-black">
+              <div class="bg-white border-2 border-gray-300 rounded-xl p-6 shadow-md">
                 <div class="flex items-center justify-between">
                   <div>
-                    <p class="text-gray-300 text-sm mb-1">Completados</p>
-                    <p class="text-4xl font-bold">${trabajosCompletados}</p>
+                    <p class="text-gray-600 text-sm mb-1">Completados</p>
+                    <p class="text-4xl font-bold text-gray-800">${trabajosCompletados}</p>
                   </div>
-                  <i class="fas fa-check-circle text-5xl text-black/30"></i>
+                  <i class="fas fa-check-circle text-5xl text-gray-300"></i>
                 </div>
               </div>
               
-              <div class="bg-gradient-to-br from-gray-700 to-gray-900 border-2 border-gray-600 rounded-xl p-6 text-black">
+              <div class="bg-white border-2 border-gray-300 rounded-xl p-6 shadow-md">
                 <div class="flex items-center justify-between">
                   <div>
-                    <p class="text-gray-300 text-sm mb-1">Horas Totales</p>
-                    <p class="text-4xl font-bold">${totalHoras.toFixed(1)}</p>
+                    <p class="text-gray-600 text-sm mb-1">Horas Totales</p>
+                    <p class="text-4xl font-bold text-gray-800">${totalHoras.toFixed(1)}</p>
                   </div>
-                  <i class="fas fa-clock text-5xl text-black/30"></i>
+                  <i class="fas fa-clock text-5xl text-gray-300"></i>
                 </div>
               </div>
             </div>
             
             <!-- Trabajos Recientes -->
             ${trabajos.length > 0 ? `
-              <div class="bg-zinc-800 border border-black rounded-xl p-6 mb-6">
+              <div class="bg-gray-50 border border-gray-300 rounded-xl p-6 mb-6">
                 <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <i class="fas fa-briefcase text-blue-600"></i>
+                  <i class="fas fa-briefcase text-gray-700"></i>
                   Trabajos Recientes
                 </h3>
                 <div class="space-y-3 max-h-60 overflow-y-auto">
@@ -4044,20 +4044,20 @@ window.viewPersonal = async (id) => {
             
             <!-- Notas -->
             ${p.notas ? `
-              <div class="bg-yellow-50 rounded-xl p-6">
+              <div class="bg-gray-50 border border-gray-300 rounded-xl p-6">
                 <h3 class="text-xl font-bold text-gray-800 mb-3 flex items-center gap-2">
-                  <i class="fas fa-sticky-note text-yellow-600"></i>
+                  <i class="fas fa-sticky-note text-gray-700"></i>
                   Notas
                 </h3>
-                <p class="text-gray-600 whitespace-pre-wrap">${p.notas}</p>
+                <p class="text-gray-700 whitespace-pre-wrap">${p.notas}</p>
               </div>
             ` : ''}
             
           </div>
           
           <!-- Footer -->
-          <div class="bg-white border-t border-gray-200 p-6 flex justify-end gap-3 border-t">
-            <button onclick="closeModal()" class="px-6 py-3 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 transition-colors font-medium">
+          <div class="bg-white border-t border-gray-200 p-6 flex justify-end gap-3">
+            <button onclick="closeModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium">
               <i class="fas fa-times mr-2"></i>Cerrar
             </button>
             <button onclick="closeModal(); showPersonalForm(${id})" class="px-6 py-3 bg-blue-600 text-black rounded-lg hover:bg-blue-700 transition-colors font-medium">
