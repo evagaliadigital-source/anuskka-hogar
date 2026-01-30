@@ -2317,12 +2317,12 @@ async function loadPersonalLista() {
     
     // Encabezado con título y botón
     let html = `
-      <div class="bg-gradient-to-r from-gray-900 to-black border-2 border-yellow-600 rounded-xl shadow-xl p-6 mb-6">
+      <div class="bg-white border-2 border-black rounded-xl shadow-md p-6 mb-6">
         <div class="flex justify-between items-center">
-          <h2 class="text-2xl font-bold text-white">
-            <i class="fas fa-users mr-2 text-yellow-500"></i>Gestión de Empleados
+          <h2 class="text-2xl font-bold text-black">
+            <i class="fas fa-users mr-2"></i>Gestión de Empleados
           </h2>
-          <button onclick="showPersonalForm()" class="bg-gradient-to-r from-yellow-600 to-yellow-700 text-white px-6 py-3 rounded-lg font-medium hover:shadow-xl hover:shadow-yellow-500/50 transition-all duration-300">
+          <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white border-2 border-yellow-600 px-6 py-3 rounded-lg font-medium hover:shadow-lg hover:shadow-yellow-500/30 transition-all duration-300">
             <i class="fas fa-plus mr-2"></i>Nuevo Empleado
           </button>
         </div>
@@ -2363,10 +2363,10 @@ async function loadPersonalLista() {
               </div>
               
               <div class="flex gap-3">
-                <button onclick="viewPersonal(${e.id})" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-4 py-2.5 rounded-lg font-medium hover:shadow-lg hover:shadow-yellow-500/30 transition-all duration-300">
+                <button onclick="viewPersonal(${e.id})" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white border-2 border-yellow-600 px-4 py-2.5 rounded-lg font-medium hover:shadow-lg hover:shadow-yellow-500/30 transition-all duration-300">
                   <i class="fas fa-eye mr-2"></i>Ver
                 </button>
-                <button onclick="showPersonalForm(${e.id})" class="flex-1 bg-gradient-to-r from-yellow-600 to-yellow-700 text-white px-4 py-2.5 rounded-lg font-medium hover:shadow-lg hover:shadow-yellow-500/50 transition-all duration-300">
+                <button onclick="showPersonalForm(${e.id})" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white border-2 border-yellow-600 px-4 py-2.5 rounded-lg font-medium hover:shadow-lg hover:shadow-yellow-500/30 transition-all duration-300">
                   <i class="fas fa-edit mr-2"></i>Editar
                 </button>
               </div>
