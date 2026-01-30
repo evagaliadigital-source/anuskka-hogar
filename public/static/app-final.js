@@ -2458,22 +2458,48 @@ async function showPersonalForm(id = null) {
     const formData = new FormData(e.target)
     const data = Object.fromEntries(formData)
     
+    // Validar campos requeridos
+    if (!data.nombre || !data.apellidos || !data.telefono) {
+      showToast('❌ Por favor completa los campos requeridos: Nombre, Apellidos y Teléfono', 'error')
+      return
+    }
+    
     // Procesar especialidades (checkboxes múltiples)
     data.especialidades = Array.from(e.target.querySelectorAll('input[name="especialidades"]:checked'))
       .map(cb => cb.value)
     
     try {
+      showLoading('Guardando personal...')
+      
+      let response
       if (isEdit) {
-        await axios.put(`${API}/personal/${id}`, data)
+        response = await axios.put(`${API}/personal/${id}`, data)
       } else {
-        await axios.post(`${API}/personal`, data)
+        response = await axios.post(`${API}/personal`, data)
       }
+      
+      hideLoading()
+      
+      if (response.data.success === false) {
+        showToast(`❌ ${response.data.error}`, 'error')
+        return
+      }
+      
       closeModal()
       loadPersonalLista()
-      showToast('✓ Personal guardado correctamente', 'success')
+      showToast('✅ Personal guardado correctamente', 'success')
     } catch (error) {
-      console.error(error)
-      showToast('❌ Error al guardar personal', 'error')
+      hideLoading()
+      console.error('Error guardando personal:', error)
+      
+      let errorMsg = 'Error al guardar personal'
+      if (error.response?.data?.error) {
+        errorMsg = error.response.data.error
+      } else if (error.message) {
+        errorMsg = error.message
+      }
+      
+      showToast(`❌ ${errorMsg}`, 'error')
     }
   })
 }

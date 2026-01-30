@@ -401,37 +401,78 @@ app.get('/api/personal/:id', async (c) => {
 
 // Crear personal
 app.post('/api/personal', async (c) => {
-  const data = await c.req.json()
-  const result = await c.env.DB.prepare(`
-    INSERT INTO empleadas (nombre, apellidos, telefono, email, dni, fecha_contratacion, 
-                          salario_hora, especialidades, notas)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).bind(
-    data.nombre, data.apellidos, data.telefono, data.email || null, data.dni,
-    data.fecha_contratacion || null, data.salario_hora || null, 
-    JSON.stringify(data.especialidades || []), data.notas || null
-  ).run()
-  
-  return c.json({ id: result.meta.last_row_id, ...data })
+  try {
+    const data = await c.req.json()
+    
+    console.log('📝 Creando personal:', data)
+    
+    // Validar campos requeridos
+    if (!data.nombre || !data.apellidos || !data.telefono) {
+      return c.json({ 
+        success: false, 
+        error: 'Faltan campos requeridos: nombre, apellidos y teléfono' 
+      }, 400)
+    }
+    
+    const result = await c.env.DB.prepare(`
+      INSERT INTO empleadas (nombre, apellidos, telefono, email, dni, fecha_contratacion, 
+                            salario_hora, especialidades, notas)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      data.nombre, data.apellidos, data.telefono, data.email || null, data.dni || null,
+      data.fecha_contratacion || null, data.salario_hora || null, 
+      JSON.stringify(data.especialidades || []), data.notas || null
+    ).run()
+    
+    console.log('✅ Personal creado con ID:', result.meta.last_row_id)
+    
+    return c.json({ success: true, id: result.meta.last_row_id, ...data })
+  } catch (error) {
+    console.error('❌ Error creando personal:', error)
+    return c.json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Error al guardar personal' 
+    }, 500)
+  }
 })
 
 // Actualizar personal
 app.put('/api/personal/:id', async (c) => {
-  const id = c.req.param('id')
-  const data = await c.req.json()
-  
-  await c.env.DB.prepare(`
-    UPDATE empleadas 
-    SET nombre = ?, apellidos = ?, telefono = ?, email = ?, 
-        salario_hora = ?, especialidades = ?, notas = ?
-    WHERE id = ?
-  `).bind(
-    data.nombre, data.apellidos, data.telefono, data.email,
-    data.salario_hora || null, JSON.stringify(data.especialidades || []), 
-    data.notas, id
-  ).run()
-  
-  return c.json({ success: true })
+  try {
+    const id = c.req.param('id')
+    const data = await c.req.json()
+    
+    console.log('📝 Actualizando personal ID:', id, data)
+    
+    // Validar campos requeridos
+    if (!data.nombre || !data.apellidos || !data.telefono) {
+      return c.json({ 
+        success: false, 
+        error: 'Faltan campos requeridos: nombre, apellidos y teléfono' 
+      }, 400)
+    }
+    
+    await c.env.DB.prepare(`
+      UPDATE empleadas 
+      SET nombre = ?, apellidos = ?, telefono = ?, email = ?, dni = ?,
+          salario_hora = ?, especialidades = ?, notas = ?
+      WHERE id = ?
+    `).bind(
+      data.nombre, data.apellidos, data.telefono, data.email || null, data.dni || null,
+      data.salario_hora || null, JSON.stringify(data.especialidades || []), 
+      data.notas || null, id
+    ).run()
+    
+    console.log('✅ Personal actualizado ID:', id)
+    
+    return c.json({ success: true })
+  } catch (error) {
+    console.error('❌ Error actualizando personal:', error)
+    return c.json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Error al actualizar personal' 
+    }, 500)
+  }
 })
 
 // ============================================
