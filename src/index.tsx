@@ -2685,6 +2685,45 @@ app.get('/', (c) => {
     <!-- JSZip para generar archivos ZIP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
+        /* Tamaño de fuente global aumentado para tablets */
+        html {
+            font-size: 18px; /* Base aumentada de 16px a 18px */
+        }
+        
+        body {
+            font-size: 1.1rem; /* ~19.8px */
+        }
+        
+        /* Aumentar tamaños de Tailwind específicos */
+        .text-xs { font-size: 0.875rem !important; } /* ~15.75px (antes 12px) */
+        .text-sm { font-size: 1rem !important; } /* ~18px (antes 14px) */
+        .text-base { font-size: 1.125rem !important; } /* ~20.25px (antes 16px) */
+        .text-lg { font-size: 1.25rem !important; } /* ~22.5px (antes 18px) */
+        .text-xl { font-size: 1.5rem !important; } /* ~27px (antes 20px) */
+        .text-2xl { font-size: 1.75rem !important; } /* ~31.5px (antes 24px) */
+        .text-3xl { font-size: 2rem !important; } /* ~36px (antes 30px) */
+        
+        /* Botones más grandes */
+        button {
+            font-size: 1.1rem !important;
+            padding: 0.75rem 1.25rem !important;
+        }
+        
+        /* Inputs y selects más grandes */
+        input, select, textarea {
+            font-size: 1.1rem !important;
+            padding: 0.75rem !important;
+        }
+        
+        /* Tablas más legibles */
+        table {
+            font-size: 1.1rem !important;
+        }
+        
+        th, td {
+            padding: 1rem !important;
+        }
+        
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .tab-button.active { 
