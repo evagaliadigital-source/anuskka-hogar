@@ -3298,34 +3298,8 @@ app.get('/', (c) => {
 
         <!-- PERSONAL TAB -->
         <div id="personal-tab" class="tab-content">
-            <!-- Sub-navegación de pestañas -->
-            <div class="bg-white rounded-xl shadow-md p-2 mb-6 flex gap-2">
-                <button onclick="showPersonalSubTab('nuevo')" id="personal-subtab-nuevo" class="personal-subtab active px-6 py-3 rounded-lg font-medium transition-all bg-gradient-to-r from-gray-800 to-gray-900 text-white">
-                    <i class="fas fa-plus-circle mr-2"></i>Nuevo Personal
-                </button>
-                <button onclick="showPersonalSubTab('gestion')" id="personal-subtab-gestion" class="personal-subtab px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
-                    <i class="fas fa-users mr-2"></i>Gestión de Personal
-                </button>
-            </div>
-            
-            <!-- SUBTAB: NUEVO PERSONAL -->
-            <div id="personal-subtab-nuevo-content" class="personal-subtab-content active">
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <h3 class="text-xl font-bold text-gray-800 mb-6">
-                        <i class="fas fa-user-plus text-brand-orange mr-2"></i>Añadir Nuevo Personal
-                    </h3>
-                    <div id="personal-form-container"></div>
-                </div>
-            </div>
-            
-            <!-- SUBTAB: GESTIÓN DE PERSONAL -->
-            <div id="personal-subtab-gestion-content" class="personal-subtab-content" style="display: none;">
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <h3 class="text-xl font-bold text-gray-800 mb-6">
-                        <i class="fas fa-users-cog text-brand-orange mr-2"></i>Personal Registrado
-                    </h3>
-                    <div id="personal-lista" class="overflow-x-auto"></div>
-                </div>
+            <div class="bg-white border-2 border-black rounded-xl shadow-md p-6">
+                <div id="empleadas-lista" class="overflow-x-auto"></div>
             </div>
         </div>
 
