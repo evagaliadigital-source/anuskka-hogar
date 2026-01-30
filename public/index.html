@@ -1,9 +1,33 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-version="2026-01-30-v2">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="description" content="Sistema de gestión integral para Anushka Hogar - Tapicería y decoración">
+    <meta name="theme-color" content="#ffffff">
     <title>Anushka Hogar - Dashboard</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Iconos para diferentes dispositivos -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/static/icon-512.png">
+    <link rel="apple-touch-icon" href="/static/icon-192.png">
+    
+    <!-- iOS específico -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Anushka Hogar">
+    
+    <!-- PWA Meta Tags adicionales -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Anushka Hogar">
+    <meta name="format-detection" content="telephone=no">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -13,25 +37,34 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .tab-button.active { 
-            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
-            color: white;
+            background: #ffffff;
+            color: black;
+            border: 2px solid black;
+        }
+        .tab-button:hover:not(.active) {
+            background: #f5f5f5;
+            color: black;
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+<body class="bg-white min-h-screen">
     <!-- Header -->
-    <header class="bg-white shadow-md sticky top-0 z-50">
+    <header class="bg-white shadow-2xl sticky top-0 z-50 border-b-2 border-black">
         <div class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <img src="/static/logo.jpg" alt="Anushka Hogar" class="h-16 object-contain">
                 </div>
                 <div class="flex items-center space-x-4">
+                    <button onclick="abrirModalSoporte()" class="bg-black hover:bg-gray-800 text-black border border-black px-3 py-2 rounded-lg transition-all flex items-center gap-2" title="Soporte Técnico">
+                        <i class="fas fa-headset"></i>
+                        <span class="hidden md:inline">Soporte</span>
+                    </button>
                     <div class="text-right">
                         <p class="text-sm text-gray-600">Bienvenida</p>
-                        <p class="font-semibold text-gray-800">Admin</p>
+                        <p class="font-semibold text-black">Admin</p>
                     </div>
-                    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-all">
+                    <button onclick="logout()" class="bg-black hover:bg-gray-800 text-black border border-black px-4 py-2 rounded-lg transition-all">
                         <i class="fas fa-sign-out-alt mr-2"></i>Salir
                     </button>
                 </div>
@@ -41,42 +74,42 @@
 
     <!-- Navigation Tabs -->
     <div class="container mx-auto px-6 mt-6">
-        <div class="bg-white rounded-xl shadow-md p-2 flex flex-wrap gap-2">
+        <div class="bg-white rounded-xl shadow-2xl p-2 flex flex-wrap gap-2 border-2 border-black">
             <button onclick="showTab('dashboard')" class="tab-button active px-6 py-3 rounded-lg font-medium transition-all">
                 <i class="fas fa-chart-line mr-2"></i>Dashboard
             </button>
-            <button onclick="showTab('presupuestos')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
+            <button onclick="showTab('presupuestos')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-600">
                 <i class="fas fa-file-alt mr-2"></i>Presupuestos
             </button>
-            <button onclick="showTab('clientes')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
+            <button onclick="showTab('clientes')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-600">
                 <i class="fas fa-users mr-2"></i>Clientes
             </button>
-            <button onclick="showTab('trabajos')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
+            <button onclick="showTab('trabajos')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-600">
                 <i class="fas fa-briefcase mr-2"></i>Trabajos
             </button>
-            <button onclick="showTab('empleadas')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
+            <button onclick="showTab('personal')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-600">
                 <i class="fas fa-user-tie mr-2"></i>Personal
             </button>
-            <button onclick="showTab('stock')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
+            <button onclick="showTab('stock')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-600">
                 <i class="fas fa-boxes mr-2"></i>Stock
             </button>
-            <button onclick="showTab('facturas')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
+            <button onclick="showTab('facturas')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-600">
                 <i class="fas fa-file-invoice-dollar mr-2"></i>Facturación
             </button>
-            <button onclick="showTab('reportes')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-700 hover:bg-gray-100">
+            <button onclick="showTab('reportes')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-600">
                 <i class="fas fa-chart-bar mr-2"></i>Reportes
             </button>
         </div>
     </div>
 
     <!-- Main Content -->
-    <div class="container mx-auto px-6 py-6">
+    <div class="container mx-auto px-6 py-6 max-h-[calc(100vh-220px)] overflow-y-auto">
         
         <!-- DASHBOARD TAB -->
         <div id="dashboard-tab" class="tab-content active">
             <!-- KPI Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
-                <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="bg-white border-2 border-black rounded-xl shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600">Ingresos Mes</p>
@@ -88,7 +121,7 @@
                     </div>
                 </div>
                 
-                <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="bg-white border-2 border-black rounded-xl shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600">Trabajos Activos</p>
@@ -100,7 +133,7 @@
                     </div>
                 </div>
                 
-                <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="bg-white border-2 border-black rounded-xl shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600">Stock Bajo</p>
@@ -112,7 +145,7 @@
                     </div>
                 </div>
                 
-                <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="bg-white border-2 border-black rounded-xl shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600">Horas Semanales</p>
@@ -124,7 +157,7 @@
                     </div>
                 </div>
                 
-                <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="bg-white border-2 border-black rounded-xl shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600">Satisfacción</p>
@@ -139,13 +172,13 @@
 
             <!-- Charts -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">Trabajos por Estado</h3>
+                <div class="bg-white border-2 border-black rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold text-black mb-4">Trabajos por Estado</h3>
                     <canvas id="chartTrabajos"></canvas>
                 </div>
                 
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">Ingresos Últimos 7 Días</h3>
+                <div class="bg-white border-2 border-black rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold text-black mb-4">Ingresos Últimos 7 Días</h3>
                     <canvas id="chartIngresos"></canvas>
                 </div>
             </div>
@@ -153,10 +186,10 @@
 
         <!-- PRESUPUESTOS TAB -->
         <div id="presupuestos-tab" class="tab-content">
-            <div class="bg-white rounded-xl shadow-md p-6">
+            <div class="bg-white border-2 border-black rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Gestión de Presupuestos</h2>
-                    <button onclick="showPresupuestoForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                    <h2 class="text-2xl font-bold text-black">Gestión de Presupuestos</h2>
+                    <button onclick="showPresupuestoForm()" class="bg-black text-black border-2 border-black hover:bg-gray-800 px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
                         <i class="fas fa-plus mr-2"></i>Nuevo Presupuesto
                     </button>
                 </div>
@@ -177,10 +210,10 @@
 
         <!-- CLIENTES TAB -->
         <div id="clientes-tab" class="tab-content">
-            <div class="bg-white rounded-xl shadow-md p-6">
+            <div class="bg-white border-2 border-black rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Gestión de Clientes</h2>
-                    <button onclick="showClienteForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                    <h2 class="text-2xl font-bold text-black">Gestión de Clientes</h2>
+                    <button onclick="showClienteForm()" class="bg-black text-black border-2 border-black hover:bg-gray-800 px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
                         <i class="fas fa-plus mr-2"></i>Nuevo Cliente
                     </button>
                 </div>
@@ -190,16 +223,27 @@
 
         <!-- TRABAJOS TAB -->
         <div id="trabajos-tab" class="tab-content">
-            <div class="bg-white rounded-xl shadow-md p-6">
+            <div class="bg-white border-2 border-black rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Gestión de Trabajos</h2>
-                    <button onclick="showTrabajoForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                    <h2 class="text-2xl font-bold text-black">Gestión de Trabajos</h2>
+                    <button id="btn-nuevo-trabajo" onclick="showTrabajoForm()" class="bg-black text-black border-2 border-black hover:bg-gray-800 px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
                         <i class="fas fa-plus mr-2"></i>Nuevo Trabajo
                     </button>
                 </div>
                 
                 <!-- Filtros -->
-                <div class="mb-6 flex gap-4">
+                <div class="mb-6 flex gap-4 flex-wrap">
+                    <select id="filter-categoria" onchange="loadTrabajos()" class="px-4 py-2 border rounded-lg">
+                        <option value="">Todas las categorías</option>
+                        <option value="tienda">🏪 Tienda (TT)</option>
+                        <option value="externo">🚚 Externos (TE)</option>
+                    </select>
+                    <select id="filter-tipo" onchange="loadTrabajos()" class="px-4 py-2 border rounded-lg">
+                        <option value="">Todos los tipos</option>
+                        <option value="confeccion">✂️ Confección</option>
+                        <option value="instalacion">🔨 Instalación</option>
+                        <option value="arreglo">🔧 Arreglo</option>
+                    </select>
                     <select id="filter-estado" onchange="loadTrabajos()" class="px-4 py-2 border rounded-lg">
                         <option value="">Todos los estados</option>
                         <option value="pendiente">Pendiente</option>
@@ -208,35 +252,40 @@
                         <option value="cancelado">Cancelado</option>
                     </select>
                     <input type="date" id="filter-fecha" onchange="loadTrabajos()" class="px-4 py-2 border rounded-lg">
+                    
+                    <!-- Checkbox Excluir Cancelados/Completados -->
+                    <div class="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200">
+                        <input type="checkbox" 
+                               id="excluir-finalizados-trabajos" 
+                               onchange="loadTrabajos()"
+                               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer">
+                        <label for="excluir-finalizados-trabajos" class="text-sm font-medium text-gray-700 cursor-pointer select-none whitespace-nowrap">
+                            <i class="fas fa-filter mr-1"></i>Excluir cancelados y completados
+                        </label>
+                    </div>
                 </div>
                 
                 <div id="trabajos-lista" class="overflow-x-auto"></div>
             </div>
         </div>
 
-        <!-- EMPLEADAS TAB -->
-        <div id="empleadas-tab" class="tab-content">
-            <div class="bg-white rounded-xl shadow-md p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Gestión de Personal</h2>
-                    <button onclick="showEmpleadaForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
-                        <i class="fas fa-plus mr-2"></i>Nuevo Personal
-                    </button>
-                </div>
+        <!-- PERSONAL TAB -->
+        <div id="personal-tab" class="tab-content">
+            <div class="bg-white border-2 border-black rounded-xl shadow-md p-6">
                 <div id="empleadas-lista" class="overflow-x-auto"></div>
             </div>
         </div>
 
         <!-- STOCK TAB -->
         <div id="stock-tab" class="tab-content">
-            <div class="bg-white rounded-xl shadow-md p-6">
+            <div class="bg-white border-2 border-black rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Control de Inventario</h2>
+                    <h2 class="text-2xl font-bold text-black">Control de Inventario</h2>
                     <div class="flex gap-3">
-                        <button onclick="loadStock(true)" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+                        <button onclick="loadStock(true)" class="bg-red-500 text-black px-4 py-2 rounded-lg hover:bg-red-600">
                             <i class="fas fa-exclamation-circle mr-2"></i>Bajo Stock
                         </button>
-                        <button onclick="showStockForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                        <button onclick="showStockForm()" class="bg-black text-black border-2 border-black hover:bg-gray-800 px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
                             <i class="fas fa-plus mr-2"></i>Nuevo Artículo
                         </button>
                     </div>
@@ -247,10 +296,10 @@
 
         <!-- FACTURAS TAB -->
         <div id="facturas-tab" class="tab-content">
-            <div class="bg-white rounded-xl shadow-md p-6">
+            <div class="bg-white border-2 border-black rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Facturación</h2>
-                    <button onclick="showFacturaForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                    <h2 class="text-2xl font-bold text-black">Facturación</h2>
+                    <button onclick="showFacturaForm()" class="bg-black text-black border-2 border-black hover:bg-gray-800 px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
                         <i class="fas fa-plus mr-2"></i>Nueva Factura
                     </button>
                 </div>
@@ -260,9 +309,9 @@
 
         <!-- REPORTES TAB -->
         <div id="reportes-tab" class="tab-content">
-            <div class="bg-white rounded-xl shadow-md p-6">
+            <div class="bg-white border-2 border-black rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Reportes Mensuales</h2>
+                    <h2 class="text-2xl font-bold text-black">Reportes Mensuales</h2>
                     <input type="month" id="reporte-mes" onchange="loadReporte()" 
                            class="px-4 py-2 border rounded-lg">
                 </div>
@@ -275,7 +324,123 @@
     <!-- Modal Container -->
     <div id="modal-container"></div>
 
+    <!-- Botón de instalación PWA (flotante - SIEMPRE VISIBLE) -->
+    <button id="install-button"
+            class="fixed bottom-6 right-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-black px-6 py-3 rounded-full shadow-2xl hover:shadow-purple-500/50 transition-all transform hover:scale-105 z-50 flex items-center gap-2">
+        <i class="fas fa-download"></i>
+        <span class="font-medium">Instalar App</span>
+    </button>
+
+    <!-- Footer Legal -->
+    <footer class="bg-gray-100 border-t border-gray-200 mt-8 py-4">
+        <div class="container mx-auto px-4 text-center text-sm text-gray-600">
+            <p>&copy; 2026 Anushka Hogar. Todos los derechos reservados.</p>
+            <div class="mt-2 space-x-4">
+                <a href="/static/politica-privacidad.html" class="text-blue-600 hover:underline">Política de Privacidad</a>
+                <span class="text-gray-400">|</span>
+                <a href="/static/aviso-legal.html" class="text-blue-600 hover:underline">Aviso Legal</a>
+            </div>
+        </div>
+    </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
-    <script src="/static/app.js"></script>
+    <script src="/static/app-main.js"></script>
+    
+    <!-- PWA: Service Worker y botón de instalación -->
+    <script>
+        // Registrar Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registrado:', registration.scope)
+                    })
+                    .catch(error => {
+                        console.error('❌ Error al registrar Service Worker:', error)
+                    })
+            })
+        }
+
+        // Botón de instalación PWA - MEJORADO
+        let deferredPrompt
+        const installButton = document.getElementById('install-button')
+
+        // Detectar si ya está instalada
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            console.log('📱 PWA: Ya instalada - modo standalone')
+            installButton.style.display = 'none'
+        }
+
+        // Evento cuando se puede instalar
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('💡 PWA: beforeinstallprompt disparado - App puede instalarse')
+            e.preventDefault()
+            deferredPrompt = e
+            installButton.style.display = 'flex'
+            
+            // Agregar efecto de atención
+            installButton.classList.add('animate-bounce')
+            setTimeout(() => {
+                installButton.classList.remove('animate-bounce')
+            }, 2000)
+        })
+
+        // Click en el botón
+        installButton.addEventListener('click', async () => {
+            console.log('👆 Click en botón instalar')
+            
+            if (!deferredPrompt) {
+                console.log('⚠️ No hay deferredPrompt disponible')
+                
+                // Instrucciones manuales según navegador
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+                const isAndroid = /Android/.test(navigator.userAgent)
+                
+                let message = '📱 Para instalar esta app:\n\n'
+                
+                if (isIOS) {
+                    message += '1. Toca el botón de Compartir (□↑)\n2. Selecciona "Añadir a pantalla de inicio"'
+                } else if (isAndroid) {
+                    message += '1. Abre el menú (⋮)\n2. Selecciona "Instalar app" o "Añadir a pantalla de inicio"'
+                } else {
+                    message += '1. Busca el icono ⊕ en la barra de direcciones\n2. O usa el menú → "Instalar Anushka Hogar"'
+                }
+                
+                alert(message)
+                return
+            }
+            
+            // Mostrar prompt de instalación
+            deferredPrompt.prompt()
+            
+            // Esperar respuesta del usuario
+            const { outcome } = await deferredPrompt.userChoice
+            
+            console.log(`👤 Usuario ${outcome === 'accepted' ? 'aceptó' : 'rechazó'} instalar`)
+            
+            if (outcome === 'accepted') {
+                showToast('✅ App instalada correctamente', 'success')
+                installButton.style.display = 'none'
+            } else {
+                showToast('ℹ️ Puedes instalarla en cualquier momento', 'info')
+            }
+            
+            deferredPrompt = null
+        })
+
+        // Cuando se instala
+        window.addEventListener('appinstalled', () => {
+            console.log('✅ PWA: appinstalled disparado')
+            installButton.style.display = 'none'
+            showToast('🎉 ¡App instalada! Ya puedes acceder desde tu pantalla de inicio', 'success')
+        })
+        
+        // Log del estado inicial
+        console.log('🔍 PWA Estado inicial:', {
+            'Display mode': window.matchMedia('(display-mode: standalone)').matches ? 'standalone' : 'browser',
+            'User agent': navigator.userAgent,
+            'Platform': navigator.platform
+        })
+    </script>
 </body>
 </html>
