@@ -3841,9 +3841,229 @@ window.deleteTrabajo = async (id) => {
 }
 window.closeModal = closeModal
 window.viewPersonal = async (id) => {
-  const { data } = await axios.get(`${API}/personal/${id}`)
-  const calificacion = data.personal.calificacion ? `\nCalificación: ${data.personal.calificacion} ⭐` : ''
-  alert(`Personal: ${data.personal.nombre} ${data.personal.apellidos}${calificacion}\nTrabajos: ${data.trabajos.length}\nHoras registradas: ${data.horas.length}`)
+  try {
+    const { data } = await axios.get(`${API}/personal/${id}`)
+    const p = data.personal
+    const trabajos = data.trabajos || []
+    const horas = data.horas || []
+    
+    // Calcular estadísticas
+    const totalHoras = horas.reduce((sum, h) => sum + (h.horas_trabajadas || 0), 0)
+    const trabajosActivos = trabajos.filter(t => t.estado === 'en_proceso' || t.estado === 'pendiente').length
+    const trabajosCompletados = trabajos.filter(t => t.estado === 'completado').length
+    
+    // Especialidades
+    let especialidadesArray = []
+    try {
+      especialidadesArray = typeof p.especialidades === 'string' ? JSON.parse(p.especialidades) : (p.especialidades || [])
+    } catch (e) {
+      especialidadesArray = []
+    }
+    
+    const especialidadesHTML = especialidadesArray.length > 0 
+      ? especialidadesArray.map(esp => `<span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium"><i class="fas fa-check mr-1"></i>${esp}</span>`).join('')
+      : '<span class="text-gray-400 italic">Sin especialidades registradas</span>'
+    
+    const modalContainer = document.getElementById('modal-container')
+    modalContainer.innerHTML = `
+      <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onclick="closeModal()">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+          
+          <!-- Header -->
+          <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-4">
+                <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-4xl font-bold text-blue-600 shadow-lg">
+                  ${p.nombre.charAt(0)}${p.apellidos.charAt(0)}
+                </div>
+                <div>
+                  <h2 class="text-3xl font-bold">${p.nombre} ${p.apellidos}</h2>
+                  <div class="flex items-center gap-4 mt-2">
+                    ${p.calificacion ? `<div class="flex items-center gap-1">
+                      <i class="fas fa-star text-yellow-300"></i>
+                      <span class="font-semibold">${p.calificacion.toFixed(1)}</span>
+                    </div>` : ''}
+                    <span class="bg-white/25 backdrop-blur-sm px-3 py-1 rounded-full text-sm">
+                      <i class="fas fa-briefcase mr-1"></i>${trabajos.length} trabajos
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button onclick="closeModal()" class="text-white hover:bg-white/20 p-3 rounded-full transition-all">
+                <i class="fas fa-times text-2xl"></i>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Content -->
+          <div class="p-6">
+            
+            <!-- Información de Contacto -->
+            <div class="bg-gray-50 rounded-xl p-6 mb-6">
+              <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i class="fas fa-address-card text-blue-600"></i>
+                Información de Contacto
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-phone text-blue-600"></i>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Teléfono</p>
+                    <p class="font-semibold text-gray-800">${p.telefono || 'No registrado'}</p>
+                  </div>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-envelope text-purple-600"></i>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Email</p>
+                    <p class="font-semibold text-gray-800">${p.email || 'No registrado'}</p>
+                  </div>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-id-card text-green-600"></i>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">DNI</p>
+                    <p class="font-semibold text-gray-800">${p.dni || 'No registrado'}</p>
+                  </div>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-calendar text-orange-600"></i>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Fecha de Contratación</p>
+                    <p class="font-semibold text-gray-800">${p.fecha_contratacion ? new Date(p.fecha_contratacion).toLocaleDateString('es-ES') : 'No registrada'}</p>
+                  </div>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-euro-sign text-teal-600"></i>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Salario por Hora</p>
+                    <p class="font-semibold text-gray-800">${p.salario_hora ? `${p.salario_hora.toFixed(2)} €` : 'No registrado'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Especialidades -->
+            <div class="bg-purple-50 rounded-xl p-6 mb-6">
+              <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i class="fas fa-certificate text-purple-600"></i>
+                Especialidades
+              </h3>
+              <div class="flex flex-wrap gap-2">
+                ${especialidadesHTML}
+              </div>
+            </div>
+            
+            <!-- Estadísticas -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-blue-100 text-sm mb-1">Trabajos Activos</p>
+                    <p class="text-4xl font-bold">${trabajosActivos}</p>
+                  </div>
+                  <i class="fas fa-tasks text-5xl text-white/30"></i>
+                </div>
+              </div>
+              
+              <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-green-100 text-sm mb-1">Completados</p>
+                    <p class="text-4xl font-bold">${trabajosCompletados}</p>
+                  </div>
+                  <i class="fas fa-check-circle text-5xl text-white/30"></i>
+                </div>
+              </div>
+              
+              <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-purple-100 text-sm mb-1">Horas Totales</p>
+                    <p class="text-4xl font-bold">${totalHoras.toFixed(1)}</p>
+                  </div>
+                  <i class="fas fa-clock text-5xl text-white/30"></i>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Trabajos Recientes -->
+            ${trabajos.length > 0 ? `
+              <div class="bg-gray-50 rounded-xl p-6 mb-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <i class="fas fa-briefcase text-blue-600"></i>
+                  Trabajos Recientes
+                </h3>
+                <div class="space-y-3 max-h-60 overflow-y-auto">
+                  ${trabajos.slice(0, 10).map(t => `
+                    <div class="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow">
+                      <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                          <p class="font-semibold text-gray-800">${t.cliente_nombre || 'Sin cliente'}</p>
+                          <p class="text-sm text-gray-500">${t.tipo_servicio || 'Sin tipo'}</p>
+                          <p class="text-xs text-gray-400 mt-1">
+                            <i class="fas fa-calendar mr-1"></i>${t.fecha_programada ? new Date(t.fecha_programada).toLocaleDateString('es-ES') : 'Sin fecha'}
+                          </p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-medium ${
+                          t.estado === 'completado' ? 'bg-green-100 text-green-800' :
+                          t.estado === 'en_proceso' ? 'bg-blue-100 text-blue-800' :
+                          t.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-gray-100 text-gray-800'
+                        }">
+                          ${t.estado || 'Sin estado'}
+                        </span>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+            
+            <!-- Notas -->
+            ${p.notas ? `
+              <div class="bg-yellow-50 rounded-xl p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-3 flex items-center gap-2">
+                  <i class="fas fa-sticky-note text-yellow-600"></i>
+                  Notas
+                </h3>
+                <p class="text-gray-700 whitespace-pre-wrap">${p.notas}</p>
+              </div>
+            ` : ''}
+            
+          </div>
+          
+          <!-- Footer -->
+          <div class="bg-gray-50 p-6 flex justify-end gap-3 border-t">
+            <button onclick="closeModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium">
+              <i class="fas fa-times mr-2"></i>Cerrar
+            </button>
+            <button onclick="closeModal(); showPersonalForm(${id})" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+              <i class="fas fa-edit mr-2"></i>Editar
+            </button>
+          </div>
+          
+        </div>
+      </div>
+    `
+  } catch (error) {
+    console.error('Error cargando empleado:', error)
+    showToast('❌ Error al cargar información del empleado', 'error')
+  }
 }
 window.editPersonal = (id) => showPersonalForm(id)
 window.editStock = (id) => showStockForm(id)
