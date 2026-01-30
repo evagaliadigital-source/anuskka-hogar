@@ -1916,6 +1916,13 @@ function toggleSeleccionMultipleTrabajo() {
 
 // Función para exportar trabajos a CSV
 function exportarTrabajos() {
+  // Verificar que NO sea usuario tienda
+  const userRole = getUserRole()
+  if (userRole === 'tienda') {
+    showToast('❌ No tienes permisos para exportar', 'error')
+    return
+  }
+  
   if (!currentData.trabajos || currentData.trabajos.length === 0) {
     showToast('No hay trabajos para exportar', 'warning')
     return
@@ -10574,6 +10581,13 @@ function cancelarSeleccion() {
 
 // Exportar tareas a Excel
 function exportarTareas() {
+  // Verificar que NO sea usuario tienda
+  const userRole = getUserRole()
+  if (userRole === 'tienda') {
+    showToast('❌ No tienes permisos para exportar', 'error')
+    return
+  }
+  
   showNotification('Exportando tareas...', 'info')
   
   // Aquí iría la lógica de exportación
