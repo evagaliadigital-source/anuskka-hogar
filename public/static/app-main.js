@@ -2317,12 +2317,12 @@ async function loadPersonalLista() {
     
     // Encabezado con título y botón
     let html = `
-      <div class="bg-white border-2 border-black rounded-xl shadow-md p-6 mb-6">
+      <div class="bg-white border border-gray-200 rounded-xl shadow-md p-6 mb-6">
         <div class="flex justify-between items-center">
           <h2 class="text-2xl font-bold text-black">
             <i class="fas fa-users mr-2"></i>Gestión de Empleados
           </h2>
-          <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white border-2 border-yellow-600 px-6 py-3 rounded-lg font-medium hover:shadow-lg hover:shadow-yellow-500/30 transition-all duration-300">
+          <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white border border-yellow-600 px-6 py-3 rounded-lg font-medium hover:shadow-lg hover:shadow-yellow-500/30 transition-all duration-300">
             <i class="fas fa-plus mr-2"></i>Nuevo Empleado
           </button>
         </div>
@@ -2331,11 +2331,11 @@ async function loadPersonalLista() {
     
     if (!data || data.length === 0) {
       html += `
-        <div class="bg-white border-2 border-black rounded-xl shadow-md p-12 text-center">
+        <div class="bg-white border border-gray-200 rounded-xl shadow-md p-12 text-center">
           <i class="fas fa-users text-6xl text-yellow-600 mb-4"></i>
           <p class="text-xl text-gray-800 font-semibold mb-2">No hay empleados registrados</p>
           <p class="text-gray-600 mb-6">Crea tu primer empleado para empezar</p>
-          <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-8 py-4 rounded-lg font-medium hover:shadow-xl hover:shadow-yellow-500/30 transition-all duration-300">
+          <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white border border-yellow-600 px-8 py-4 rounded-lg font-medium hover:shadow-xl hover:shadow-yellow-500/30 transition-all duration-300">
             <i class="fas fa-plus mr-2"></i>Crear Primer Empleado
           </button>
         </div>
@@ -2344,7 +2344,7 @@ async function loadPersonalLista() {
       html += `
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           ${data.map(e => `
-            <div class="bg-white border-2 border-black rounded-xl p-6 hover:shadow-2xl hover:shadow-yellow-500/20 transition-all duration-300">
+            <div class="bg-white border border-gray-200 rounded-xl shadow-md p-6 hover:shadow-xl hover:border-yellow-500/50 transition-all duration-300">
               <div class="flex items-start justify-between mb-4">
                 <div>
                   <h3 class="text-lg font-bold text-black">${e.nombre} ${e.apellidos}</h3>
@@ -2363,10 +2363,10 @@ async function loadPersonalLista() {
               </div>
               
               <div class="flex gap-3">
-                <button onclick="viewPersonal(${e.id})" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white border-2 border-yellow-600 px-4 py-2.5 rounded-lg font-medium hover:shadow-lg hover:shadow-yellow-500/30 transition-all duration-300">
+                <button onclick="viewPersonal(${e.id})" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white border border-yellow-600 px-4 py-2.5 rounded-lg font-medium hover:shadow-lg hover:shadow-yellow-500/30 transition-all duration-300">
                   <i class="fas fa-eye mr-2"></i>Ver
                 </button>
-                <button onclick="showPersonalForm(${e.id})" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white border-2 border-yellow-600 px-4 py-2.5 rounded-lg font-medium hover:shadow-lg hover:shadow-yellow-500/30 transition-all duration-300">
+                <button onclick="showPersonalForm(${e.id})" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white border border-yellow-600 px-4 py-2.5 rounded-lg font-medium hover:shadow-lg hover:shadow-yellow-500/30 transition-all duration-300">
                   <i class="fas fa-edit mr-2"></i>Editar
                 </button>
               </div>
