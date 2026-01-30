@@ -1126,14 +1126,16 @@ function agregarCheckboxTrabajos() {
 async function loadTrabajos() {
   try {
     const categoria = document.getElementById('filter-categoria')?.value || ''
+    const tipo = document.getElementById('filter-tipo')?.value || ''
     const estado = document.getElementById('filter-estado')?.value || ''
     const fecha = document.getElementById('filter-fecha')?.value || ''
     const excluirFinalizados = document.getElementById('excluir-finalizados-trabajos')?.checked || false
     
-    console.log('🔍 Filtros trabajos:', { categoria, estado, fecha, excluirFinalizados })
+    console.log('🔍 Filtros trabajos:', { categoria, tipo, estado, fecha, excluirFinalizados })
     
     const params = new URLSearchParams()
     if (categoria) params.append('categoria', categoria)
+    if (tipo) params.append('tipo', tipo)
     if (estado) params.append('estado', estado)
     if (fecha) params.append('fecha', fecha)
     if (excluirFinalizados) params.append('excluir_finalizados', 'true')
@@ -1742,6 +1744,7 @@ async function showTrabajoForm(id = null) {
                 <option value="">Seleccionar tipo</option>
                 <option value="confeccion" ${trabajo.tipo_servicio === 'confeccion' ? 'selected' : ''}>Confección</option>
                 <option value="instalacion" ${trabajo.tipo_servicio === 'instalacion' ? 'selected' : ''}>Instalación</option>
+                <option value="arreglo" ${trabajo.tipo_servicio === 'arreglo' ? 'selected' : ''}>Arreglo</option>
               </select>
             </div>
             <div>
@@ -1953,11 +1956,13 @@ function aplicarFiltrosTrabajos() {
 // Función para limpiar filtros de trabajos
 function limpiarFiltrosTrabajos() {
   const filtroEstado = document.getElementById('filter-estado')
+  const filtroTipo = document.getElementById('filter-tipo')
   const filtroFecha = document.getElementById('filter-fecha')
   const checkboxExcluir = document.getElementById('excluir-finalizados-trabajos')
   const ordenSelect = document.getElementById('ordenar-trabajos')
   
   if (filtroEstado) filtroEstado.value = ''
+  if (filtroTipo) filtroTipo.value = ''
   if (filtroFecha) filtroFecha.value = ''
   if (checkboxExcluir) checkboxExcluir.checked = false
   if (ordenSelect) ordenSelect.value = 'fecha'

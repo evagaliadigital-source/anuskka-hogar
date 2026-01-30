@@ -441,6 +441,7 @@ app.put('/api/personal/:id', async (c) => {
 // Obtener todos los trabajos
 app.get('/api/trabajos', async (c) => {
   const categoria = c.req.query('categoria')
+  const tipo = c.req.query('tipo')
   const estado = c.req.query('estado')
   const fecha = c.req.query('fecha')
   const excluir_finalizados = c.req.query('excluir_finalizados') === 'true'
@@ -459,6 +460,12 @@ app.get('/api/trabajos', async (c) => {
   if (categoria) {
     query += ' AND t.categoria = ?'
     bindings.push(categoria)
+  }
+  
+  // Filtrar por tipo de servicio
+  if (tipo) {
+    query += ' AND t.tipo_servicio = ?'
+    bindings.push(tipo)
   }
   
   // Excluir cancelados y completados si se solicita
