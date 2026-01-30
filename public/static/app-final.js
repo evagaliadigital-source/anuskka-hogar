@@ -2275,11 +2275,26 @@ async function loadPersonalLista() {
     const { data } = await axios.get(`${API}/personal`)
     currentData.personal = data
     
-    const container = document.getElementById('empleadas-lista')
+    // Buscar primero el contenedor en el tab
+    let container = document.getElementById('empleadas-lista')
+    
+    // Si no existe, buscar el tab y crear el contenedor
     if (!container) {
-      console.error('❌ Contenedor empleadas-lista no encontrado')
-      return
+      console.warn('⚠️ Contenedor empleadas-lista no encontrado, creando...')
+      const personalTab = document.getElementById('personal-tab')
+      if (personalTab) {
+        container = document.createElement('div')
+        container.id = 'empleadas-lista'
+        container.className = 'overflow-x-auto'
+        personalTab.appendChild(container)
+        console.log('✅ Contenedor empleadas-lista creado')
+      } else {
+        console.error('❌ Tab personal-tab tampoco existe')
+        return
+      }
     }
+    
+    console.log('✅ Contenedor encontrado/creado, inyectando contenido...')
     
     // Encabezado con título y botón
     let html = `
