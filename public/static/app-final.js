@@ -630,7 +630,7 @@ function renderTopEmpleadas(data) {
   container.innerHTML = data.map((e, index) => `
     <div class="flex items-center justify-between p-4 bg-zinc-800 border border-black rounded-lg">
       <div class="flex items-center space-x-4">
-        <div class="bg-gradient-to-br from-gray-800 to-gray-900 text-black font-bold w-10 h-10 rounded-full flex items-center justify-center">
+        <div class="bg-gradient-to-br from-gray-800 to-gray-900 text-white font-bold w-10 h-10 rounded-full flex items-center justify-center">
           ${index + 1}
         </div>
         <div>
@@ -859,7 +859,7 @@ function renderizarTablaClientes(clientes) {
             ? 'No se encontraron clientes con los filtros aplicados'
             : 'Crea tu primer cliente para comenzar'}
         </p>
-        <button onclick="showClienteForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg hover:shadow-lg transition-all">
+        <button onclick="showClienteForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all">
           <i class="fas fa-plus mr-2"></i>Crear Cliente
         </button>
       </div>
@@ -995,7 +995,7 @@ async function showClienteForm(id = null) {
           </div>
           
           <div class="flex gap-3 pt-4">
-            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
               <i class="fas fa-save mr-2"></i>Guardar
             </button>
             <button type="button" onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -1804,7 +1804,7 @@ async function showTrabajoForm(id = null) {
           </div>
           
           <div class="flex gap-3 pt-4">
-            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
               <i class="fas fa-save mr-2"></i>Guardar
             </button>
             <button type="button" onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -1997,7 +1997,7 @@ function renderizarTrabajosTabla(trabajos) {
         <p class="text-gray-400 mb-6 text-center">
           Crea tu primer trabajo para comenzar
         </p>
-        <button onclick="showTrabajoForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg hover:shadow-lg transition-all">
+        <button onclick="showTrabajoForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all">
           <i class="fas fa-plus mr-2"></i>Crear Trabajo
         </button>
       </div>
@@ -2303,7 +2303,7 @@ async function loadPersonalLista() {
           <h2 class="text-2xl font-bold text-black">
             <i class="fas fa-users mr-2"></i>Gestión de Empleados
           </h2>
-          <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+          <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
             <i class="fas fa-plus mr-2"></i>Nuevo Empleado
           </button>
         </div>
@@ -2315,7 +2315,7 @@ async function loadPersonalLista() {
         <div class="bg-white rounded-xl shadow-md p-12 text-center">
           <i class="fas fa-users text-6xl text-gray-600 mb-4"></i>
           <p class="text-xl text-gray-400 mb-4">No hay empleados registrados</p>
-          <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+          <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
             <i class="fas fa-plus mr-2"></i>Crear Primer Empleado
           </button>
         </div>
@@ -2367,7 +2367,7 @@ async function loadPersonalLista() {
             <h2 class="text-2xl font-bold text-black">
               <i class="fas fa-users mr-2"></i>Gestión de Empleados
             </h2>
-            <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+            <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
               <i class="fas fa-plus mr-2"></i>Nuevo Empleado
             </button>
           </div>
@@ -2503,7 +2503,7 @@ async function showPersonalForm(id = null) {
           </div>
           
           <div class="flex gap-3 pt-4">
-            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
               <i class="fas fa-save mr-2"></i>Guardar
             </button>
             <button type="button" onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -2770,7 +2770,7 @@ async function showStockForm(id = null, preselectedCategoriaId = null) {
           </div>
           
           <div class="flex gap-3 pt-4">
-            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
               <i class="fas fa-save mr-2"></i>Guardar
             </button>
             <button type="button" onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -3681,7 +3681,7 @@ async function showFacturaForm() {
           </div>
           
           <div class="flex gap-3 pt-4">
-            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
               <i class="fas fa-save mr-2"></i>Guardar
             </button>
             <button type="button" onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -4754,7 +4754,7 @@ async function showPresupuestoForm(presupuestoId = null, preselectedClienteId = 
       
       <div class="flex gap-3 justify-end">
         <button type="button" onclick="closeModal()" class="px-6 py-2 border rounded-lg hover:bg-gray-50">Cancelar</button>
-        <button type="submit" class="px-6 py-2 bg-gradient-to-r from-gray-800 to-gray-900 text-black rounded-lg hover:shadow-lg">Guardar Presupuesto</button>
+        <button type="submit" class="px-6 py-2 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-lg hover:shadow-lg">Guardar Presupuesto</button>
       </div>
     </form>
   `, 'max-w-6xl')
@@ -11689,18 +11689,18 @@ async function viewCliente(id) {
       <div id="modal-overlay" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
           <!-- Header -->
-          <div class="sticky top-0 bg-gradient-to-r from-gray-800 to-gray-900 text-black p-6 rounded-t-xl z-10">
+          <div class="sticky top-0 bg-gradient-to-r from-gray-800 to-gray-900 text-white p-6 rounded-t-xl z-10">
             <div class="flex justify-between items-center">
               <div>
                 <h3 class="text-2xl font-bold">${cliente.nombre} ${cliente.apellidos}</h3>
-                <div class="flex gap-4 mt-2 text-sm text-gray-600">
+                <div class="flex gap-4 mt-2 text-sm text-gray-300">
                   <span><i class="fas fa-tag mr-2"></i>${cliente.numero_cliente}</span>
                   <span><i class="fas fa-calendar mr-2"></i>Desde ${formatFecha(cliente.fecha_registro)}</span>
-                  <span class="px-2 py-1 bg-blue-600 rounded">${cliente.tipo_cliente}</span>
-                  <span class="px-2 py-1 bg-purple-600 rounded">${cliente.estado_negocio}</span>
+                  <span class="px-2 py-1 bg-blue-600 text-white rounded">${cliente.tipo_cliente}</span>
+                  <span class="px-2 py-1 bg-purple-600 text-white rounded">${cliente.estado_negocio}</span>
                 </div>
               </div>
-              <button onclick="closeModal()" class="text-black hover:text-gray-600">
+              <button onclick="closeModal()" class="text-white hover:text-gray-300">
                 <i class="fas fa-times text-2xl"></i>
               </button>
             </div>

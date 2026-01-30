@@ -11724,18 +11724,18 @@ async function viewCliente(id) {
       <div id="modal-overlay" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
           <!-- Header -->
-          <div class="sticky top-0 bg-gradient-to-r from-gray-800 to-gray-900 text-black p-6 rounded-t-xl z-10">
+          <div class="sticky top-0 bg-gradient-to-r from-gray-800 to-gray-900 text-white p-6 rounded-t-xl z-10">
             <div class="flex justify-between items-center">
               <div>
                 <h3 class="text-2xl font-bold">${cliente.nombre} ${cliente.apellidos}</h3>
-                <div class="flex gap-4 mt-2 text-sm text-gray-600">
+                <div class="flex gap-4 mt-2 text-sm text-gray-300">
                   <span><i class="fas fa-tag mr-2"></i>${cliente.numero_cliente}</span>
                   <span><i class="fas fa-calendar mr-2"></i>Desde ${formatFecha(cliente.fecha_registro)}</span>
-                  <span class="px-2 py-1 bg-blue-600 rounded">${cliente.tipo_cliente}</span>
-                  <span class="px-2 py-1 bg-purple-600 rounded">${cliente.estado_negocio}</span>
+                  <span class="px-2 py-1 bg-blue-600 text-white rounded">${cliente.tipo_cliente}</span>
+                  <span class="px-2 py-1 bg-purple-600 text-white rounded">${cliente.estado_negocio}</span>
                 </div>
               </div>
-              <button onclick="closeModal()" class="text-black hover:text-gray-600">
+              <button onclick="closeModal()" class="text-white hover:text-gray-300">
                 <i class="fas fa-times text-2xl"></i>
               </button>
             </div>
