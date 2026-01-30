@@ -356,47 +356,65 @@ app.delete('/api/clientes/:id/archivos/:archivoId', async (c) => {
 
 // Obtener todo el personal
 app.get('/api/personal', async (c) => {
-  const { results } = await c.env.DB.prepare(`
-    SELECT * FROM empleadas WHERE activa = 1 ORDER BY nombre
-  `).all()
-  return c.json(results)
+  try {
+    const { results } = await c.env.DB.prepare(`
+      SELECT * FROM empleadas ORDER BY nombre
+    `).all()
+    return c.json(results)
+  } catch (error) {
+    console.error('❌ Error obteniendo personal:', error)
+    return c.json({ 
+      error: error instanceof Error ? error.message : 'Error al obtener personal' 
+    }, 500)
+  }
 })
 
 // Obtener personal por ID
 app.get('/api/personal/:id', async (c) => {
-  const id = c.req.param('id')
-  
-  const personal = await c.env.DB.prepare(`
-    SELECT * FROM empleadas WHERE id = ?
-  `).bind(id).first()
-  
-  const trabajos = await c.env.DB.prepare(`
-    SELECT t.*, c.nombre as cliente_nombre, c.apellidos as cliente_apellidos
-    FROM trabajos t
-    LEFT JOIN clientes c ON t.cliente_id = c.id
-    WHERE t.empleada_id = ?
-    ORDER BY t.fecha_programada DESC
-    LIMIT 20
-  `).bind(id).all()
-  
-  const horas = await c.env.DB.prepare(`
-    SELECT * FROM registro_horas 
-    WHERE empleada_id = ? 
-    ORDER BY fecha DESC LIMIT 30
-  `).bind(id).all()
-  
-  const evaluaciones = await c.env.DB.prepare(`
-    SELECT * FROM evaluaciones 
-    WHERE empleada_id = ? 
-    ORDER BY fecha DESC LIMIT 10
-  `).bind(id).all()
-  
-  return c.json({
-    personal,
-    trabajos: trabajos.results,
-    horas: horas.results,
-    evaluaciones: evaluaciones.results
-  })
+  try {
+    const id = c.req.param('id')
+    
+    const personal = await c.env.DB.prepare(`
+      SELECT * FROM empleadas WHERE id = ?
+    `).bind(id).first()
+    
+    if (!personal) {
+      return c.json({ error: 'Personal no encontrado' }, 404)
+    }
+    
+    const trabajos = await c.env.DB.prepare(`
+      SELECT t.*, c.nombre as cliente_nombre, c.apellidos as cliente_apellidos
+      FROM trabajos t
+      LEFT JOIN clientes c ON t.cliente_id = c.id
+      WHERE t.empleada_id = ?
+      ORDER BY t.fecha_programada DESC
+      LIMIT 20
+    `).bind(id).all()
+    
+    const horas = await c.env.DB.prepare(`
+      SELECT * FROM registro_horas 
+      WHERE empleada_id = ? 
+      ORDER BY fecha DESC LIMIT 30
+    `).bind(id).all()
+    
+    const evaluaciones = await c.env.DB.prepare(`
+      SELECT * FROM evaluaciones 
+      WHERE empleada_id = ? 
+      ORDER BY fecha DESC LIMIT 10
+    `).bind(id).all()
+    
+    return c.json({
+      personal,
+      trabajos: trabajos.results,
+      horas: horas.results,
+      evaluaciones: evaluaciones.results
+    })
+  } catch (error) {
+    console.error('❌ Error obteniendo personal por ID:', error)
+    return c.json({ 
+      error: error instanceof Error ? error.message : 'Error al obtener personal' 
+    }, 500)
+  }
 })
 
 // Crear personal
