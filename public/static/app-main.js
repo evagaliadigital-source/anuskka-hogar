@@ -4071,38 +4071,62 @@ window.viewPersonal = async (id) => {
     
     // AGREGAR EVENT LISTENERS DESPUÉS DE INYECTAR HTML
     setTimeout(() => {
+      console.log('🔧 Intentando agregar event listeners al modal...')
+      
       // Overlay - cerrar al hacer clic fuera
       const overlay = document.getElementById('modal-overlay-personal')
       if (overlay) {
+        console.log('✅ Overlay encontrado, agregando listener')
         overlay.addEventListener('click', (e) => {
           if (e.target.id === 'modal-overlay-personal') {
+            console.log('🔴 Click en overlay, cerrando modal')
             closeModal()
           }
         })
+      } else {
+        console.error('❌ Overlay NO encontrado')
       }
       
       // Botón X del header
       const btnCloseHeader = document.getElementById('btn-close-header-personal')
       if (btnCloseHeader) {
-        btnCloseHeader.addEventListener('click', closeModal)
+        console.log('✅ Botón X encontrado, agregando listener')
+        btnCloseHeader.addEventListener('click', () => {
+          console.log('🔴 Click en botón X, cerrando modal')
+          closeModal()
+        })
+      } else {
+        console.error('❌ Botón X NO encontrado')
       }
       
       // Botón Cerrar del footer
       const btnCloseFooter = document.getElementById('btn-close-footer-personal')
       if (btnCloseFooter) {
-        btnCloseFooter.addEventListener('click', closeModal)
+        console.log('✅ Botón Cerrar encontrado, agregando listener')
+        btnCloseFooter.addEventListener('click', () => {
+          console.log('🔴 Click en botón Cerrar, cerrando modal')
+          closeModal()
+        })
+      } else {
+        console.error('❌ Botón Cerrar NO encontrado')
       }
       
       // Botón Editar
       const btnEdit = document.getElementById('btn-edit-personal')
       if (btnEdit) {
+        console.log('✅ Botón Editar encontrado, agregando listener')
         btnEdit.addEventListener('click', () => {
           const personalId = btnEdit.getAttribute('data-id')
+          console.log('🔴 Click en botón Editar, ID:', personalId)
           closeModal()
           setTimeout(() => showPersonalForm(personalId), 100)
         })
+      } else {
+        console.error('❌ Botón Editar NO encontrado')
       }
-    }, 50)
+      
+      console.log('✅ Todos los listeners agregados')
+    }, 100)
     
   } catch (error) {
     console.error('Error cargando empleado:', error)
