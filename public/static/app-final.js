@@ -2136,8 +2136,8 @@ function showPersonalSubTab(subtab) {
 
 // Cargar pestaña Personal (llamada desde showTab)
 async function loadPersonal() {
-  // Por defecto mostrar sub-tab de Nuevo Personal
-  showPersonalSubTab('nuevo')
+  // Cargar directamente la lista de personal (Gestión de Empleados)
+  loadPersonalLista()
 }
 
 // Mostrar formulario en el contenedor de Nuevo Personal
@@ -2275,44 +2275,85 @@ async function loadPersonalLista() {
     
     const container = document.getElementById('personal-lista')
     
-    if (!data || data.length === 0) {
-      container.innerHTML = '<p class="text-center text-gray-500 py-8">No hay personal registrado</p>'
-      return
-    }
-    
-    container.innerHTML = `
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        ${data.map(e => `
-          <div class="bg-white border rounded-xl p-6 hover:shadow-lg transition-shadow">
-            <div class="flex items-start justify-between mb-4">
-              <div>
-                <h3 class="text-lg font-bold text-gray-800">${e.nombre} ${e.apellidos}</h3>
-                <p class="text-sm text-gray-600">${e.telefono}</p>
-              </div>
-              ${e.calificacion ? `<div class="text-yellow-600 font-semibold">${e.calificacion.toFixed(1)} ⭐</div>` : ''}
-            </div>
-            
-            <div class="space-y-2 mb-4">
-              <p class="text-sm"><span class="font-medium">Email:</span> ${e.email || 'N/A'}</p>
-              <p class="text-sm"><span class="font-medium">DNI:</span> ${e.dni}</p>
-              ${e.salario_hora ? `<p class="text-sm"><span class="font-medium">Salario/hora:</span> €${e.salario_hora.toFixed(2)}</p>` : ''}
-              ${e.fecha_contratacion ? `<p class="text-sm"><span class="font-medium">Contratada:</span> ${new Date(e.fecha_contratacion).toLocaleDateString('es-ES')}</p>` : ''}
-            </div>
-            
-            <div class="flex gap-2">
-              <button onclick="viewPersonal(${e.id})" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                <i class="fas fa-eye mr-2"></i>Ver
-              </button>
-              <button onclick="editPersonal(${e.id})" class="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
-                <i class="fas fa-edit mr-2"></i>Editar
-              </button>
-            </div>
-          </div>
-        `).join('')}
+    // Encabezado con título y botón
+    let html = `
+      <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+        <div class="flex justify-between items-center">
+          <h2 class="text-2xl font-bold text-gray-800">
+            <i class="fas fa-users mr-2"></i>Gestión de Empleados
+          </h2>
+          <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+            <i class="fas fa-plus mr-2"></i>Nuevo Empleado
+          </button>
+        </div>
       </div>
     `
+    
+    if (!data || data.length === 0) {
+      html += `
+        <div class="bg-white rounded-xl shadow-md p-12 text-center">
+          <i class="fas fa-users text-6xl text-gray-300 mb-4"></i>
+          <p class="text-xl text-gray-500 mb-4">No hay empleados registrados</p>
+          <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+            <i class="fas fa-plus mr-2"></i>Crear Primer Empleado
+          </button>
+        </div>
+      `
+    } else {
+      html += `
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          ${data.map(e => `
+            <div class="bg-white border rounded-xl p-6 hover:shadow-lg transition-shadow">
+              <div class="flex items-start justify-between mb-4">
+                <div>
+                  <h3 class="text-lg font-bold text-gray-800">${e.nombre} ${e.apellidos}</h3>
+                  <p class="text-sm text-gray-600">
+                    <i class="fas fa-phone mr-1"></i>${e.telefono}
+                  </p>
+                </div>
+                ${e.calificacion ? `<div class="text-yellow-600 font-semibold">${e.calificacion.toFixed(1)} ⭐</div>` : ''}
+              </div>
+              
+              <div class="space-y-2 mb-4">
+                ${e.email ? `<p class="text-sm"><i class="fas fa-envelope mr-2 text-gray-400"></i>${e.email}</p>` : ''}
+                ${e.dni ? `<p class="text-sm"><i class="fas fa-id-card mr-2 text-gray-400"></i>${e.dni}</p>` : ''}
+                ${e.salario_hora ? `<p class="text-sm"><i class="fas fa-euro-sign mr-2 text-gray-400"></i>${e.salario_hora.toFixed(2)}/hora</p>` : ''}
+                ${e.fecha_contratacion ? `<p class="text-sm"><i class="fas fa-calendar mr-2 text-gray-400"></i>${new Date(e.fecha_contratacion).toLocaleDateString('es-ES')}</p>` : ''}
+              </div>
+              
+              <div class="flex gap-2">
+                <button onclick="viewPersonal(${e.id})" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                  <i class="fas fa-eye mr-2"></i>Ver
+                </button>
+                <button onclick="showPersonalForm(${e.id})" class="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                  <i class="fas fa-edit mr-2"></i>Editar
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `
+    }
+    
+    container.innerHTML = html
   } catch (error) {
     console.error('Error cargando personal:', error)
+    const container = document.getElementById('personal-lista')
+    container.innerHTML = `
+      <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+        <div class="flex justify-between items-center">
+          <h2 class="text-2xl font-bold text-gray-800">
+            <i class="fas fa-users mr-2"></i>Gestión de Empleados
+          </h2>
+          <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+            <i class="fas fa-plus mr-2"></i>Nuevo Empleado
+          </button>
+        </div>
+      </div>
+      <div class="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+        <p class="text-red-600">❌ Error al cargar empleados</p>
+      </div>
+    `
     showToast('❌ Error al cargar personal', 'error')
   }
 }
