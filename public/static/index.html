@@ -31,70 +31,37 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <style>
-        :root {
-            --gold: #d4af37;
-            --gold-light: #f4d03f;
-            --gold-dark: #b8941f;
-            --black: #0a0a0a;
-            --black-light: #1a1a1a;
-            --gray-dark: #2a2a2a;
-        }
-        
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        
         .tab-button.active { 
-            background: linear-gradient(135deg, var(--black) 0%, var(--black-light) 100%);
-            color: var(--gold);
-            border: 2px solid var(--gold);
-            box-shadow: 0 4px 6px rgba(212, 175, 55, 0.2);
+            background: #000000;
+            color: white;
+            border: 2px solid white;
         }
-        
         .tab-button:hover:not(.active) {
-            background: var(--gray-dark);
-            color: var(--gold-light);
-        }
-        
-        .gold-gradient {
-            background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 50%, var(--gold-light) 100%);
-        }
-        
-        .black-gradient {
-            background: linear-gradient(135deg, var(--black) 0%, var(--black-light) 100%);
-        }
-        
-        .gold-border {
-            border: 2px solid var(--gold);
-        }
-        
-        .gold-text {
-            color: var(--gold);
-        }
-        
-        .hover-gold:hover {
-            color: var(--gold);
-            border-color: var(--gold);
+            background: #1a1a1a;
+            color: white;
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-zinc-900 via-black to-zinc-900 min-h-screen">
+<body class="bg-black min-h-screen">
     <!-- Header -->
-    <header class="black-gradient shadow-2xl sticky top-0 z-50 border-b-2 border-yellow-600">
+    <header class="bg-black shadow-2xl sticky top-0 z-50 border-b-2 border-white">
         <div class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <img src="/static/logo.jpg" alt="Anushka Hogar" class="h-16 object-contain">
                 </div>
                 <div class="flex items-center space-x-4">
-                    <button onclick="abrirModalSoporte()" class="bg-zinc-800 hover:bg-zinc-700 text-yellow-500 border border-yellow-600 px-3 py-2 rounded-lg transition-all flex items-center gap-2" title="Soporte Técnico">
+                    <button onclick="abrirModalSoporte()" class="bg-white hover:bg-gray-100 text-black border border-white px-3 py-2 rounded-lg transition-all flex items-center gap-2" title="Soporte Técnico">
                         <i class="fas fa-headset"></i>
                         <span class="hidden md:inline">Soporte</span>
                     </button>
                     <div class="text-right">
-                        <p class="text-sm text-yellow-400">Bienvenida</p>
-                        <p class="font-semibold text-yellow-500">Admin</p>
+                        <p class="text-sm text-gray-300">Bienvenida</p>
+                        <p class="font-semibold text-white">Admin</p>
                     </div>
-                    <button onclick="logout()" class="bg-zinc-800 hover:bg-zinc-700 text-yellow-500 border border-yellow-600 px-4 py-2 rounded-lg transition-all">
+                    <button onclick="logout()" class="bg-white hover:bg-gray-100 text-black border border-white px-4 py-2 rounded-lg transition-all">
                         <i class="fas fa-sign-out-alt mr-2"></i>Salir
                     </button>
                 </div>
@@ -104,29 +71,29 @@
 
     <!-- Navigation Tabs -->
     <div class="container mx-auto px-6 mt-6">
-        <div class="bg-zinc-900 rounded-xl shadow-2xl p-2 flex flex-wrap gap-2 border-2 border-yellow-700">
+        <div class="bg-black rounded-xl shadow-2xl p-2 flex flex-wrap gap-2 border-2 border-white">
             <button onclick="showTab('dashboard')" class="tab-button active px-6 py-3 rounded-lg font-medium transition-all">
                 <i class="fas fa-chart-line mr-2"></i>Dashboard
             </button>
-            <button onclick="showTab('presupuestos')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-400 hover:bg-zinc-800">
+            <button onclick="showTab('presupuestos')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-300">
                 <i class="fas fa-file-alt mr-2"></i>Presupuestos
             </button>
-            <button onclick="showTab('clientes')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-400 hover:bg-zinc-800">
+            <button onclick="showTab('clientes')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-300">
                 <i class="fas fa-users mr-2"></i>Clientes
             </button>
-            <button onclick="showTab('trabajos')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-400 hover:bg-zinc-800">
+            <button onclick="showTab('trabajos')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-300">
                 <i class="fas fa-briefcase mr-2"></i>Trabajos
             </button>
-            <button onclick="showTab('personal')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-400 hover:bg-zinc-800">
+            <button onclick="showTab('personal')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-300">
                 <i class="fas fa-user-tie mr-2"></i>Personal
             </button>
-            <button onclick="showTab('stock')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-400 hover:bg-zinc-800">
+            <button onclick="showTab('stock')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-300">
                 <i class="fas fa-boxes mr-2"></i>Stock
             </button>
-            <button onclick="showTab('facturas')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-400 hover:bg-zinc-800">
+            <button onclick="showTab('facturas')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-300">
                 <i class="fas fa-file-invoice-dollar mr-2"></i>Facturación
             </button>
-            <button onclick="showTab('reportes')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-400 hover:bg-zinc-800">
+            <button onclick="showTab('reportes')" class="tab-button px-6 py-3 rounded-lg font-medium transition-all text-gray-300">
                 <i class="fas fa-chart-bar mr-2"></i>Reportes
             </button>
         </div>
@@ -139,7 +106,7 @@
         <div id="dashboard-tab" class="tab-content active">
             <!-- KPI Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
-                <div class="bg-zinc-900 border-2 border-yellow-700 rounded-xl shadow-md p-6">
+                <div class="bg-zinc-900 border-2 border-white rounded-xl shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600">Ingresos Mes</p>
@@ -151,7 +118,7 @@
                     </div>
                 </div>
                 
-                <div class="bg-zinc-900 border-2 border-yellow-700 rounded-xl shadow-md p-6">
+                <div class="bg-zinc-900 border-2 border-white rounded-xl shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600">Trabajos Activos</p>
@@ -163,7 +130,7 @@
                     </div>
                 </div>
                 
-                <div class="bg-zinc-900 border-2 border-yellow-700 rounded-xl shadow-md p-6">
+                <div class="bg-zinc-900 border-2 border-white rounded-xl shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600">Stock Bajo</p>
@@ -175,7 +142,7 @@
                     </div>
                 </div>
                 
-                <div class="bg-zinc-900 border-2 border-yellow-700 rounded-xl shadow-md p-6">
+                <div class="bg-zinc-900 border-2 border-white rounded-xl shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600">Horas Semanales</p>
@@ -187,7 +154,7 @@
                     </div>
                 </div>
                 
-                <div class="bg-zinc-900 border-2 border-yellow-700 rounded-xl shadow-md p-6">
+                <div class="bg-zinc-900 border-2 border-white rounded-xl shadow-md p-6">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-gray-600">Satisfacción</p>
@@ -202,13 +169,13 @@
 
             <!-- Charts -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <div class="bg-zinc-900 border-2 border-yellow-700 rounded-xl shadow-md p-6">
-                    <h3 class="text-lg font-bold text-yellow-500 mb-4">Trabajos por Estado</h3>
+                <div class="bg-zinc-900 border-2 border-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold text-white mb-4">Trabajos por Estado</h3>
                     <canvas id="chartTrabajos"></canvas>
                 </div>
                 
-                <div class="bg-zinc-900 border-2 border-yellow-700 rounded-xl shadow-md p-6">
-                    <h3 class="text-lg font-bold text-yellow-500 mb-4">Ingresos Últimos 7 Días</h3>
+                <div class="bg-zinc-900 border-2 border-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold text-white mb-4">Ingresos Últimos 7 Días</h3>
                     <canvas id="chartIngresos"></canvas>
                 </div>
             </div>
@@ -216,10 +183,10 @@
 
         <!-- PRESUPUESTOS TAB -->
         <div id="presupuestos-tab" class="tab-content">
-            <div class="bg-zinc-900 border-2 border-yellow-700 rounded-xl shadow-md p-6">
+            <div class="bg-zinc-900 border-2 border-white rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-yellow-500">Gestión de Presupuestos</h2>
-                    <button onclick="showPresupuestoForm()" class="bg-gradient-to-r from-zinc-900 to-black text-yellow-500 border-2 border-yellow-600 hover:border-yellow-400 px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                    <h2 class="text-2xl font-bold text-white">Gestión de Presupuestos</h2>
+                    <button onclick="showPresupuestoForm()" class="bg-white text-black border-2 border-white hover:bg-gray-100 px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
                         <i class="fas fa-plus mr-2"></i>Nuevo Presupuesto
                     </button>
                 </div>
@@ -240,10 +207,10 @@
 
         <!-- CLIENTES TAB -->
         <div id="clientes-tab" class="tab-content">
-            <div class="bg-zinc-900 border-2 border-yellow-700 rounded-xl shadow-md p-6">
+            <div class="bg-zinc-900 border-2 border-white rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-yellow-500">Gestión de Clientes</h2>
-                    <button onclick="showClienteForm()" class="bg-gradient-to-r from-zinc-900 to-black text-yellow-500 border-2 border-yellow-600 hover:border-yellow-400 px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                    <h2 class="text-2xl font-bold text-white">Gestión de Clientes</h2>
+                    <button onclick="showClienteForm()" class="bg-white text-black border-2 border-white hover:bg-gray-100 px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
                         <i class="fas fa-plus mr-2"></i>Nuevo Cliente
                     </button>
                 </div>
@@ -253,10 +220,10 @@
 
         <!-- TRABAJOS TAB -->
         <div id="trabajos-tab" class="tab-content">
-            <div class="bg-zinc-900 border-2 border-yellow-700 rounded-xl shadow-md p-6">
+            <div class="bg-zinc-900 border-2 border-white rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-yellow-500">Gestión de Trabajos</h2>
-                    <button id="btn-nuevo-trabajo" onclick="showTrabajoForm()" class="bg-gradient-to-r from-zinc-900 to-black text-yellow-500 border-2 border-yellow-600 hover:border-yellow-400 px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                    <h2 class="text-2xl font-bold text-white">Gestión de Trabajos</h2>
+                    <button id="btn-nuevo-trabajo" onclick="showTrabajoForm()" class="bg-white text-black border-2 border-white hover:bg-gray-100 px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
                         <i class="fas fa-plus mr-2"></i>Nuevo Trabajo
                     </button>
                 </div>
@@ -301,21 +268,21 @@
 
         <!-- PERSONAL TAB -->
         <div id="personal-tab" class="tab-content">
-            <div class="bg-zinc-900 border-2 border-yellow-700 rounded-xl shadow-md p-6">
+            <div class="bg-zinc-900 border-2 border-white rounded-xl shadow-md p-6">
                 <div id="empleadas-lista" class="overflow-x-auto"></div>
             </div>
         </div>
 
         <!-- STOCK TAB -->
         <div id="stock-tab" class="tab-content">
-            <div class="bg-zinc-900 border-2 border-yellow-700 rounded-xl shadow-md p-6">
+            <div class="bg-zinc-900 border-2 border-white rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-yellow-500">Control de Inventario</h2>
+                    <h2 class="text-2xl font-bold text-white">Control de Inventario</h2>
                     <div class="flex gap-3">
                         <button onclick="loadStock(true)" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
                             <i class="fas fa-exclamation-circle mr-2"></i>Bajo Stock
                         </button>
-                        <button onclick="showStockForm()" class="bg-gradient-to-r from-zinc-900 to-black text-yellow-500 border-2 border-yellow-600 hover:border-yellow-400 px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                        <button onclick="showStockForm()" class="bg-white text-black border-2 border-white hover:bg-gray-100 px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
                             <i class="fas fa-plus mr-2"></i>Nuevo Artículo
                         </button>
                     </div>
@@ -326,10 +293,10 @@
 
         <!-- FACTURAS TAB -->
         <div id="facturas-tab" class="tab-content">
-            <div class="bg-zinc-900 border-2 border-yellow-700 rounded-xl shadow-md p-6">
+            <div class="bg-zinc-900 border-2 border-white rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-yellow-500">Facturación</h2>
-                    <button onclick="showFacturaForm()" class="bg-gradient-to-r from-zinc-900 to-black text-yellow-500 border-2 border-yellow-600 hover:border-yellow-400 px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+                    <h2 class="text-2xl font-bold text-white">Facturación</h2>
+                    <button onclick="showFacturaForm()" class="bg-white text-black border-2 border-white hover:bg-gray-100 px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
                         <i class="fas fa-plus mr-2"></i>Nueva Factura
                     </button>
                 </div>
@@ -339,9 +306,9 @@
 
         <!-- REPORTES TAB -->
         <div id="reportes-tab" class="tab-content">
-            <div class="bg-zinc-900 border-2 border-yellow-700 rounded-xl shadow-md p-6">
+            <div class="bg-zinc-900 border-2 border-white rounded-xl shadow-md p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-yellow-500">Reportes Mensuales</h2>
+                    <h2 class="text-2xl font-bold text-white">Reportes Mensuales</h2>
                     <input type="month" id="reporte-mes" onchange="loadReporte()" 
                            class="px-4 py-2 border rounded-lg">
                 </div>
