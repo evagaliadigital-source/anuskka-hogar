@@ -128,9 +128,26 @@ function showModal(content, maxWidth = 'max-w-2xl') {
 
 // Cerrar modal
 function closeModal() {
-  // Cerrar TODOS los modales con id modal-overlay
+  console.log('🔧 closeModal ejecutándose...')
+  
+  // Cerrar modal de personal específicamente
+  const modalOverlayPersonal = document.getElementById('modal-overlay-personal')
+  if (modalOverlayPersonal) {
+    console.log('✅ Encontrado modal-overlay-personal, eliminando...')
+    modalOverlayPersonal.remove()
+  }
+  
+  // Cerrar modal-container completo
+  const modalContainer = document.getElementById('modal-container')
+  if (modalContainer) {
+    console.log('✅ Encontrado modal-container, limpiando...')
+    modalContainer.innerHTML = ''
+  }
+  
+  // Cerrar TODOS los modales con id modal-overlay (otros modales)
   const overlays = document.querySelectorAll('[id="modal-overlay"]')
   overlays.forEach(overlay => {
+    console.log('✅ Encontrado modal-overlay genérico, eliminando...')
     overlay.remove()
   })
   
@@ -138,11 +155,13 @@ function closeModal() {
   const allModals = document.querySelectorAll('.fixed.inset-0.bg-white.bg-opacity-50')
   allModals.forEach(modal => {
     if (modal.parentElement === document.body) {
+      console.log('✅ Encontrado modal genérico, eliminando...')
       modal.remove()
     }
   })
   
   document.body.style.overflow = 'auto'
+  console.log('✅ closeModal completado')
 }
 
 // Mostrar toast notification
