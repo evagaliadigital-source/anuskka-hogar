@@ -2274,6 +2274,10 @@ async function loadPersonalLista() {
     currentData.personal = data
     
     const container = document.getElementById('empleadas-lista')
+    if (!container) {
+      console.error('❌ Contenedor empleadas-lista no encontrado')
+      return
+    }
     
     // Encabezado con título y botón
     let html = `
@@ -2338,22 +2342,24 @@ async function loadPersonalLista() {
     container.innerHTML = html
   } catch (error) {
     console.error('Error cargando personal:', error)
-    const container = document.getElementById('personal-lista')
-    container.innerHTML = `
-      <div class="bg-white rounded-xl shadow-md p-6 mb-6">
-        <div class="flex justify-between items-center">
-          <h2 class="text-2xl font-bold text-gray-800">
-            <i class="fas fa-users mr-2"></i>Gestión de Empleados
-          </h2>
-          <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
-            <i class="fas fa-plus mr-2"></i>Nuevo Empleado
-          </button>
+    const container = document.getElementById('empleadas-lista')
+    if (container) {
+      container.innerHTML = `
+        <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+          <div class="flex justify-between items-center">
+            <h2 class="text-2xl font-bold text-gray-800">
+              <i class="fas fa-users mr-2"></i>Gestión de Empleados
+            </h2>
+            <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+              <i class="fas fa-plus mr-2"></i>Nuevo Empleado
+            </button>
+          </div>
         </div>
-      </div>
-      <div class="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-        <p class="text-red-600">❌ Error al cargar empleados</p>
-      </div>
-    `
+        <div class="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+          <p class="text-red-600">❌ Error al cargar empleados</p>
+        </div>
+      `
+    }
     showToast('❌ Error al cargar personal', 'error')
   }
 }
