@@ -628,7 +628,7 @@ function renderTopEmpleadas(data) {
   if (!container) return
   
   container.innerHTML = data.map((e, index) => `
-    <div class="flex items-center justify-between p-4 bg-zinc-800 border border-black rounded-lg">
+    <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
       <div class="flex items-center space-x-4">
         <div class="bg-gradient-to-br from-gray-800 to-gray-900 text-white font-bold w-10 h-10 rounded-full flex items-center justify-center">
           ${index + 1}
@@ -3777,7 +3777,7 @@ async function loadReporte() {
           <h3 class="text-xl font-bold text-gray-800 mb-4">👷 Horas Trabajadas</h3>
           <div class="space-y-3">
             ${data.horas.map(h => `
-              <div class="flex items-center justify-between p-3 bg-zinc-800 border border-black rounded-lg">
+              <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
                 <span class="font-medium text-black">${h.nombre} ${h.apellidos}</span>
                 <span class="font-bold text-gray-600">${(h.total_horas || 0).toFixed(1)}h</span>
               </div>
@@ -5864,7 +5864,7 @@ async function showClientePresupuestos(clienteId) {
               </table>
             </div>
             
-            <div class="mt-6 p-4 bg-zinc-800 border border-black rounded-lg">
+            <div class="mt-6 p-4 bg-white border border-gray-200 rounded-lg">
               <div class="grid grid-cols-3 gap-4 text-center">
                 <div>
                   <p class="text-2xl font-bold text-black">${presupuestos.length}</p>
@@ -7553,14 +7553,14 @@ function agregarCheckboxTareas() {
     const filtroEstado = document.getElementById('filtro-estado-tareas')
     if (filtroEstado && filtroEstado.parentElement) {
       const checkboxContainer = document.createElement('div')
-      checkboxContainer.className = 'flex items-center gap-2 px-4 py-2 bg-zinc-800 border border-black rounded-lg border border-gray-200'
+      checkboxContainer.className = 'flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg'
       checkboxContainer.innerHTML = `
         <input type="checkbox" 
                id="excluir-finalizadas-tareas" 
                onchange="aplicarFiltros()"
-               class="w-4 h-4 text-black bg-gray-100 border-gray-300 rounded focus:ring-purple-500 cursor-pointer">
-        <label for="excluir-finalizadas-tareas" class="text-sm font-medium text-gray-600 cursor-pointer select-none">
-          <i class="fas fa-filter mr-1"></i>Excluir cancelados y finalizados
+               class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer">
+        <label for="excluir-finalizadas-tareas" class="text-sm font-medium text-gray-700 cursor-pointer select-none">
+          <i class="fas fa-filter mr-1 text-blue-600"></i>Excluir cancelados y finalizados
         </label>
       `
       filtroEstado.parentElement.insertAdjacentElement('afterend', checkboxContainer)
@@ -7943,7 +7943,7 @@ async function verDetallesTarea(tareaId) {
             
             <!-- Descripción -->
             ${tarea.descripcion ? `
-              <div class="mb-6 p-4 bg-zinc-800 border border-black rounded-lg">
+              <div class="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
                 <p class="text-sm font-semibold text-gray-600 mb-2">Descripción:</p>
                 <p class="text-black leading-relaxed">${tarea.descripcion}</p>
               </div>
@@ -8614,7 +8614,7 @@ async function ajustarStock(id) {
           <i class="fas fa-exchange-alt text-black mr-2"></i>
           Ajustar Stock
         </h3>
-        <div class="mb-4 p-4 bg-zinc-800 border border-black rounded-lg">
+        <div class="mb-4 p-4 bg-white border border-gray-200 rounded-lg">
           <div class="font-medium text-gray-900">${stock.nombre}</div>
           <div class="text-sm text-gray-400">Stock actual: <span class="font-bold">${stock.cantidad_actual} ${stock.unidad}</span></div>
         </div>
@@ -8688,7 +8688,7 @@ async function showMovimientos(id) {
             <i class="fas fa-history text-black mr-2"></i>
             Historial de Movimientos
           </h3>
-          <div class="mb-6 p-4 bg-zinc-800 border border-black rounded-lg">
+          <div class="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
             <div class="font-medium text-gray-900">${stock.nombre}</div>
             <div class="text-sm text-gray-400">Código: ${stock.codigo || '-'}</div>
           </div>
@@ -9083,7 +9083,7 @@ async function showImportarStock() {
         const lines = text.split('\n').slice(0, 6)
         
         previewContent.innerHTML = `
-          <pre class="text-xs p-3 bg-zinc-800 border border-black rounded">${lines.join('\n')}</pre>
+          <pre class="text-xs p-3 bg-white border border-gray-200 rounded">${lines.join('\n')}</pre>
           <p class="text-xs text-gray-400 mt-2 px-3">Vista previa del CSV</p>
         `
         previewSection.classList.remove('hidden')
@@ -10644,7 +10644,7 @@ async function cargarCalendarioTareas() {
     // Días vacíos al inicio
     for (let i = 0; i < primerDiaSemana; i++) {
       const div = document.createElement('div')
-      div.className = 'aspect-square bg-zinc-800 border border-black rounded-lg'
+      div.className = 'aspect-square bg-white border border-gray-200 rounded-lg'
       grid.appendChild(div)
     }
     
@@ -11082,7 +11082,7 @@ async function cargarCalendarioGlobal() {
     
     // Días vacíos del mes anterior
     for (let i = 0; i < diaSemana; i++) {
-      grid.innerHTML += '<div class="h-24 bg-zinc-800 border border-black rounded-lg"></div>'
+      grid.innerHTML += '<div class="h-24 bg-white border border-gray-200 rounded-lg"></div>'
     }
     
     // Días del mes
@@ -11400,7 +11400,7 @@ async function cargarDiarioDia(fechaStr) {
             
             <!-- Descripción -->
             ${t.descripcion ? `
-              <div class="bg-zinc-800 border border-black rounded-lg p-3 mb-3">
+              <div class="bg-white border border-gray-200 rounded-lg p-3 mb-3">
                 <p class="text-sm text-gray-600 leading-relaxed">${t.descripcion}</p>
               </div>
             ` : ''}
@@ -11570,7 +11570,7 @@ function abrirSoporteModal() {
         </div>
 
         <!-- Datos adicionales (opcional) -->
-        <details class="bg-zinc-800 border border-black rounded-lg">
+        <details class="bg-white border border-gray-200 rounded-lg">
           <summary class="cursor-pointer px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg">
             <i class="fas fa-phone mr-1"></i>Teléfono de contacto (opcional)
           </summary>
@@ -12613,11 +12613,11 @@ function renderProductosGrid() {
           </div>
         ` : `
           <div class="grid grid-cols-2 gap-2 mb-3">
-            <div class="bg-zinc-800 border border-black rounded-lg p-2">
+            <div class="bg-white border border-gray-200 rounded-lg p-2">
               <p class="text-xs text-gray-600">Stock</p>
               <p class="font-bold text-gray-900">${producto.stock_actual || 0} ${producto.unidad || ''}</p>
             </div>
-            <div class="bg-zinc-800 border border-black rounded-lg p-2">
+            <div class="bg-white border border-gray-200 rounded-lg p-2">
               <p class="text-xs text-gray-600">Precio</p>
               <p class="font-bold text-black">${producto.precio_base ? producto.precio_base.toFixed(2) + '€' : '-'}</p>
             </div>
@@ -14892,7 +14892,7 @@ window.verHistorialProducto = async function(productoId) {
           </h2>
           
           ${historial.length === 0 ? `
-            <div class="text-center py-12 bg-zinc-800 border border-black rounded-lg">
+            <div class="text-center py-12 bg-white border border-gray-200 rounded-lg">
               <i class="fas fa-inbox text-6xl text-gray-600 mb-4"></i>
               <p class="text-gray-400 text-lg">No hay modificaciones registradas</p>
               <p class="text-gray-400 text-sm mt-2">Los cambios de stock se registrarán a partir de ahora</p>
