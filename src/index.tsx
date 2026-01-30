@@ -526,11 +526,12 @@ app.post('/api/trabajos', async (c) => {
     // Generar nuevo número (TT26001, TT26002, TE26001, etc.)
     let numeroTrabajo = `${prefijo}26001`
     if (lastTrabajo && lastTrabajo.numero_trabajo) {
-      // Extraer último número (del formato TT26001)
-      const match = lastTrabajo.numero_trabajo.match(/\d+$/)
+      // Extraer SOLO los últimos 3 dígitos del formato TT26001
+      const match = lastTrabajo.numero_trabajo.match(/(\d{3})$/)
       if (match) {
-        const lastNum = parseInt(match[0])
-        numeroTrabajo = `${prefijo}26${String(lastNum + 1).padStart(3, '0')}`
+        const lastNum = parseInt(match[1])
+        const nextNum = lastNum + 1
+        numeroTrabajo = `${prefijo}26${String(nextNum).padStart(3, '0')}`
       }
     }
     
