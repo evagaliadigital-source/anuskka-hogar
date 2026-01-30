@@ -4026,7 +4026,26 @@ function ocultarPestanasSegunRol() {
       }
     })
     
-    console.log('🏪 Modo Tienda: Pestañas sensibles ocultas (Historial VISIBLE para Ana Ramos)')
+    // Ocultar botón "Nuevo Trabajo"
+    const btnNuevoTrabajo = document.getElementById('btn-nuevo-trabajo')
+    if (btnNuevoTrabajo) {
+      btnNuevoTrabajo.style.display = 'none'
+    }
+    
+    // Ocultar botones de exportar (si existen)
+    const botonesExportar = document.querySelectorAll('[onclick*="exportar"]')
+    botonesExportar.forEach(btn => {
+      // Solo ocultar botones de exportar trabajos, tareas y clientes
+      if (btn.onclick && (
+        btn.onclick.toString().includes('exportarTrabajos') ||
+        btn.onclick.toString().includes('exportarTareas') ||
+        btn.onclick.toString().includes('exportarClientesCSV')
+      )) {
+        btn.style.display = 'none'
+      }
+    })
+    
+    console.log('🏪 Modo Tienda: Pestañas sensibles ocultas, botón Nuevo Trabajo oculto, botones Exportar ocultos')
   } else if (rol === 'admin' || rol === 'duena') {
     console.log('👑 Modo Ana Ramos: Acceso completo')
   }
