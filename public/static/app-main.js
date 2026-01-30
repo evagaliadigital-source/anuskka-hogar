@@ -649,7 +649,7 @@ function renderTopEmpleadas(data) {
   container.innerHTML = data.map((e, index) => `
     <div class="flex items-center justify-between p-4 bg-zinc-800 border border-black rounded-lg">
       <div class="flex items-center space-x-4">
-        <div class="bg-gradient-to-br from-gray-800 to-gray-900 text-black font-bold w-10 h-10 rounded-full flex items-center justify-center">
+        <div class="bg-gradient-to-br from-gray-800 to-gray-900 text-white font-bold w-10 h-10 rounded-full flex items-center justify-center">
           ${index + 1}
         </div>
         <div>
@@ -878,7 +878,7 @@ function renderizarTablaClientes(clientes) {
             ? 'No se encontraron clientes con los filtros aplicados'
             : 'Crea tu primer cliente para comenzar'}
         </p>
-        <button onclick="showClienteForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg hover:shadow-lg transition-all">
+        <button onclick="showClienteForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all">
           <i class="fas fa-plus mr-2"></i>Crear Cliente
         </button>
       </div>
@@ -1624,7 +1624,7 @@ async function viewTrabajo(id) {
                 ${tareasDelTrabajo.length > 0 ? `<span class="ml-2 px-2 py-1 bg-gray-200 text-gray-600 text-xs font-semibold rounded-full">${tareasDelTrabajo.filter(t => t.estado !== 'completada').length}</span>` : ''}
               </h4>
               <button onclick="crearTareaParaTrabajo(${id}, '${trabajo.nombre_trabajo}')" 
-                      class="px-3 py-1.5 bg-gray-700 hover:bg-gray-800 text-black text-sm rounded-lg transition-all">
+                      class="px-3 py-1.5 bg-gray-700 hover:bg-gray-800 text-white text-sm rounded-lg transition-all">
                 <i class="fas fa-plus mr-1"></i>Nueva Tarea
               </button>
             </div>
@@ -2016,7 +2016,7 @@ function renderizarTrabajosTabla(trabajos) {
         <p class="text-gray-400 mb-6 text-center">
           Crea tu primer trabajo para comenzar
         </p>
-        <button onclick="showTrabajoForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg hover:shadow-lg transition-all">
+        <button onclick="showTrabajoForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all">
           <i class="fas fa-plus mr-2"></i>Crear Trabajo
         </button>
       </div>
@@ -2127,7 +2127,7 @@ window.seleccionarTodosTrabajo = seleccionarTodosTrabajo
 function showPersonalSubTab(subtab) {
   // Remover clase active de todos los botones
   document.querySelectorAll('.personal-subtab').forEach(btn => {
-    btn.classList.remove('active', 'bg-gradient-to-r', 'from-gray-800', 'to-gray-900', 'text-black')
+    btn.classList.remove('active', 'bg-gradient-to-r', 'from-gray-800', 'to-gray-900', 'text-white')
     btn.classList.add('text-gray-600', 'hover:bg-gray-100')
   })
   
@@ -2138,7 +2138,7 @@ function showPersonalSubTab(subtab) {
   
   // Activar botón seleccionado
   const btn = document.getElementById(`personal-subtab-${subtab}`)
-  btn.classList.add('active', 'bg-gradient-to-r', 'from-gray-800', 'to-gray-900', 'text-black')
+  btn.classList.add('active', 'bg-gradient-to-r', 'from-gray-800', 'to-gray-900', 'text-white')
   btn.classList.remove('text-gray-600', 'hover:bg-gray-100')
   
   // Mostrar contenido correspondiente
@@ -4697,7 +4697,7 @@ async function showPresupuestoForm(presupuestoId = null, preselectedClienteId = 
       <div class="border rounded-lg p-4 bg-gray-50">
         <div class="flex justify-between items-center mb-3">
           <h4 class="font-semibold text-gray-600">🧵 Telas</h4>
-          <button type="button" onclick="addLineaTela()" class="text-sm bg-gray-800 text-black px-3 py-1 rounded hover:bg-gray-900">
+          <button type="button" onclick="addLineaTela()" class="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900">
             <i class="fas fa-plus mr-1"></i>Añadir
           </button>
         </div>
@@ -4708,7 +4708,7 @@ async function showPresupuestoForm(presupuestoId = null, preselectedClienteId = 
       <div class="border rounded-lg p-4 bg-gray-50">
         <div class="flex justify-between items-center mb-3">
           <h4 class="font-semibold text-gray-600">🔩 Materiales</h4>
-          <button type="button" onclick="addLineaMaterial()" class="text-sm bg-gray-800 text-black px-3 py-1 rounded hover:bg-gray-900">
+          <button type="button" onclick="addLineaMaterial()" class="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900">
             <i class="fas fa-plus mr-1"></i>Añadir
           </button>
         </div>
@@ -4719,7 +4719,7 @@ async function showPresupuestoForm(presupuestoId = null, preselectedClienteId = 
       <div class="border rounded-lg p-4 bg-gray-50">
         <div class="flex justify-between items-center mb-3">
           <h4 class="font-semibold text-gray-600">✂️ Confección</h4>
-          <button type="button" onclick="addLineaConfeccion()" class="text-sm bg-gray-800 text-black px-3 py-1 rounded hover:bg-gray-900">
+          <button type="button" onclick="addLineaConfeccion()" class="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900">
             <i class="fas fa-plus mr-1"></i>Añadir
           </button>
         </div>
@@ -4730,7 +4730,7 @@ async function showPresupuestoForm(presupuestoId = null, preselectedClienteId = 
       <div class="border rounded-lg p-4 bg-gray-50">
         <div class="flex justify-between items-center mb-3">
           <h4 class="font-semibold text-gray-600">🔧 Instalación</h4>
-          <button type="button" onclick="addLineaInstalacion()" class="text-sm bg-gray-800 text-black px-3 py-1 rounded hover:bg-gray-900">
+          <button type="button" onclick="addLineaInstalacion()" class="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900">
             <i class="fas fa-plus mr-1"></i>Añadir
           </button>
         </div>
@@ -4789,7 +4789,7 @@ async function showPresupuestoForm(presupuestoId = null, preselectedClienteId = 
       
       <div class="flex gap-3 justify-end">
         <button type="button" onclick="closeModal()" class="px-6 py-2 border rounded-lg hover:bg-gray-50">Cancelar</button>
-        <button type="submit" class="px-6 py-2 bg-gradient-to-r from-gray-800 to-gray-900 text-black rounded-lg hover:shadow-lg">Guardar Presupuesto</button>
+        <button type="submit" class="px-6 py-2 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-lg hover:shadow-lg">Guardar Presupuesto</button>
       </div>
     </form>
   `, 'max-w-6xl')
@@ -4842,28 +4842,28 @@ async function editPresupuesto(id) {
         <div class="border rounded-lg p-4 bg-gray-50">
           <div class="flex justify-between items-center mb-3">
             <h4 class="font-semibold text-gray-600">🧵 Telas</h4>
-            <button type="button" onclick="addLineaTela()" class="text-sm bg-gray-800 text-black px-3 py-1 rounded hover:bg-gray-900"><i class="fas fa-plus mr-1"></i>Añadir</button>
+            <button type="button" onclick="addLineaTela()" class="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900"><i class="fas fa-plus mr-1"></i>Añadir</button>
           </div>
           <div id="telas-container"></div>
         </div>
         <div class="border rounded-lg p-4 bg-gray-50">
           <div class="flex justify-between items-center mb-3">
             <h4 class="font-semibold text-gray-600">🔩 Materiales</h4>
-            <button type="button" onclick="addLineaMaterial()" class="text-sm bg-gray-800 text-black px-3 py-1 rounded hover:bg-gray-900"><i class="fas fa-plus mr-1"></i>Añadir</button>
+            <button type="button" onclick="addLineaMaterial()" class="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900"><i class="fas fa-plus mr-1"></i>Añadir</button>
           </div>
           <div id="materiales-container"></div>
         </div>
         <div class="border rounded-lg p-4 bg-gray-50">
           <div class="flex justify-between items-center mb-3">
             <h4 class="font-semibold text-gray-600">✂️ Confección</h4>
-            <button type="button" onclick="addLineaConfeccion()" class="text-sm bg-gray-800 text-black px-3 py-1 rounded hover:bg-gray-900"><i class="fas fa-plus mr-1"></i>Añadir</button>
+            <button type="button" onclick="addLineaConfeccion()" class="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900"><i class="fas fa-plus mr-1"></i>Añadir</button>
           </div>
           <div id="confeccion-container"></div>
         </div>
         <div class="border rounded-lg p-4 bg-gray-50">
           <div class="flex justify-between items-center mb-3">
             <h4 class="font-semibold text-gray-600">🔧 Instalación</h4>
-            <button type="button" onclick="addLineaInstalacion()" class="text-sm bg-gray-800 text-black px-3 py-1 rounded hover:bg-gray-900"><i class="fas fa-plus mr-1"></i>Añadir</button>
+            <button type="button" onclick="addLineaInstalacion()" class="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900"><i class="fas fa-plus mr-1"></i>Añadir</button>
           </div>
           <div id="instalacion-container"></div>
         </div>
@@ -6209,7 +6209,7 @@ async function showGestionCategorias() {
             
             <div class="mt-3 pt-3 border-t border-gray-200">
               <button onclick="closeModal(); setTimeout(() => showStockForm(null, ${cat.id}), 300)" 
-                      class="w-full px-4 py-2 bg-gray-800 text-black rounded-lg hover:bg-gray-900 transition-colors text-sm font-medium">
+                      class="w-full px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors text-sm font-medium">
                 <i class="fas fa-plus mr-2"></i>Añadir Artículo en ${cat.nombre}
               </button>
             </div>
@@ -8237,7 +8237,7 @@ async function showNuevaTarea() {
           </div>
           
           <div class="flex space-x-3 pt-4 border-t">
-            <button type="submit" class="flex-1 bg-gray-700 hover:bg-gray-800 text-black px-6 py-3 rounded-lg transition-all">
+            <button type="submit" class="flex-1 bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-lg transition-all">
               <i class="fas fa-save mr-2"></i>Crear Tarea
             </button>
             <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-black px-6 py-3 rounded-lg transition-all">
@@ -8445,7 +8445,7 @@ async function editarTarea(tareaId) {
             </div>
             
             <div class="flex space-x-3 pt-4 border-t">
-              <button type="submit" class="flex-1 bg-gray-700 hover:bg-gray-800 text-black px-6 py-3 rounded-lg transition-all">
+              <button type="submit" class="flex-1 bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-lg transition-all">
                 <i class="fas fa-save mr-2"></i>Guardar Cambios
               </button>
               <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-black px-6 py-3 rounded-lg transition-all">
@@ -8931,7 +8931,7 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
           </div>
           
           <div class="flex space-x-3 pt-4 border-t">
-            <button type="submit" class="flex-1 bg-gray-700 hover:bg-gray-800 text-black px-6 py-3 rounded-lg transition-all">
+            <button type="submit" class="flex-1 bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-lg transition-all">
               <i class="fas fa-save mr-2"></i>Crear Tarea
             </button>
             <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-black px-6 py-3 rounded-lg transition-all">
@@ -10286,22 +10286,22 @@ function cambiarVistaTareas(vista) {
   
   // Actualizar botones
   document.querySelectorAll('.vista-tareas-btn').forEach(btn => {
-    btn.classList.remove('bg-gray-700', 'text-black')
+    btn.classList.remove('bg-gray-700', 'text-white')
     btn.classList.add('bg-gray-200', 'text-gray-600')
   })
   
   if (vista === 'lista') {
     document.getElementById('vista-lista-btn').classList.remove('bg-gray-200', 'text-gray-600')
-    document.getElementById('vista-lista-btn').classList.add('bg-gray-700', 'text-black')
+    document.getElementById('vista-lista-btn').classList.add('bg-gray-700', 'text-white')
   } else if (vista === 'miniatura') {
     document.getElementById('vista-miniatura-btn').classList.remove('bg-gray-200', 'text-gray-600')
-    document.getElementById('vista-miniatura-btn').classList.add('bg-gray-700', 'text-black')
+    document.getElementById('vista-miniatura-btn').classList.add('bg-gray-700', 'text-white')
   } else if (vista === 'kanban') {
     document.getElementById('vista-kanban-btn').classList.remove('bg-gray-200', 'text-gray-600')
-    document.getElementById('vista-kanban-btn').classList.add('bg-gray-700', 'text-black')
+    document.getElementById('vista-kanban-btn').classList.add('bg-gray-700', 'text-white')
   } else if (vista === 'calendario') {
     document.getElementById('vista-calendario-btn').classList.remove('bg-gray-200', 'text-gray-600')
-    document.getElementById('vista-calendario-btn').classList.add('bg-gray-700', 'text-black')
+    document.getElementById('vista-calendario-btn').classList.add('bg-gray-700', 'text-white')
   }
   
   // Mostrar/ocultar vistas
@@ -11485,7 +11485,7 @@ async function cargarDiarioDia(fechaStr) {
               </button>
               ` : ''}
               <button onclick="viewTrabajo(${t.id})" 
-                      class="${esTienda ? 'w-full' : 'flex-1'} bg-gray-700 hover:bg-gray-800 text-black px-4 py-2 rounded-lg transition-all text-sm font-medium">
+                      class="${esTienda ? 'w-full' : 'flex-1'} bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition-all text-sm font-medium">
                 <i class="fas fa-eye mr-2"></i>Ver Completo
               </button>
             </div>
