@@ -99,7 +99,7 @@ function showModal(content, maxWidth = 'max-w-2xl') {
   // Crear overlay
   const overlay = document.createElement('div')
   overlay.id = 'modal-overlay'
-  overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 overflow-y-auto'
+  overlay.className = 'fixed inset-0 bg-white bg-opacity-50 flex items-start justify-center z-50 p-4 overflow-y-auto'
   overlay.onclick = (e) => {
     if (e.target === overlay) {
       closeModal()
@@ -111,7 +111,7 @@ function showModal(content, maxWidth = 'max-w-2xl') {
   modal.className = `bg-white rounded-xl shadow-2xl ${maxWidth} w-full max-h-[95vh] overflow-y-auto my-1`
   modal.innerHTML = `
     <div class="sticky top-0 bg-white border-b px-3 py-1.5 flex justify-between items-center z-10 shadow-sm">
-      <h3 class="text-sm font-semibold text-gray-300">Detalles</h3>
+      <h3 class="text-sm font-semibold text-gray-600">Detalles</h3>
       <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 p-0.5 -mr-1">
         <i class="fas fa-times text-sm"></i>
       </button>
@@ -135,7 +135,7 @@ function closeModal() {
   })
   
   // También intentar cerrar modales sin ID específico
-  const allModals = document.querySelectorAll('.fixed.inset-0.bg-black.bg-opacity-50')
+  const allModals = document.querySelectorAll('.fixed.inset-0.bg-white.bg-opacity-50')
   allModals.forEach(modal => {
     if (modal.parentElement === document.body) {
       modal.remove()
@@ -162,7 +162,7 @@ function showToast(message, type = 'info') {
   }
   
   const toast = document.createElement('div')
-  toast.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50 animate-fade-in`
+  toast.className = `fixed top-4 right-4 ${colors[type]} text-black px-6 py-3 rounded-lg shadow-lg flex items-center space-x-3 z-50 animate-fade-in`
   toast.innerHTML = `
     <i class="fas ${icons[type]}"></i>
     <span>${message}</span>
@@ -188,11 +188,11 @@ function showLoading(message = 'Cargando...') {
   console.log('📊 showLoading llamado:', message)
   const loadingDiv = document.createElement('div')
   loadingDiv.id = 'loading-overlay'
-  loadingDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+  loadingDiv.className = 'fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50'
   loadingDiv.innerHTML = `
     <div class="bg-white rounded-lg p-8 flex flex-col items-center">
       <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mb-4"></div>
-      <p class="text-gray-300 font-medium">${message}</p>
+      <p class="text-gray-600 font-medium">${message}</p>
     </div>
   `
   document.body.appendChild(loadingDiv)
@@ -628,13 +628,13 @@ function renderTopEmpleadas(data) {
   if (!container) return
   
   container.innerHTML = data.map((e, index) => `
-    <div class="flex items-center justify-between p-4 bg-zinc-800 border border-white rounded-lg">
+    <div class="flex items-center justify-between p-4 bg-zinc-800 border border-black rounded-lg">
       <div class="flex items-center space-x-4">
-        <div class="bg-gradient-to-br from-gray-800 to-gray-900 text-white font-bold w-10 h-10 rounded-full flex items-center justify-center">
+        <div class="bg-gradient-to-br from-gray-800 to-gray-900 text-black font-bold w-10 h-10 rounded-full flex items-center justify-center">
           ${index + 1}
         </div>
         <div>
-          <p class="font-semibold text-white">${e.nombre} ${e.apellidos}</p>
+          <p class="font-semibold text-black">${e.nombre} ${e.apellidos}</p>
           <p class="text-sm text-gray-600">${e.trabajos_completados} trabajos completados</p>
         </div>
       </div>
@@ -686,7 +686,7 @@ function renderizarBuscadorClientes() {
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <!-- Buscador -->
         <div class="md:col-span-2">
-          <label class="block text-sm font-medium text-gray-300 mb-2">
+          <label class="block text-sm font-medium text-gray-600 mb-2">
             <i class="fas fa-search mr-2"></i>Buscar cliente
           </label>
           <input 
@@ -700,7 +700,7 @@ function renderizarBuscadorClientes() {
         
         <!-- Filtro por trabajos activos -->
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">
+          <label class="block text-sm font-medium text-gray-600 mb-2">
             <i class="fas fa-tasks mr-2"></i>Filtrar por trabajos
           </label>
           <select 
@@ -719,14 +719,14 @@ function renderizarBuscadorClientes() {
       <div class="mt-4 flex gap-3">
         <button 
           onclick="limpiarFiltrosClientes()" 
-          class="px-4 py-2 bg-gray-200 text-gray-300 rounded-lg hover:bg-gray-300 transition-colors"
+          class="px-4 py-2 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 transition-colors"
         >
           <i class="fas fa-eraser mr-2"></i>Limpiar filtros
         </button>
         ${esAdmin ? `
         <button 
           onclick="exportarClientesCSV()" 
-          class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          class="px-4 py-2 bg-green-600 text-black rounded-lg hover:bg-green-700 transition-colors"
         >
           <i class="fas fa-file-export mr-2"></i>Exportar a CSV
         </button>
@@ -853,13 +853,13 @@ function renderizarTablaClientes(clientes) {
         <div class="text-gray-400 mb-6">
           <i class="fas fa-users text-6xl"></i>
         </div>
-        <h3 class="text-2xl font-bold text-gray-300 mb-2">No hay clientes</h3>
+        <h3 class="text-2xl font-bold text-gray-600 mb-2">No hay clientes</h3>
         <p class="text-gray-400 mb-6 text-center">
           ${document.getElementById('buscar-cliente')?.value || document.getElementById('filtro-ciudad-cliente')?.value
             ? 'No se encontraron clientes con los filtros aplicados'
             : 'Crea tu primer cliente para comenzar'}
         </p>
-        <button onclick="showClienteForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all">
+        <button onclick="showClienteForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg hover:shadow-lg transition-all">
           <i class="fas fa-plus mr-2"></i>Crear Cliente
         </button>
       </div>
@@ -902,11 +902,11 @@ function renderizarTablaClientes(clientes) {
                 <i class="fas fa-eye"></i>
               </button>
               ${!esTienda ? `
-              <button onclick="editCliente(${c.id})" class="text-white hover:text-green-800 mr-3" title="Editar">
+              <button onclick="editCliente(${c.id})" class="text-black hover:text-green-800 mr-3" title="Editar">
                 <i class="fas fa-edit"></i>
               </button>
               ` : ''}
-              <button onclick="showClientePresupuestos(${c.id})" class="text-white hover:text-purple-800" title="Ver presupuestos">
+              <button onclick="showClientePresupuestos(${c.id})" class="text-black hover:text-purple-800" title="Ver presupuestos">
                 <i class="fas fa-file-alt"></i>
               </button>
             </td>
@@ -932,18 +932,18 @@ async function showClienteForm(id = null) {
   }
   
   const html = `
-    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="modal-overlay" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <h3 class="text-2xl font-bold mb-6">${isEdit ? 'Editar' : 'Nuevo'} Cliente</h3>
         <form id="cliente-form" class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Nombre *</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Nombre *</label>
               <input type="text" name="nombre" value="${cliente.nombre}" required 
                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-700">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Apellidos *</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Apellidos *</label>
               <input type="text" name="apellidos" value="${cliente.apellidos}" required 
                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-700">
             </div>
@@ -951,51 +951,51 @@ async function showClienteForm(id = null) {
           
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Teléfono *</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Teléfono *</label>
               <input type="tel" name="telefono" value="${cliente.telefono}" required 
                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-700">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Email</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Email</label>
               <input type="email" name="email" value="${cliente.email || ''}" 
                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-700">
             </div>
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">DNI / NIE</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">DNI / NIE</label>
             <input type="text" name="dni" value="${cliente.dni || ''}" 
                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-700"
                    placeholder="12345678X">
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Dirección *</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Dirección *</label>
             <input type="text" name="direccion" value="${cliente.direccion}" required 
                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-700">
           </div>
           
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Ciudad *</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Ciudad *</label>
               <input type="text" name="ciudad" value="${cliente.ciudad}" required 
                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-700">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Código Postal</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Código Postal</label>
               <input type="text" name="codigo_postal" value="${cliente.codigo_postal || ''}" 
                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-700">
             </div>
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Notas</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Notas</label>
             <textarea name="notas" rows="3" 
                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-700">${cliente.notas || ''}</textarea>
           </div>
           
           <div class="flex gap-3 pt-4">
-            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg">
               <i class="fas fa-save mr-2"></i>Guardar
             </button>
             <button type="button" onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -1072,7 +1072,7 @@ function agregarCheckboxTrabajos() {
           onchange="loadTrabajos()"
           class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
         >
-        <span class="text-sm font-medium text-gray-300">
+        <span class="text-sm font-medium text-gray-600">
           <i class="fas fa-filter mr-1 text-blue-600"></i>
           Excluir cancelados y completados
         </span>
@@ -1083,7 +1083,7 @@ function agregarCheckboxTrabajos() {
     <div class="flex items-center gap-3">
       <!-- Ordenar -->
       <div class="flex items-center gap-2">
-        <label class="text-sm font-medium text-gray-300">Ordenar:</label>
+        <label class="text-sm font-medium text-gray-600">Ordenar:</label>
         <select 
           id="ordenar-trabajos" 
           onchange="ordenarTrabajos()"
@@ -1099,7 +1099,7 @@ function agregarCheckboxTrabajos() {
       <!-- Selección múltiple -->
       <button 
         onclick="toggleSeleccionMultipleTrabajo()"
-        class="px-3 py-1.5 text-sm font-medium text-gray-300 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        class="px-3 py-1.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
       >
         <i class="fas fa-check-square mr-1"></i>
         Selección múltiple
@@ -1108,7 +1108,7 @@ function agregarCheckboxTrabajos() {
       <!-- Exportar -->
       <button 
         onclick="exportarTrabajos()"
-        class="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+        class="px-3 py-1.5 text-sm font-medium text-black bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
       >
         <i class="fas fa-file-export mr-1"></i>
         Exportar
@@ -1216,11 +1216,11 @@ async function viewTrabajo(id) {
     }
     
     const html = `
-      <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onclick="if(event.target===this) closeModal()">
+      <div id="modal-overlay" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50 p-4" onclick="if(event.target===this) closeModal()">
         <div class="bg-white rounded-xl shadow-2xl p-8 max-w-5xl w-full max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-start mb-6">
-            <h3 class="text-2xl font-bold text-white">
-              <i class="fas fa-briefcase text-gray-300 mr-2"></i>
+            <h3 class="text-2xl font-bold text-black">
+              <i class="fas fa-briefcase text-gray-600 mr-2"></i>
               Detalles del Trabajo
             </h3>
             <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
@@ -1234,7 +1234,7 @@ async function viewTrabajo(id) {
                 <i class="fas fa-link mr-2"></i>
                 <strong>Generado desde presupuesto</strong>
                 <button onclick="closeModal(); showTab('presupuestos'); setTimeout(() => viewPresupuesto(${trabajo.presupuesto_id}), 300)" 
-                        class="ml-2 text-white hover:text-purple-800 underline">
+                        class="ml-2 text-black hover:text-purple-800 underline">
                   Ver presupuesto original
                 </button>
               </p>
@@ -1243,7 +1243,7 @@ async function viewTrabajo(id) {
           
           <!-- INFORMACIÓN GENERAL DEL TRABAJO -->
           <div class="mb-6 bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-lg border border-gray-200">
-            <h4 class="font-bold text-white mb-4 flex items-center">
+            <h4 class="font-bold text-black mb-4 flex items-center">
               <i class="fas fa-info-circle mr-2 text-blue-600"></i>Información General
             </h4>
             
@@ -1253,7 +1253,7 @@ async function viewTrabajo(id) {
                 <div class="text-xs text-gray-400 mb-1">
                   <i class="fas fa-user mr-1"></i>CLIENTE
                 </div>
-                <div class="font-semibold text-white">
+                <div class="font-semibold text-black">
                   ${trabajo.cliente_nombre} ${trabajo.cliente_apellidos}
                 </div>
               </div>
@@ -1263,7 +1263,7 @@ async function viewTrabajo(id) {
                 <div class="text-xs text-gray-400 mb-1">
                   <i class="fas fa-tag mr-1"></i>TIPO DE SERVICIO
                 </div>
-                <div class="font-semibold text-white">
+                <div class="font-semibold text-black">
                   ${trabajo.tipo_servicio.replace(/_/g, ' ').toUpperCase()}
                 </div>
               </div>
@@ -1283,7 +1283,7 @@ async function viewTrabajo(id) {
                 <div class="text-xs text-gray-400 mb-1">
                   <i class="fas fa-user-tie mr-1"></i>EMPLEADA ASIGNADA
                 </div>
-                <div class="font-semibold text-white">
+                <div class="font-semibold text-black">
                   ${trabajo.nombre_empleada || '<span class="text-gray-400 italic">Sin asignar</span>'}
                 </div>
               </div>
@@ -1293,7 +1293,7 @@ async function viewTrabajo(id) {
                 <div class="text-xs text-gray-400 mb-1">
                   <i class="fas fa-map-marker-alt mr-1"></i>DIRECCIÓN
                 </div>
-                <div class="font-semibold text-white">
+                <div class="font-semibold text-black">
                   ${trabajo.direccion || '<span class="text-gray-400 italic">Sin dirección</span>'}
                 </div>
               </div>
@@ -1304,7 +1304,7 @@ async function viewTrabajo(id) {
                   <div class="text-xs text-gray-400 mb-1">
                     <i class="fas fa-file-alt mr-1"></i>DESCRIPCIÓN
                   </div>
-                  <div class="text-sm text-gray-300">
+                  <div class="text-sm text-gray-600">
                     ${trabajo.descripcion}
                   </div>
                 </div>
@@ -1344,7 +1344,7 @@ async function viewTrabajo(id) {
                 <div class="text-xs text-gray-400 mb-1">
                   <i class="fas fa-euro-sign mr-1"></i>PRECIO CLIENTE
                 </div>
-                <div class="font-bold text-white text-xl">
+                <div class="font-bold text-black text-xl">
                   €${trabajo.precio_cliente ? trabajo.precio_cliente.toFixed(2) : '0.00'}
                 </div>
               </div>
@@ -1354,7 +1354,7 @@ async function viewTrabajo(id) {
                   <div class="text-xs text-gray-400 mb-1">
                     <i class="fas fa-tools mr-1"></i>COSTE MATERIALES
                   </div>
-                  <div class="font-semibold text-white">
+                  <div class="font-semibold text-black">
                     €${trabajo.coste_materiales ? trabajo.coste_materiales.toFixed(2) : '0.00'}
                   </div>
                 </div>
@@ -1363,7 +1363,7 @@ async function viewTrabajo(id) {
                   <div class="text-xs text-gray-400 mb-1">
                     <i class="fas fa-user-clock mr-1"></i>COSTE MANO DE OBRA
                   </div>
-                  <div class="font-semibold text-white">
+                  <div class="font-semibold text-black">
                     €${trabajo.coste_mano_obra ? trabajo.coste_mano_obra.toFixed(2) : '0.00'}
                   </div>
                 </div>
@@ -1375,7 +1375,7 @@ async function viewTrabajo(id) {
                 <div class="text-xs text-yellow-700 mb-2 font-semibold">
                   <i class="fas fa-sticky-note mr-1"></i>NOTAS
                 </div>
-                <div class="text-sm text-gray-300">
+                <div class="text-sm text-gray-600">
                   ${trabajo.notas}
                 </div>
               </div>
@@ -1385,7 +1385,7 @@ async function viewTrabajo(id) {
           <!-- TAREAS ASOCIADAS -->
           ${tareasDelTrabajo.length > 0 ? `
             <div class="mb-6 bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
-              <h4 class="font-bold text-white mb-4 flex items-center justify-between">
+              <h4 class="font-bold text-black mb-4 flex items-center justify-between">
                 <span><i class="fas fa-clipboard-list mr-2 text-blue-600"></i>Tareas Asociadas</span>
                 <span class="text-sm font-normal text-gray-600">${tareasDelTrabajo.length} tarea${tareasDelTrabajo.length !== 1 ? 's' : ''}</span>
               </h4>
@@ -1396,7 +1396,7 @@ async function viewTrabajo(id) {
                     'pendiente': '<span class="px-3 py-1 text-xs font-bold rounded-full bg-orange-100 text-orange-700">⏳ Pendiente</span>',
                     'en_proceso': '<span class="px-3 py-1 text-xs font-bold rounded-full bg-blue-100 text-blue-700">🔄 En Proceso</span>',
                     'completada': '<span class="px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-700">✅ Finalizada</span>',
-                    'cancelada': '<span class="px-3 py-1 text-xs font-bold rounded-full bg-gray-100 text-gray-300">❌ Cancelada</span>'
+                    'cancelada': '<span class="px-3 py-1 text-xs font-bold rounded-full bg-gray-100 text-gray-600">❌ Cancelada</span>'
                   }
                   
                   const prioridadBadges = {
@@ -1409,7 +1409,7 @@ async function viewTrabajo(id) {
                     <div class="bg-white border-2 rounded-lg p-4 transition-all hover:shadow-md ${tarea.estado === 'completada' ? 'border-green-300' : 'border-gray-200'}">
                       <div class="flex items-start justify-between mb-2">
                         <div class="flex-1">
-                          <h5 class="font-bold text-white mb-1">${tarea.titulo}</h5>
+                          <h5 class="font-bold text-black mb-1">${tarea.titulo}</h5>
                           <div class="flex flex-wrap gap-2 mb-2">
                             ${estadoBadges[tarea.estado] || ''}
                             ${prioridadBadges[tarea.prioridad] || ''}
@@ -1449,18 +1449,18 @@ async function viewTrabajo(id) {
               </div>
               
               <button onclick="closeModal(); showTab('tareas'); setTimeout(() => showNuevaTarea(${id}), 300)" 
-                      class="mt-4 w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium">
+                      class="mt-4 w-full px-4 py-2 bg-blue-500 text-black rounded-lg hover:bg-blue-600 font-medium">
                 <i class="fas fa-plus mr-2"></i>Crear Nueva Tarea para este Trabajo
               </button>
             </div>
           ` : `
             <div class="mb-6 bg-gray-50 p-6 rounded-lg border border-gray-200 text-center">
               <p class="text-gray-400 mb-3">
-                <i class="fas fa-clipboard-list text-3xl text-gray-300 mb-2"></i>
+                <i class="fas fa-clipboard-list text-3xl text-gray-600 mb-2"></i>
                 <br>No hay tareas asociadas a este trabajo
               </p>
               <button onclick="closeModal(); showTab('tareas'); setTimeout(() => showNuevaTarea(${id}), 300)" 
-                      class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium">
+                      class="px-4 py-2 bg-blue-500 text-black rounded-lg hover:bg-blue-600 font-medium">
                 <i class="fas fa-plus mr-2"></i>Crear Tarea
               </button>
             </div>
@@ -1468,8 +1468,8 @@ async function viewTrabajo(id) {
           
           <!-- TIMELINE DE FASES -->
           <div class="mb-6 bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-lg border border-gray-300">
-            <h4 class="font-bold text-white mb-4 flex items-center justify-between">
-              <span><i class="fas fa-tasks mr-2 text-white"></i>Fases del Trabajo</span>
+            <h4 class="font-bold text-black mb-4 flex items-center justify-between">
+              <span><i class="fas fa-tasks mr-2 text-black"></i>Fases del Trabajo</span>
               <span class="text-sm font-normal text-gray-600">${progresoPercent.toFixed(0)}% Completado</span>
             </h4>
             
@@ -1490,19 +1490,19 @@ async function viewTrabajo(id) {
                              id="fase-${fase.id}"
                              ${fase.estado === 'completado' ? 'checked' : ''}
                              onchange="toggleFase(${id}, ${fase.id}, '${fase.fase}', this.checked)"
-                             class="w-6 h-6 text-white bg-gray-100 border-gray-300 rounded focus:ring-green-500 cursor-pointer">
+                             class="w-6 h-6 text-black bg-gray-100 border-gray-300 rounded focus:ring-green-500 cursor-pointer">
                     </div>
                     
                     <!-- Icon decorativo -->
                     <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-xl
-                      ${fase.estado === 'completado' ? 'bg-green-100 text-white' : 'bg-gray-100 text-gray-400'}">
+                      ${fase.estado === 'completado' ? 'bg-green-100 text-black' : 'bg-gray-100 text-gray-400'}">
                       ${faseIcons[fase.fase]}
                     </div>
                     
                     <!-- Contenido -->
                     <div class="flex-1">
                       <div class="flex items-center justify-between mb-2">
-                        <label for="fase-${fase.id}" class="font-bold text-white cursor-pointer hover:text-white">
+                        <label for="fase-${fase.id}" class="font-bold text-black cursor-pointer hover:text-black">
                           ${faseLabels[fase.fase]}
                         </label>
                         ${fase.estado === 'completado' ? 
@@ -1528,7 +1528,7 @@ async function viewTrabajo(id) {
                           `).join('')}
                         </select>
                         ${fase.personal_nombre ? `
-                          <p class="text-xs text-white mt-1">
+                          <p class="text-xs text-black mt-1">
                             <i class="fas fa-check-circle mr-1"></i>Asignado a: ${fase.personal_nombre} ${fase.personal_apellidos}
                           </p>
                         ` : ''}
@@ -1549,7 +1549,7 @@ async function viewTrabajo(id) {
                       
                       <!-- Botón para agregar/editar notas -->
                       <button onclick="editarNotasFase(${id}, ${fase.id}, '${fase.fase}', \`${fase.notas || ''}\`)" 
-                              class="mt-2 text-xs text-white hover:text-teal-700 hover:underline">
+                              class="mt-2 text-xs text-black hover:text-teal-700 hover:underline">
                         <i class="fas fa-edit mr-1"></i>${fase.notas ? 'Editar notas' : 'Agregar notas'}
                       </button>
                     </div>
@@ -1584,15 +1584,15 @@ async function viewTrabajo(id) {
             </div>
             <div class="bg-gray-50 p-4 rounded-lg">
               <p class="text-sm text-gray-600 mb-1">Precio Cliente</p>
-              <p class="font-semibold text-white text-xl">€${trabajo.precio_cliente ? trabajo.precio_cliente.toFixed(2) : '0.00'}</p>
+              <p class="font-semibold text-black text-xl">€${trabajo.precio_cliente ? trabajo.precio_cliente.toFixed(2) : '0.00'}</p>
             </div>
           </div>
           
           ${trabajo.descripcion ? `
             <div class="mb-4">
-              <h4 class="font-semibold text-gray-300 mb-2">Descripción</h4>
+              <h4 class="font-semibold text-gray-600 mb-2">Descripción</h4>
               <div class="bg-gray-50 p-4 rounded-lg">
-                <pre class="text-sm text-gray-300 whitespace-pre-wrap font-sans">${trabajo.descripcion}</pre>
+                <pre class="text-sm text-gray-600 whitespace-pre-wrap font-sans">${trabajo.descripcion}</pre>
               </div>
             </div>
           ` : ''}
@@ -1600,12 +1600,12 @@ async function viewTrabajo(id) {
           <!-- TAREAS ASOCIADAS AL TRABAJO -->
           <div class="mb-6 bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-lg border border-gray-300">
             <div class="flex items-center justify-between mb-4">
-              <h4 class="font-bold text-white flex items-center">
-                <i class="fas fa-tasks mr-2 text-gray-300"></i>Tareas Pendientes
-                ${tareasDelTrabajo.length > 0 ? `<span class="ml-2 px-2 py-1 bg-gray-200 text-gray-300 text-xs font-semibold rounded-full">${tareasDelTrabajo.filter(t => t.estado !== 'completada').length}</span>` : ''}
+              <h4 class="font-bold text-black flex items-center">
+                <i class="fas fa-tasks mr-2 text-gray-600"></i>Tareas Pendientes
+                ${tareasDelTrabajo.length > 0 ? `<span class="ml-2 px-2 py-1 bg-gray-200 text-gray-600 text-xs font-semibold rounded-full">${tareasDelTrabajo.filter(t => t.estado !== 'completada').length}</span>` : ''}
               </h4>
               <button onclick="crearTareaParaTrabajo(${id}, '${trabajo.nombre_trabajo}')" 
-                      class="px-3 py-1.5 bg-gray-700 hover:bg-gray-800 text-white text-sm rounded-lg transition-all">
+                      class="px-3 py-1.5 bg-gray-700 hover:bg-gray-800 text-black text-sm rounded-lg transition-all">
                 <i class="fas fa-plus mr-1"></i>Nueva Tarea
               </button>
             </div>
@@ -1650,7 +1650,7 @@ async function viewTrabajo(id) {
           
           <div class="flex gap-3 mt-6">
             <button onclick="closeModal(); editTrabajo(${id})" 
-                    class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-lg hover:shadow-lg font-medium">
+                    class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-black px-6 py-3 rounded-lg hover:shadow-lg font-medium">
               <i class="fas fa-edit mr-2"></i>Editar Trabajo
             </button>
             <button onclick="closeModal()" 
@@ -1698,13 +1698,13 @@ async function showTrabajoForm(id = null) {
   }
   
   const html = `
-    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="modal-overlay" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <h3 class="text-2xl font-bold mb-6">${isEdit ? 'Editar' : 'Nuevo'} Trabajo</h3>
         <form id="trabajo-form" class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Cliente *</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Cliente *</label>
               <select name="cliente_id" required class="w-full px-4 py-2 border rounded-lg">
                 <option value="">Seleccionar cliente</option>
                 ${clientesRes.data.map(c => `
@@ -1715,7 +1715,7 @@ async function showTrabajoForm(id = null) {
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Personal Asignado</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Personal Asignado</label>
               <select name="empleada_id" class="w-full px-4 py-2 border rounded-lg">
                 <option value="">Sin asignar</option>
                 <option value="Ana Ramos" ${trabajo.empleada_nombre === 'Ana Ramos' ? 'selected' : ''}>Ana Ramos</option>
@@ -1726,7 +1726,7 @@ async function showTrabajoForm(id = null) {
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Categoría *</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Categoría *</label>
             <select name="categoria" required class="w-full px-4 py-2 border rounded-lg">
               <option value="tienda" ${trabajo.categoria === 'tienda' ? 'selected' : ''}>🏪 Tienda (TT-XXXX)</option>
               <option value="externo" ${trabajo.categoria === 'externo' ? 'selected' : ''}>🤝 Externo (TE-XXXX)</option>
@@ -1739,7 +1739,7 @@ async function showTrabajoForm(id = null) {
           
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Tipo de Servicio *</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Tipo de Servicio *</label>
               <select name="tipo_servicio" required class="w-full px-4 py-2 border rounded-lg">
                 <option value="">Seleccionar tipo</option>
                 <option value="confeccion" ${trabajo.tipo_servicio === 'confeccion' ? 'selected' : ''}>Confección</option>
@@ -1748,27 +1748,27 @@ async function showTrabajoForm(id = null) {
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Precio Cliente (€)</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Precio Cliente (€)</label>
               <input type="number" name="precio_cliente" value="${trabajo.precio_cliente}" step="0.01" 
                      class="w-full px-4 py-2 border rounded-lg" placeholder="Opcional">
             </div>
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Dirección *</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Dirección *</label>
             <input type="text" name="direccion" value="${trabajo.direccion}" required 
                    class="w-full px-4 py-2 border rounded-lg">
           </div>
           
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Fecha Inicio *</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Fecha Inicio *</label>
               <input type="date" name="fecha_programada" 
                      value="${trabajo.fecha_programada ? trabajo.fecha_programada.split('T')[0] : ''}" 
                      required class="w-full px-4 py-2 border rounded-lg">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Fecha Límite</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Fecha Límite</label>
               <input type="date" name="fecha_finalizacion" 
                      value="${trabajo.fecha_finalizacion ? trabajo.fecha_finalizacion.split('T')[0] : ''}" 
                      class="w-full px-4 py-2 border rounded-lg">
@@ -1776,7 +1776,7 @@ async function showTrabajoForm(id = null) {
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Prioridad</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Prioridad</label>
             <select name="prioridad" class="w-full px-4 py-2 border rounded-lg">
               <option value="baja" ${trabajo.prioridad === 'baja' ? 'selected' : ''}>Baja</option>
               <option value="normal" ${trabajo.prioridad === 'normal' ? 'selected' : ''}>Normal</option>
@@ -1787,7 +1787,7 @@ async function showTrabajoForm(id = null) {
           
           ${isEdit ? `
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Estado</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Estado</label>
               <select name="estado" class="w-full px-4 py-2 border rounded-lg">
                 <option value="pendiente" ${trabajo.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
                 <option value="en_proceso" ${trabajo.estado === 'en_proceso' ? 'selected' : ''}>En Proceso</option>
@@ -1798,13 +1798,13 @@ async function showTrabajoForm(id = null) {
           ` : ''}
           
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Descripción</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Descripción</label>
             <textarea name="descripcion" rows="2" 
                       class="w-full px-4 py-2 border rounded-lg">${trabajo.descripcion || ''}</textarea>
           </div>
           
           <div class="flex gap-3 pt-4">
-            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg">
               <i class="fas fa-save mr-2"></i>Guardar
             </button>
             <button type="button" onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -1993,11 +1993,11 @@ function renderizarTrabajosTabla(trabajos) {
         <div class="text-gray-400 mb-6">
           <i class="fas fa-briefcase text-6xl"></i>
         </div>
-        <h3 class="text-2xl font-bold text-gray-300 mb-2">No hay trabajos</h3>
+        <h3 class="text-2xl font-bold text-gray-600 mb-2">No hay trabajos</h3>
         <p class="text-gray-400 mb-6 text-center">
           Crea tu primer trabajo para comenzar
         </p>
-        <button onclick="showTrabajoForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all">
+        <button onclick="showTrabajoForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg hover:shadow-lg transition-all">
           <i class="fas fa-plus mr-2"></i>Crear Trabajo
         </button>
       </div>
@@ -2057,7 +2057,7 @@ function renderizarTrabajosTabla(trabajos) {
                 <i class="fas fa-eye"></i>
               </button>
               ${!esTienda ? `
-              <button onclick="editTrabajo(${t.id})" class="text-white hover:text-green-800" title="Editar">
+              <button onclick="editTrabajo(${t.id})" class="text-black hover:text-green-800" title="Editar">
                 <i class="fas fa-edit"></i>
               </button>
               <button onclick="deleteTrabajo(${t.id})" class="text-red-600 hover:text-red-800" title="Borrar">
@@ -2108,8 +2108,8 @@ window.seleccionarTodosTrabajo = seleccionarTodosTrabajo
 function showPersonalSubTab(subtab) {
   // Remover clase active de todos los botones
   document.querySelectorAll('.personal-subtab').forEach(btn => {
-    btn.classList.remove('active', 'bg-gradient-to-r', 'from-gray-800', 'to-gray-900', 'text-white')
-    btn.classList.add('text-gray-300', 'hover:bg-gray-100')
+    btn.classList.remove('active', 'bg-gradient-to-r', 'from-gray-800', 'to-gray-900', 'text-black')
+    btn.classList.add('text-gray-600', 'hover:bg-gray-100')
   })
   
   // Ocultar todos los contenidos
@@ -2119,8 +2119,8 @@ function showPersonalSubTab(subtab) {
   
   // Activar botón seleccionado
   const btn = document.getElementById(`personal-subtab-${subtab}`)
-  btn.classList.add('active', 'bg-gradient-to-r', 'from-gray-800', 'to-gray-900', 'text-white')
-  btn.classList.remove('text-gray-300', 'hover:bg-gray-100')
+  btn.classList.add('active', 'bg-gradient-to-r', 'from-gray-800', 'to-gray-900', 'text-black')
+  btn.classList.remove('text-gray-600', 'hover:bg-gray-100')
   
   // Mostrar contenido correspondiente
   const content = document.getElementById(`personal-subtab-${subtab}-content`)
@@ -2150,12 +2150,12 @@ async function showPersonalFormInContainer() {
     <form id="personal-form-inline" class="space-y-4">
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">Nombre *</label>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Nombre *</label>
           <input type="text" name="nombre" required 
                  class="w-full px-4 py-2 border rounded-lg">
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">Apellidos *</label>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Apellidos *</label>
           <input type="text" name="apellidos" required 
                  class="w-full px-4 py-2 border rounded-lg">
         </div>
@@ -2163,17 +2163,17 @@ async function showPersonalFormInContainer() {
       
       <div class="grid grid-cols-3 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">Teléfono *</label>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Teléfono *</label>
           <input type="tel" name="telefono" required 
                  class="w-full px-4 py-2 border rounded-lg">
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">DNI *</label>
+          <label class="block text-sm font-medium text-gray-600 mb-1">DNI *</label>
           <input type="text" name="dni" required 
                  class="w-full px-4 py-2 border rounded-lg">
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">Email</label>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Email</label>
           <input type="email" name="email" 
                  class="w-full px-4 py-2 border rounded-lg">
         </div>
@@ -2181,59 +2181,59 @@ async function showPersonalFormInContainer() {
       
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">Fecha Contratación</label>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Fecha Contratación</label>
           <input type="date" name="fecha_contratacion" 
                  class="w-full px-4 py-2 border rounded-lg">
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">Salario/Hora (€)</label>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Salario/Hora (€)</label>
           <input type="number" name="salario_hora" step="0.01" 
                  class="w-full px-4 py-2 border rounded-lg">
         </div>
       </div>
       
       <div>
-        <label class="block text-sm font-medium text-gray-300 mb-2">Especialidades</label>
+        <label class="block text-sm font-medium text-gray-600 mb-2">Especialidades</label>
         <div class="grid grid-cols-3 gap-3">
           <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
-            <input type="checkbox" name="especialidades" value="corte" class="rounded text-white">
+            <input type="checkbox" name="especialidades" value="corte" class="rounded text-black">
             <span class="text-sm">✂️ Corte</span>
           </label>
           <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
-            <input type="checkbox" name="especialidades" value="confeccion" class="rounded text-white">
+            <input type="checkbox" name="especialidades" value="confeccion" class="rounded text-black">
             <span class="text-sm">🧵 Confección</span>
           </label>
           <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
-            <input type="checkbox" name="especialidades" value="ventas" class="rounded text-white">
+            <input type="checkbox" name="especialidades" value="ventas" class="rounded text-black">
             <span class="text-sm">💼 Ventas</span>
           </label>
           <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
-            <input type="checkbox" name="especialidades" value="atencion_cliente" class="rounded text-white">
+            <input type="checkbox" name="especialidades" value="atencion_cliente" class="rounded text-black">
             <span class="text-sm">📞 Atención al Cliente</span>
           </label>
           <label class="flex items-center space-x-2 bg-green-50 p-3 rounded border-2 border-green-300 hover:bg-green-100 cursor-pointer">
-            <input type="checkbox" name="especialidades" value="instalacion" class="rounded text-white">
+            <input type="checkbox" name="especialidades" value="instalacion" class="rounded text-black">
             <span class="text-sm font-semibold">🔨 Instalación</span>
           </label>
           <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
-            <input type="checkbox" name="especialidades" value="plancha" class="rounded text-white">
+            <input type="checkbox" name="especialidades" value="plancha" class="rounded text-black">
             <span class="text-sm">👔 Plancha</span>
           </label>
           <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
-            <input type="checkbox" name="especialidades" value="apoyo" class="rounded text-white">
+            <input type="checkbox" name="especialidades" value="apoyo" class="rounded text-black">
             <span class="text-sm">🤝 Apoyo</span>
           </label>
         </div>
       </div>
       
       <div>
-        <label class="block text-sm font-medium text-gray-300 mb-1">Notas</label>
+        <label class="block text-sm font-medium text-gray-600 mb-1">Notas</label>
         <textarea name="notas" rows="3" 
                   class="w-full px-4 py-2 border rounded-lg"></textarea>
       </div>
       
       <div class="flex gap-3 pt-4">
-        <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+        <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg">
           <i class="fas fa-save mr-2"></i>Guardar Personal
         </button>
         <button type="button" onclick="showPersonalFormInContainer()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -2300,10 +2300,10 @@ async function loadPersonalLista() {
     let html = `
       <div class="bg-white rounded-xl shadow-md p-6 mb-6">
         <div class="flex justify-between items-center">
-          <h2 class="text-2xl font-bold text-white">
+          <h2 class="text-2xl font-bold text-black">
             <i class="fas fa-users mr-2"></i>Gestión de Empleados
           </h2>
-          <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+          <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
             <i class="fas fa-plus mr-2"></i>Nuevo Empleado
           </button>
         </div>
@@ -2313,9 +2313,9 @@ async function loadPersonalLista() {
     if (!data || data.length === 0) {
       html += `
         <div class="bg-white rounded-xl shadow-md p-12 text-center">
-          <i class="fas fa-users text-6xl text-gray-300 mb-4"></i>
+          <i class="fas fa-users text-6xl text-gray-600 mb-4"></i>
           <p class="text-xl text-gray-400 mb-4">No hay empleados registrados</p>
-          <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+          <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg">
             <i class="fas fa-plus mr-2"></i>Crear Primer Empleado
           </button>
         </div>
@@ -2327,7 +2327,7 @@ async function loadPersonalLista() {
             <div class="bg-white border rounded-xl p-6 hover:shadow-lg transition-shadow">
               <div class="flex items-start justify-between mb-4">
                 <div>
-                  <h3 class="text-lg font-bold text-white">${e.nombre} ${e.apellidos}</h3>
+                  <h3 class="text-lg font-bold text-black">${e.nombre} ${e.apellidos}</h3>
                   <p class="text-sm text-gray-600">
                     <i class="fas fa-phone mr-1"></i>${e.telefono}
                   </p>
@@ -2343,10 +2343,10 @@ async function loadPersonalLista() {
               </div>
               
               <div class="flex gap-2">
-                <button onclick="viewPersonal(${e.id})" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                <button onclick="viewPersonal(${e.id})" class="flex-1 bg-blue-500 text-black px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
                   <i class="fas fa-eye mr-2"></i>Ver
                 </button>
-                <button onclick="showPersonalForm(${e.id})" class="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                <button onclick="showPersonalForm(${e.id})" class="flex-1 bg-green-500 text-black px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
                   <i class="fas fa-edit mr-2"></i>Editar
                 </button>
               </div>
@@ -2364,10 +2364,10 @@ async function loadPersonalLista() {
       container.innerHTML = `
         <div class="bg-white rounded-xl shadow-md p-6 mb-6">
           <div class="flex justify-between items-center">
-            <h2 class="text-2xl font-bold text-white">
+            <h2 class="text-2xl font-bold text-black">
               <i class="fas fa-users mr-2"></i>Gestión de Empleados
             </h2>
-            <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
+            <button onclick="showPersonalForm()" class="bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all">
               <i class="fas fa-plus mr-2"></i>Nuevo Empleado
             </button>
           </div>
@@ -2407,18 +2407,18 @@ async function showPersonalForm(id = null) {
   }
   
   const html = `
-    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="modal-overlay" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <h3 class="text-2xl font-bold mb-6">${isEdit ? 'Editar' : 'Nuevo'} Personal</h3>
         <form id="personal-form" class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Nombre *</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Nombre *</label>
               <input type="text" name="nombre" value="${personal.nombre}" required 
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Apellidos *</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Apellidos *</label>
               <input type="text" name="apellidos" value="${personal.apellidos}" required 
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
@@ -2426,17 +2426,17 @@ async function showPersonalForm(id = null) {
           
           <div class="grid grid-cols-3 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Teléfono *</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Teléfono *</label>
               <input type="tel" name="telefono" value="${personal.telefono}" required 
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">DNI *</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">DNI *</label>
               <input type="text" name="dni" value="${personal.dni}" required 
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Email</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Email</label>
               <input type="email" name="email" value="${personal.email || ''}" 
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
@@ -2444,66 +2444,66 @@ async function showPersonalForm(id = null) {
           
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Fecha Contratación</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Fecha Contratación</label>
               <input type="date" name="fecha_contratacion" value="${personal.fecha_contratacion || ''}" 
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Salario/Hora (€)</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Salario/Hora (€)</label>
               <input type="number" name="salario_hora" value="${personal.salario_hora || ''}" step="0.01" 
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Especialidades</label>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Especialidades</label>
             <div class="grid grid-cols-3 gap-3">
               <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
                 <input type="checkbox" name="especialidades" value="corte" 
-                       ${personal.especialidades.includes('corte') ? 'checked' : ''} class="rounded text-white">
+                       ${personal.especialidades.includes('corte') ? 'checked' : ''} class="rounded text-black">
                 <span class="text-sm">✂️ Corte</span>
               </label>
               <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
                 <input type="checkbox" name="especialidades" value="confeccion" 
-                       ${personal.especialidades.includes('confeccion') ? 'checked' : ''} class="rounded text-white">
+                       ${personal.especialidades.includes('confeccion') ? 'checked' : ''} class="rounded text-black">
                 <span class="text-sm">🧵 Confección</span>
               </label>
               <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
                 <input type="checkbox" name="especialidades" value="ventas" 
-                       ${personal.especialidades.includes('ventas') ? 'checked' : ''} class="rounded text-white">
+                       ${personal.especialidades.includes('ventas') ? 'checked' : ''} class="rounded text-black">
                 <span class="text-sm">💼 Ventas</span>
               </label>
               <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
                 <input type="checkbox" name="especialidades" value="atencion_cliente" 
-                       ${personal.especialidades.includes('atencion_cliente') ? 'checked' : ''} class="rounded text-white">
+                       ${personal.especialidades.includes('atencion_cliente') ? 'checked' : ''} class="rounded text-black">
                 <span class="text-sm">📞 Atención al Cliente</span>
               </label>
               <label class="flex items-center space-x-2 bg-green-50 p-3 rounded border-2 border-green-300 hover:bg-green-100 cursor-pointer">
                 <input type="checkbox" name="especialidades" value="instalacion" 
-                       ${personal.especialidades.includes('instalacion') ? 'checked' : ''} class="rounded text-white">
+                       ${personal.especialidades.includes('instalacion') ? 'checked' : ''} class="rounded text-black">
                 <span class="text-sm font-semibold">🔨 Instalación</span>
               </label>
               <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
                 <input type="checkbox" name="especialidades" value="plancha" 
-                       ${personal.especialidades.includes('plancha') ? 'checked' : ''} class="rounded text-white">
+                       ${personal.especialidades.includes('plancha') ? 'checked' : ''} class="rounded text-black">
                 <span class="text-sm">👔 Plancha</span>
               </label>
               <label class="flex items-center space-x-2 bg-gray-50 p-3 rounded border hover:bg-gray-100 cursor-pointer">
                 <input type="checkbox" name="especialidades" value="apoyo" 
-                       ${personal.especialidades.includes('apoyo') ? 'checked' : ''} class="rounded text-white">
+                       ${personal.especialidades.includes('apoyo') ? 'checked' : ''} class="rounded text-black">
                 <span class="text-sm">🤝 Apoyo</span>
               </label>
             </div>
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Notas</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Notas</label>
             <textarea name="notas" rows="3" 
                       class="w-full px-4 py-2 border rounded-lg">${personal.notas || ''}</textarea>
           </div>
           
           <div class="flex gap-3 pt-4">
-            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg">
               <i class="fas fa-save mr-2"></i>Guardar
             </button>
             <button type="button" onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -2628,7 +2628,7 @@ async function loadStock(bajoStock = false) {
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   ${s.categoria_nombre ? `
-                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-300">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-600">
                       ${s.categoria_nombre}
                     </span>
                   ` : '<span class="text-gray-400">Sin categoría</span>'}
@@ -2646,10 +2646,10 @@ async function loadStock(bajoStock = false) {
                   <button onclick="editStock(${s.id})" class="text-blue-600 hover:text-blue-800" title="Editar">
                     <i class="fas fa-edit"></i>
                   </button>
-                  <button onclick="showMovimientos(${s.id})" class="text-white hover:text-green-800" title="Ver movimientos">
+                  <button onclick="showMovimientos(${s.id})" class="text-black hover:text-green-800" title="Ver movimientos">
                     <i class="fas fa-history"></i>
                   </button>
-                  <button onclick="ajustarStock(${s.id})" class="text-white hover:text-purple-800" title="Ajustar stock">
+                  <button onclick="ajustarStock(${s.id})" class="text-black hover:text-purple-800" title="Ajustar stock">
                     <i class="fas fa-exchange-alt"></i>
                   </button>
                   <button onclick="deleteStock(${s.id})" class="text-red-600 hover:text-red-800" title="Eliminar">
@@ -2692,21 +2692,21 @@ async function showStockForm(id = null, preselectedCategoriaId = null) {
   await loadCategorias()
   
   const html = `
-    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="modal-overlay" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <h3 class="text-2xl font-bold mb-6">
-          <i class="fas ${isEdit ? 'fa-edit' : 'fa-plus'} text-gray-300 mr-2"></i>
+          <i class="fas ${isEdit ? 'fa-edit' : 'fa-plus'} text-gray-600 mr-2"></i>
           ${isEdit ? 'Editar' : 'Nuevo'} Artículo
         </h3>
         <form id="stock-form" class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Nombre *</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Nombre *</label>
               <input type="text" name="nombre" value="${stock.nombre}" required 
                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Categoría *</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Categoría *</label>
               <select name="categoria_id" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
                 <option value="">Seleccionar</option>
                 ${categoriasCache.map(cat => `
@@ -2719,14 +2719,14 @@ async function showStockForm(id = null, preselectedCategoriaId = null) {
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Descripción</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Descripción</label>
             <textarea name="descripcion" rows="2" 
                       class="w-full px-4 py-2 border rounded-lg">${stock.descripcion || ''}</textarea>
           </div>
           
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Unidad *</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Unidad *</label>
               <select name="unidad" required class="w-full px-4 py-2 border rounded-lg">
                 <option value="metro" ${stock.unidad === 'metro' ? 'selected' : ''}>Metro</option>
                 <option value="unidades" ${stock.unidad === 'unidades' ? 'selected' : ''}>Unidades</option>
@@ -2737,7 +2737,7 @@ async function showStockForm(id = null, preselectedCategoriaId = null) {
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Precio Unitario (€) *</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Precio Unitario (€) *</label>
               <input type="number" name="precio_unitario" value="${stock.precio_unitario}" required step="0.01" 
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
@@ -2745,12 +2745,12 @@ async function showStockForm(id = null, preselectedCategoriaId = null) {
           
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Cantidad Actual *</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Cantidad Actual *</label>
               <input type="number" name="cantidad_actual" value="${stock.cantidad_actual}" required step="0.01" 
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Cantidad Mínima *</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Cantidad Mínima *</label>
               <input type="number" name="cantidad_minima" value="${stock.cantidad_minima}" required step="0.01" 
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
@@ -2758,19 +2758,19 @@ async function showStockForm(id = null, preselectedCategoriaId = null) {
           
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Proveedor</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Proveedor</label>
               <input type="text" name="proveedor" value="${stock.proveedor || ''}" 
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Ubicación</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Ubicación</label>
               <input type="text" name="ubicacion" value="${stock.ubicacion || ''}" 
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
           </div>
           
           <div class="flex gap-3 pt-4">
-            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg">
               <i class="fas fa-save mr-2"></i>Guardar
             </button>
             <button type="button" onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -2821,18 +2821,18 @@ async function loadFacturas() {
       <div class="mb-6 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
         <div class="flex items-end gap-4">
           <div class="flex-1">
-            <label class="block text-sm font-medium text-gray-300 mb-2">Fecha Inicio</label>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Fecha Inicio</label>
             <input type="date" id="export-fecha-inicio" class="w-full px-4 py-2 border rounded-lg">
           </div>
           <div class="flex-1">
-            <label class="block text-sm font-medium text-gray-300 mb-2">Fecha Fin</label>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Fecha Fin</label>
             <input type="date" id="export-fecha-fin" class="w-full px-4 py-2 border rounded-lg">
           </div>
-          <button onclick="exportarFacturas()" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+          <button onclick="exportarFacturas()" class="px-6 py-2 bg-green-600 text-black rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
             <i class="fas fa-file-excel"></i>
             Exportar a Excel
           </button>
-          <button onclick="descargarFacturasPDF()" class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2">
+          <button onclick="descargarFacturasPDF()" class="px-6 py-2 bg-red-600 text-black rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2">
             <i class="fas fa-file-pdf"></i>
             Descargar PDFs
           </button>
@@ -2862,7 +2862,7 @@ async function loadFacturas() {
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${new Date(f.fecha_emision).toLocaleDateString('es-ES')}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">€${parseFloat(f.subtotal || 0).toFixed(2)}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">€${parseFloat(f.importe_iva || f.iva || 0).toFixed(2)}</td>
-              <td class="px-6 py-4 whitespace-nowrap font-semibold text-white">€${parseFloat(f.total).toFixed(2)}</td>
+              <td class="px-6 py-4 whitespace-nowrap font-semibold text-black">€${parseFloat(f.total).toFixed(2)}</td>
               <td class="px-6 py-4 whitespace-nowrap">
                 ${getEstadoFacturaBadge(f.estado)}
               </td>
@@ -2870,7 +2870,7 @@ async function loadFacturas() {
                 <button onclick="viewFactura(${f.id})" class="text-blue-600 hover:text-blue-800" title="Ver detalles">
                   <i class="fas fa-eye"></i>
                 </button>
-                <button onclick="downloadFacturaPDF(${f.id})" class="text-white hover:text-green-800" title="Descargar PDF">
+                <button onclick="downloadFacturaPDF(${f.id})" class="text-black hover:text-green-800" title="Descargar PDF">
                   <i class="fas fa-file-pdf"></i>
                 </button>
                 <button onclick="deleteFactura(${f.id})" class="text-red-600 hover:text-red-800" title="Eliminar">
@@ -2940,11 +2940,11 @@ async function viewFactura(id) {
     
     // Crear modal manualmente
     document.body.insertAdjacentHTML('beforeend', `
-      <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) this.remove()">
+      <div id="modal-overlay" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) this.remove()">
         <div class="bg-white rounded-xl shadow-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-900">Factura ${factura.numero_factura}</h2>
-            <button onclick="document.getElementById('modal-overlay').remove()" class="text-gray-400 hover:text-gray-300">
+            <button onclick="document.getElementById('modal-overlay').remove()" class="text-gray-400 hover:text-gray-600">
               <i class="fas fa-times text-2xl"></i>
             </button>
           </div>
@@ -2954,7 +2954,7 @@ async function viewFactura(id) {
               <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
                 <div class="flex">
                   <div class="flex-shrink-0">
-                    <i class="fas fa-info-circle text-gray-300"></i>
+                    <i class="fas fa-info-circle text-gray-600"></i>
                   </div>
                   <div class="ml-3">
                     <p class="text-sm text-yellow-700">
@@ -2998,7 +2998,7 @@ async function viewFactura(id) {
               </div>
               <div class="flex justify-between text-lg font-bold border-t pt-2">
                 <span>Total:</span>
-                <span class="text-white">€${parseFloat(factura.total).toFixed(2)}</span>
+                <span class="text-black">€${parseFloat(factura.total).toFixed(2)}</span>
               </div>
             </div>
             
@@ -3622,26 +3622,26 @@ async function showFacturaForm() {
   ])
   
   const html = `
-    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="modal-overlay" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <h3 class="text-2xl font-bold mb-6">Nueva Factura</h3>
         <form id="factura-form" class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Nº Factura *</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Nº Factura *</label>
               <input type="text" name="numero_factura" required 
                      placeholder="AH-2025-XXX"
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Fecha Emisión *</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Fecha Emisión *</label>
               <input type="date" name="fecha_emision" value="${new Date().toISOString().slice(0, 10)}" required 
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Cliente *</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Cliente *</label>
             <select name="cliente_id" required class="w-full px-4 py-2 border rounded-lg">
               <option value="">Seleccionar cliente</option>
               ${clientesRes.data.map(c => `
@@ -3651,7 +3651,7 @@ async function showFacturaForm() {
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Trabajo (opcional)</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Trabajo (opcional)</label>
             <select name="trabajo_id" class="w-full px-4 py-2 border rounded-lg">
               <option value="">Sin trabajo asociado</option>
               ${trabajosRes.data.map(t => `
@@ -3662,26 +3662,26 @@ async function showFacturaForm() {
           
           <div class="grid grid-cols-3 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Subtotal (€) *</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Subtotal (€) *</label>
               <input type="number" name="subtotal" required step="0.01" 
                      oninput="calcularTotal()"
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">IVA (€)</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">IVA (€)</label>
               <input type="number" name="iva" value="0" step="0.01" 
                      oninput="calcularTotal()"
                      class="w-full px-4 py-2 border rounded-lg">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Total (€)</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Total (€)</label>
               <input type="number" name="total" required step="0.01" readonly
                      class="w-full px-4 py-2 border rounded-lg bg-gray-50">
             </div>
           </div>
           
           <div class="flex gap-3 pt-4">
-            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+            <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg">
               <i class="fas fa-save mr-2"></i>Guardar
             </button>
             <button type="button" onclick="closeModal()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -3736,26 +3736,26 @@ async function loadReporte() {
       <div class="space-y-6">
         <!-- Resumen Financiero -->
         <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6">
-          <h3 class="text-xl font-bold text-white mb-4">📊 Resumen Financiero</h3>
+          <h3 class="text-xl font-bold text-black mb-4">📊 Resumen Financiero</h3>
           <div class="grid grid-cols-3 gap-4">
             <div class="bg-white rounded-lg p-4">
               <p class="text-sm text-gray-600">Total Facturas</p>
-              <p class="text-2xl font-bold text-white">${data.financiero.total_facturas}</p>
+              <p class="text-2xl font-bold text-black">${data.financiero.total_facturas}</p>
             </div>
             <div class="bg-white rounded-lg p-4">
               <p class="text-sm text-gray-600">Ingresos</p>
-              <p class="text-2xl font-bold text-white">€${(data.financiero.ingresos || 0).toFixed(2)}</p>
+              <p class="text-2xl font-bold text-black">€${(data.financiero.ingresos || 0).toFixed(2)}</p>
             </div>
             <div class="bg-white rounded-lg p-4">
               <p class="text-sm text-gray-600">Pendiente Cobro</p>
-              <p class="text-2xl font-bold text-white">€${(data.financiero.pendiente_cobro || 0).toFixed(2)}</p>
+              <p class="text-2xl font-bold text-black">€${(data.financiero.pendiente_cobro || 0).toFixed(2)}</p>
             </div>
           </div>
         </div>
         
         <!-- Trabajos -->
         <div class="bg-white rounded-xl shadow-md p-6">
-          <h3 class="text-xl font-bold text-white mb-4">🛠️ Trabajos Realizados</h3>
+          <h3 class="text-xl font-bold text-black mb-4">🛠️ Trabajos Realizados</h3>
           <div class="grid grid-cols-3 gap-4">
             <div class="text-center p-4 bg-blue-50 rounded-lg">
               <p class="text-sm text-gray-600">Total</p>
@@ -3763,7 +3763,7 @@ async function loadReporte() {
             </div>
             <div class="text-center p-4 bg-green-50 rounded-lg">
               <p class="text-sm text-gray-600">Completados</p>
-              <p class="text-3xl font-bold text-white">${data.trabajos.completados}</p>
+              <p class="text-3xl font-bold text-black">${data.trabajos.completados}</p>
             </div>
             <div class="text-center p-4 bg-yellow-50 rounded-lg">
               <p class="text-sm text-gray-600">Satisfacción</p>
@@ -3774,12 +3774,12 @@ async function loadReporte() {
         
         <!-- Horas Trabajadas por Empleada -->
         <div class="bg-white rounded-xl shadow-md p-6">
-          <h3 class="text-xl font-bold text-white mb-4">👷 Horas Trabajadas</h3>
+          <h3 class="text-xl font-bold text-black mb-4">👷 Horas Trabajadas</h3>
           <div class="space-y-3">
             ${data.horas.map(h => `
-              <div class="flex items-center justify-between p-3 bg-zinc-800 border border-white rounded-lg">
-                <span class="font-medium text-white">${h.nombre} ${h.apellidos}</span>
-                <span class="font-bold text-gray-300">${(h.total_horas || 0).toFixed(1)}h</span>
+              <div class="flex items-center justify-between p-3 bg-zinc-800 border border-black rounded-lg">
+                <span class="font-medium text-black">${h.nombre} ${h.apellidos}</span>
+                <span class="font-bold text-gray-600">${(h.total_horas || 0).toFixed(1)}h</span>
               </div>
             `).join('')}
           </div>
@@ -3787,7 +3787,7 @@ async function loadReporte() {
         
         <!-- Servicios Más Demandados -->
         <div class="bg-white rounded-xl shadow-md p-6">
-          <h3 class="text-xl font-bold text-white mb-4">🔥 Servicios Más Demandados</h3>
+          <h3 class="text-xl font-bold text-black mb-4">🔥 Servicios Más Demandados</h3>
           <table class="min-w-full">
             <thead class="bg-gray-50">
               <tr>
@@ -3799,9 +3799,9 @@ async function loadReporte() {
             <tbody>
               ${data.servicios.map(s => `
                 <tr class="border-t">
-                  <td class="px-4 py-2 text-white">${s.tipo_servicio.replace('_', ' ')}</td>
+                  <td class="px-4 py-2 text-black">${s.tipo_servicio.replace('_', ' ')}</td>
                   <td class="px-4 py-2 font-semibold text-blue-600">${s.total}</td>
-                  <td class="px-4 py-2 font-semibold text-white">€${(s.ingresos || 0).toFixed(2)}</td>
+                  <td class="px-4 py-2 font-semibold text-black">€${(s.ingresos || 0).toFixed(2)}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -3874,30 +3874,30 @@ window.viewPersonal = async (id) => {
     }
     
     modalContainer.innerHTML = `
-      <div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onclick="closeModal()">
-        <div class="bg-zinc-900 border-2 border-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <div class="fixed inset-0 bg-white/80 flex items-center justify-center z-50 p-4" onclick="closeModal()">
+        <div class="bg-white border-2 border-black rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
           
           <!-- Header -->
-          <div class="bg-gradient-to-r bg-black p-6 text-white border-b-2 border-white">
+          <div class="bg-gradient-to-r bg-white p-6 text-black border-b-2 border-black">
             <div class="flex items-start justify-between">
               <div class="flex items-center gap-4">
-                <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-4xl font-bold text-black shadow-lg border-2 border-white">
+                <div class="w-20 h-20 bg-black rounded-full flex items-center justify-center text-4xl font-bold text-black shadow-lg border-2 border-black">
                   ${p.nombre.charAt(0)}${p.apellidos.charAt(0)}
                 </div>
                 <div>
-                  <h2 class="text-3xl font-bold text-white">${p.nombre} ${p.apellidos}</h2>
+                  <h2 class="text-3xl font-bold text-black">${p.nombre} ${p.apellidos}</h2>
                   <div class="flex items-center gap-4 mt-2">
                     ${p.calificacion ? `<div class="flex items-center gap-1">
-                      <i class="fas fa-star text-gray-300"></i>
-                      <span class="font-semibold text-gray-300">${p.calificacion.toFixed(1)}</span>
+                      <i class="fas fa-star text-gray-600"></i>
+                      <span class="font-semibold text-gray-600">${p.calificacion.toFixed(1)}</span>
                     </div>` : ''}
-                    <span class="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm border border-white text-gray-300">
+                    <span class="bg-black/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm border border-black text-gray-600">
                       <i class="fas fa-briefcase mr-1"></i>${trabajos.length} trabajos
                     </span>
                   </div>
                 </div>
               </div>
-              <button onclick="closeModal()" class="text-white hover:bg-white/20 p-3 rounded-full transition-all border border-white">
+              <button onclick="closeModal()" class="text-black hover:bg-black/20 p-3 rounded-full transition-all border border-black">
                 <i class="fas fa-times text-2xl"></i>
               </button>
             </div>
@@ -3907,59 +3907,59 @@ window.viewPersonal = async (id) => {
           <div class="p-6">
             
             <!-- Información de Contacto -->
-            <div class="bg-zinc-800 border border-white rounded-xl p-6 mb-6">
-              <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                <i class="fas fa-address-card text-white"></i>
+            <div class="bg-zinc-800 border border-black rounded-xl p-6 mb-6">
+              <h3 class="text-xl font-bold text-black mb-4 flex items-center gap-2">
+                <i class="fas fa-address-card text-black"></i>
                 Información de Contacto
               </h3>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 bg-white/20 border border-white rounded-full flex items-center justify-center">
-                    <i class="fas fa-phone text-white"></i>
+                  <div class="w-10 h-10 bg-black/20 border border-black rounded-full flex items-center justify-center">
+                    <i class="fas fa-phone text-black"></i>
                   </div>
                   <div>
                     <p class="text-sm text-gray-400">Teléfono</p>
-                    <p class="font-semibold text-white">${p.telefono || 'No registrado'}</p>
+                    <p class="font-semibold text-black">${p.telefono || 'No registrado'}</p>
                   </div>
                 </div>
                 
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 bg-white/20 border border-white rounded-full flex items-center justify-center">
-                    <i class="fas fa-envelope text-white"></i>
+                  <div class="w-10 h-10 bg-black/20 border border-black rounded-full flex items-center justify-center">
+                    <i class="fas fa-envelope text-black"></i>
                   </div>
                   <div>
                     <p class="text-sm text-gray-400">Email</p>
-                    <p class="font-semibold text-white">${p.email || 'No registrado'}</p>
+                    <p class="font-semibold text-black">${p.email || 'No registrado'}</p>
                   </div>
                 </div>
                 
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 bg-white/20 border border-white rounded-full flex items-center justify-center">
-                    <i class="fas fa-id-card text-white"></i>
+                  <div class="w-10 h-10 bg-black/20 border border-black rounded-full flex items-center justify-center">
+                    <i class="fas fa-id-card text-black"></i>
                   </div>
                   <div>
                     <p class="text-sm text-gray-400">DNI</p>
-                    <p class="font-semibold text-white">${p.dni || 'No registrado'}</p>
+                    <p class="font-semibold text-black">${p.dni || 'No registrado'}</p>
                   </div>
                 </div>
                 
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 bg-white/20 border border-white rounded-full flex items-center justify-center">
-                    <i class="fas fa-calendar text-white"></i>
+                  <div class="w-10 h-10 bg-black/20 border border-black rounded-full flex items-center justify-center">
+                    <i class="fas fa-calendar text-black"></i>
                   </div>
                   <div>
                     <p class="text-sm text-gray-400">Fecha de Contratación</p>
-                    <p class="font-semibold text-white">${p.fecha_contratacion ? new Date(p.fecha_contratacion).toLocaleDateString('es-ES') : 'No registrada'}</p>
+                    <p class="font-semibold text-black">${p.fecha_contratacion ? new Date(p.fecha_contratacion).toLocaleDateString('es-ES') : 'No registrada'}</p>
                   </div>
                 </div>
                 
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 bg-white/20 border border-white rounded-full flex items-center justify-center">
-                    <i class="fas fa-euro-sign text-white"></i>
+                  <div class="w-10 h-10 bg-black/20 border border-black rounded-full flex items-center justify-center">
+                    <i class="fas fa-euro-sign text-black"></i>
                   </div>
                   <div>
                     <p class="text-sm text-gray-400">Salario por Hora</p>
-                    <p class="font-semibold text-white">${p.salario_hora ? `${p.salario_hora.toFixed(2)} €` : 'No registrado'}</p>
+                    <p class="font-semibold text-black">${p.salario_hora ? `${p.salario_hora.toFixed(2)} €` : 'No registrado'}</p>
                   </div>
                 </div>
               </div>
@@ -3967,8 +3967,8 @@ window.viewPersonal = async (id) => {
             
             <!-- Especialidades -->
             <div class="bg-purple-50 rounded-xl p-6 mb-6">
-              <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                <i class="fas fa-certificate text-white"></i>
+              <h3 class="text-xl font-bold text-black mb-4 flex items-center gap-2">
+                <i class="fas fa-certificate text-black"></i>
                 Especialidades
               </h3>
               <div class="flex flex-wrap gap-2">
@@ -3978,41 +3978,41 @@ window.viewPersonal = async (id) => {
             
             <!-- Estadísticas -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div class="bg-gradient-to-br from-zinc-900 to-black border-2 border-white rounded-xl p-6 text-white">
+              <div class="bg-gradient-to-br from-gray-800 to-black border-2 border-black rounded-xl p-6 text-black">
                 <div class="flex items-center justify-between">
                   <div>
-                    <p class="text-gray-300 text-sm mb-1">Trabajos Activos</p>
+                    <p class="text-gray-600 text-sm mb-1">Trabajos Activos</p>
                     <p class="text-4xl font-bold">${trabajosActivos}</p>
                   </div>
-                  <i class="fas fa-tasks text-5xl text-white/30"></i>
+                  <i class="fas fa-tasks text-5xl text-black/30"></i>
                 </div>
               </div>
               
-              <div class="bg-gradient-to-br from-zinc-900 to-black border-2 border-white rounded-xl p-6 text-white">
+              <div class="bg-gradient-to-br from-gray-800 to-black border-2 border-black rounded-xl p-6 text-black">
                 <div class="flex items-center justify-between">
                   <div>
-                    <p class="text-gray-300 text-sm mb-1">Completados</p>
+                    <p class="text-gray-600 text-sm mb-1">Completados</p>
                     <p class="text-4xl font-bold">${trabajosCompletados}</p>
                   </div>
-                  <i class="fas fa-check-circle text-5xl text-white/30"></i>
+                  <i class="fas fa-check-circle text-5xl text-black/30"></i>
                 </div>
               </div>
               
-              <div class="bg-gradient-to-br from-zinc-900 to-black border-2 border-white rounded-xl p-6 text-white">
+              <div class="bg-gradient-to-br from-gray-800 to-black border-2 border-black rounded-xl p-6 text-black">
                 <div class="flex items-center justify-between">
                   <div>
-                    <p class="text-gray-300 text-sm mb-1">Horas Totales</p>
+                    <p class="text-gray-600 text-sm mb-1">Horas Totales</p>
                     <p class="text-4xl font-bold">${totalHoras.toFixed(1)}</p>
                   </div>
-                  <i class="fas fa-clock text-5xl text-white/30"></i>
+                  <i class="fas fa-clock text-5xl text-black/30"></i>
                 </div>
               </div>
             </div>
             
             <!-- Trabajos Recientes -->
             ${trabajos.length > 0 ? `
-              <div class="bg-zinc-800 border border-white rounded-xl p-6 mb-6">
-                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <div class="bg-zinc-800 border border-black rounded-xl p-6 mb-6">
+                <h3 class="text-xl font-bold text-black mb-4 flex items-center gap-2">
                   <i class="fas fa-briefcase text-blue-600"></i>
                   Trabajos Recientes
                 </h3>
@@ -4021,7 +4021,7 @@ window.viewPersonal = async (id) => {
                     <div class="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow">
                       <div class="flex items-center justify-between">
                         <div class="flex-1">
-                          <p class="font-semibold text-white">${t.cliente_nombre || 'Sin cliente'}</p>
+                          <p class="font-semibold text-black">${t.cliente_nombre || 'Sin cliente'}</p>
                           <p class="text-sm text-gray-400">${t.tipo_servicio || 'Sin tipo'}</p>
                           <p class="text-xs text-gray-400 mt-1">
                             <i class="fas fa-calendar mr-1"></i>${t.fecha_programada ? new Date(t.fecha_programada).toLocaleDateString('es-ES') : 'Sin fecha'}
@@ -4031,7 +4031,7 @@ window.viewPersonal = async (id) => {
                           t.estado === 'completado' ? 'bg-green-100 text-green-800' :
                           t.estado === 'en_proceso' ? 'bg-blue-100 text-blue-800' :
                           t.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-gray-100 text-white'
+                          'bg-gray-100 text-black'
                         }">
                           ${t.estado || 'Sin estado'}
                         </span>
@@ -4045,11 +4045,11 @@ window.viewPersonal = async (id) => {
             <!-- Notas -->
             ${p.notas ? `
               <div class="bg-yellow-50 rounded-xl p-6">
-                <h3 class="text-xl font-bold text-white mb-3 flex items-center gap-2">
+                <h3 class="text-xl font-bold text-black mb-3 flex items-center gap-2">
                   <i class="fas fa-sticky-note text-yellow-600"></i>
                   Notas
                 </h3>
-                <p class="text-gray-300 whitespace-pre-wrap">${p.notas}</p>
+                <p class="text-gray-600 whitespace-pre-wrap">${p.notas}</p>
               </div>
             ` : ''}
             
@@ -4057,10 +4057,10 @@ window.viewPersonal = async (id) => {
           
           <!-- Footer -->
           <div class="bg-gray-50 p-6 flex justify-end gap-3 border-t">
-            <button onclick="closeModal()" class="px-6 py-3 bg-gray-200 text-gray-300 rounded-lg hover:bg-gray-300 transition-colors font-medium">
+            <button onclick="closeModal()" class="px-6 py-3 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 transition-colors font-medium">
               <i class="fas fa-times mr-2"></i>Cerrar
             </button>
-            <button onclick="closeModal(); showPersonalForm(${id})" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+            <button onclick="closeModal(); showPersonalForm(${id})" class="px-6 py-3 bg-blue-600 text-black rounded-lg hover:bg-blue-700 transition-colors font-medium">
               <i class="fas fa-edit mr-2"></i>Editar
             </button>
           </div>
@@ -4090,33 +4090,33 @@ function openGalIA() {
   
   const modal = document.createElement('div')
   modal.id = 'galia-modal-flotante'
-  modal.className = 'fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4'
+  modal.className = 'fixed inset-0 bg-white/50 z-50 flex items-center justify-center p-4'
   modal.innerHTML = `
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden">
       <!-- Header -->
       <div class="bg-gradient-to-r from-teal-700 via-blue-900 to-purple-800 p-6">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-4">
-            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg p-2">
+            <div class="w-16 h-16 bg-black rounded-full flex items-center justify-center shadow-lg p-2">
               <img src="/static/galia-pulpo.png" alt="GaliA" class="w-full h-full object-contain">
             </div>
-            <div class="text-white">
+            <div class="text-black">
               <h2 class="text-2xl font-bold">GaliA - Tu Consultora</h2>
               <p class="text-teal-200 text-sm">Experta en Cortinas • Gestión • Innovación</p>
             </div>
           </div>
-          <button onclick="openGalIA()" class="text-white hover:bg-white/20 p-3 rounded-full transition-all">
+          <button onclick="openGalIA()" class="text-black hover:bg-black/20 p-3 rounded-full transition-all">
             <i class="fas fa-times text-2xl"></i>
           </button>
         </div>
         <div class="mt-4 flex flex-wrap gap-2">
-          <span class="bg-white/25 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium">
+          <span class="bg-white/25 backdrop-blur-sm text-black px-3 py-1 rounded-full text-xs font-medium">
             <i class="fas fa-cut mr-1"></i>Cortinas
           </span>
-          <span class="bg-white/25 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium">
+          <span class="bg-white/25 backdrop-blur-sm text-black px-3 py-1 rounded-full text-xs font-medium">
             <i class="fas fa-file-invoice mr-1"></i>Facturación
           </span>
-          <span class="bg-white/25 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium">
+          <span class="bg-white/25 backdrop-blur-sm text-black px-3 py-1 rounded-full text-xs font-medium">
             <i class="fas fa-users mr-1"></i>Clientes
           </span>
         </div>
@@ -4131,11 +4131,11 @@ function openGalIA() {
               <img src="/static/galia-pulpo.png" alt="GaliA" class="w-full h-full object-contain">
             </div>
             <div class="bg-white rounded-xl p-5 shadow-md max-w-3xl border-l-4 border-teal-500">
-              <p class="text-white mb-3 text-base">
+              <p class="text-black mb-3 text-base">
                 ¡Hola! Soy <strong class="text-teal-700">GaliA</strong> 🐙, tu consultora especializada. 👋
               </p>
-              <p class="text-gray-300 mb-2 text-sm">Puedo ayudarte con:</p>
-              <ul class="list-disc list-inside text-gray-300 space-y-1 text-sm mb-3">
+              <p class="text-gray-600 mb-2 text-sm">Puedo ayudarte con:</p>
+              <ul class="list-disc list-inside text-gray-600 space-y-1 text-sm mb-3">
                 <li><strong>Cortinas</strong>: Confección, instalación, propuestas, tips de venta</li>
                 <li><strong>Facturación</strong>: VerificaTu, normativa fiscal, gestión de cobros</li>
                 <li><strong>Clientes</strong>: Fidelización, seguimiento, presupuestos</li>
@@ -4161,7 +4161,7 @@ function openGalIA() {
           >
           <button 
             onclick="sendMessageModal()" 
-            class="bg-gradient-to-r from-teal-600 to-purple-700 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all"
+            class="bg-gradient-to-r from-teal-600 to-purple-700 text-black px-6 py-3 rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all"
           >
             <i class="fas fa-paper-plane mr-2"></i>Enviar
           </button>
@@ -4173,7 +4173,7 @@ function openGalIA() {
           <button onclick="sendQuickQuestionModal('¿Qué es VerificaTu?')" class="text-xs bg-gradient-to-r from-teal-50 to-purple-50 hover:from-teal-100 hover:to-purple-100 px-3 py-2 rounded-full text-teal-800 font-medium border border-teal-200">
             📄 VerificaTu
           </button>
-          <button onclick="sendQuickQuestionModal('Tips para cerrar ventas')" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-full text-gray-300">
+          <button onclick="sendQuickQuestionModal('Tips para cerrar ventas')" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-full text-gray-600">
             💰 Tips venta
           </button>
         </div>
@@ -4202,7 +4202,7 @@ async function sendMessageModal() {
   const chatContainer = document.getElementById('chat-messages-modal')
   chatContainer.innerHTML += `
     <div class="mb-4 flex justify-end">
-      <div class="bg-gradient-to-r from-teal-600 to-purple-700 text-white rounded-xl p-4 max-w-2xl shadow-md">
+      <div class="bg-gradient-to-r from-teal-600 to-purple-700 text-black rounded-xl p-4 max-w-2xl shadow-md">
         <p class="text-sm">${message}</p>
       </div>
     </div>
@@ -4219,7 +4219,7 @@ async function sendMessageModal() {
           <img src="/static/galia-pulpo.png" alt="GaliA" class="w-full h-full object-contain">
         </div>
         <div class="bg-white rounded-xl p-4 shadow-md">
-          <i class="fas fa-circle-notch fa-spin text-white"></i>
+          <i class="fas fa-circle-notch fa-spin text-black"></i>
           <span class="text-gray-600 text-sm ml-2">Escribiendo...</span>
         </div>
       </div>
@@ -4242,7 +4242,7 @@ async function sendMessageModal() {
             <img src="/static/galia-pulpo.png" alt="GaliA" class="w-full h-full object-contain">
           </div>
           <div class="bg-white rounded-xl p-5 shadow-md max-w-3xl border-l-4 border-teal-500">
-            <div class="prose prose-sm max-w-none text-white">
+            <div class="prose prose-sm max-w-none text-black">
               ${data.respuesta.replace(/\n/g, '<br>')}
             </div>
           </div>
@@ -4428,7 +4428,7 @@ async function loadPresupuestos() {
               </td>
               <td class="px-6 py-4 text-sm text-gray-900">${p.titulo}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">${new Date(p.fecha_emision).toLocaleDateString()}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-white">€${parseFloat(p.total).toFixed(2)}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-black">€${parseFloat(p.total).toFixed(2)}</td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <select onchange="cambiarEstadoPresupuesto(${p.id}, this.value, ${p.cliente_id}, '${p.titulo.replace(/'/g, "\\'")}', ${p.total})" class="px-2 py-1 text-xs font-semibold rounded-full border-0 ${estadoColor[p.estado]} cursor-pointer">
                   <option value="pendiente" ${p.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
@@ -4442,29 +4442,29 @@ async function loadPresupuestos() {
                 <button onclick="viewPresupuesto(${p.id})" class="text-blue-600 hover:text-blue-800" title="Ver detalles">
                   <i class="fas fa-eye"></i>
                 </button>
-                <button onclick="editPresupuesto(${p.id})" class="text-white hover:text-orange-800" title="Editar">
+                <button onclick="editPresupuesto(${p.id})" class="text-black hover:text-orange-800" title="Editar">
                   <i class="fas fa-edit"></i>
                 </button>
                 <div class="relative inline-block">
-                  <button onclick="togglePDFMenu(${p.id})" class="text-white hover:text-green-800" title="Descargar PDF">
+                  <button onclick="togglePDFMenu(${p.id})" class="text-black hover:text-green-800" title="Descargar PDF">
                     <i class="fas fa-file-pdf"></i>
                   </button>
                   <div id="pdf-menu-${p.id}" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-md shadow-xl z-50 border border-gray-200">
-                    <button onclick="downloadPresupuestoPDF(${p.id}, 'completo'); togglePDFMenu(${p.id})" class="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-green-50 border-b">
+                    <button onclick="downloadPresupuestoPDF(${p.id}, 'completo'); togglePDFMenu(${p.id})" class="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-green-50 border-b">
                       <i class="fas fa-file-alt mr-2"></i>Presupuesto Completo
                     </button>
-                    <button onclick="downloadPresupuestoPDF(${p.id}, 'final'); togglePDFMenu(${p.id})" class="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-green-50">
+                    <button onclick="downloadPresupuestoPDF(${p.id}, 'final'); togglePDFMenu(${p.id})" class="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-green-50">
                       <i class="fas fa-file-invoice mr-2"></i>Presupuesto Final (Resumen)
                     </button>
                   </div>
                 </div>
                 ${p.estado === 'aceptado' && !p.trabajo_id ? `
-                  <button onclick="convertirPresupuestoATrabajo(${p.id})" class="text-white hover:text-teal-800" title="Convertir a Trabajo">
+                  <button onclick="convertirPresupuestoATrabajo(${p.id})" class="text-black hover:text-teal-800" title="Convertir a Trabajo">
                     <i class="fas fa-tasks"></i>
                   </button>
                 ` : ''}
                 ${p.trabajo_id ? `
-                  <button onclick="showTab('trabajos'); setTimeout(() => viewTrabajo(${p.trabajo_id}), 300)" class="text-white hover:text-purple-800" title="Ver Trabajo">
+                  <button onclick="showTab('trabajos'); setTimeout(() => viewTrabajo(${p.trabajo_id}), 300)" class="text-black hover:text-purple-800" title="Ver Trabajo">
                     <i class="fas fa-check-circle"></i>
                   </button>
                 ` : ''}
@@ -4499,7 +4499,7 @@ async function viewPresupuesto(id) {
       if (items.length === 0) return ''
       return `
         <div class="mb-4">
-          <h4 class="font-semibold text-gray-300 mb-2">${titulo}</h4>
+          <h4 class="font-semibold text-gray-600 mb-2">${titulo}</h4>
           <table class="w-full text-sm">
             <thead class="bg-gray-50">
               <tr>
@@ -4527,13 +4527,13 @@ async function viewPresupuesto(id) {
     showModal(`
       <div class="space-y-6">
         <div class="border-b pb-4">
-          <h3 class="text-2xl font-bold text-white">${data.numero_presupuesto}</h3>
+          <h3 class="text-2xl font-bold text-black">${data.numero_presupuesto}</h3>
           <p class="text-gray-600">${data.titulo}</p>
           <p class="text-sm text-gray-400 mt-2">Cliente: ${data.cliente_nombre} ${data.cliente_apellidos}</p>
           <p class="text-sm text-gray-400">Fecha: ${new Date(data.fecha_emision).toLocaleDateString()}</p>
         </div>
         
-        ${data.descripcion ? `<p class="text-gray-300">${data.descripcion}</p>` : ''}
+        ${data.descripcion ? `<p class="text-gray-600">${data.descripcion}</p>` : ''}
         
         ${renderLineas(telas, '🧵 Telas')}
         ${renderLineas(materiales, '🔩 Materiales')}
@@ -4541,23 +4541,23 @@ async function viewPresupuesto(id) {
         ${renderLineas(instalacion, '🔧 Instalación')}
         
         <div class="border-t pt-4 space-y-2">
-          <div class="flex justify-between text-gray-300">
+          <div class="flex justify-between text-gray-600">
             <span>Subtotal:</span>
             <span class="font-semibold">€${parseFloat(data.subtotal).toFixed(2)}</span>
           </div>
           ${data.descuento_porcentaje > 0 ? `
-            <div class="flex justify-between text-gray-300">
+            <div class="flex justify-between text-gray-600">
               <span>Descuento (${data.descuento_porcentaje}%):</span>
               <span class="font-semibold text-red-600">-€${parseFloat(data.descuento_importe).toFixed(2)}</span>
             </div>
           ` : ''}
-          <div class="flex justify-between text-gray-300">
+          <div class="flex justify-between text-gray-600">
             <span>IVA (${data.porcentaje_iva}%):</span>
             <span class="font-semibold">€${parseFloat(data.importe_iva).toFixed(2)}</span>
           </div>
           <div class="flex justify-between text-xl font-bold text-gray-900 border-t pt-2">
             <span>TOTAL:</span>
-            <span class="text-white">€${parseFloat(data.total).toFixed(2)}</span>
+            <span class="text-black">€${parseFloat(data.total).toFixed(2)}</span>
           </div>
         </div>
         
@@ -4590,19 +4590,19 @@ async function showPresupuestoForm(presupuestoId = null, preselectedClienteId = 
     <form onsubmit="savePresupuesto(event)" class="space-y-6">
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Cliente *</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Cliente *</label>
           <div class="flex gap-2">
             <select id="presupuesto-cliente" required class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-800">
               <option value="">Seleccionar cliente...</option>
               ${clientes.map(c => `<option value="${c.id}" ${preselectedClienteId && c.id === preselectedClienteId ? 'selected' : ''}>${c.nombre} ${c.apellidos}</option>`).join('')}
             </select>
-            <button type="button" onclick="showQuickClienteForm()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 whitespace-nowrap">
+            <button type="button" onclick="showQuickClienteForm()" class="px-4 py-2 bg-green-600 text-black rounded-lg hover:bg-green-700 whitespace-nowrap">
               <i class="fas fa-user-plus"></i> Nuevo
             </button>
           </div>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Estado</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Estado</label>
           <select id="presupuesto-estado" class="w-full px-4 py-2 border rounded-lg">
             <option value="pendiente">Pendiente</option>
             <option value="enviado">Enviado</option>
@@ -4613,20 +4613,20 @@ async function showPresupuestoForm(presupuestoId = null, preselectedClienteId = 
       </div>
       
       <div>
-        <label class="block text-sm font-medium text-gray-300 mb-2">Título *</label>
+        <label class="block text-sm font-medium text-gray-600 mb-2">Título *</label>
         <input type="text" id="presupuesto-titulo" required class="w-full px-4 py-2 border rounded-lg">
       </div>
       
       <div>
-        <label class="block text-sm font-medium text-gray-300 mb-2">Descripción</label>
+        <label class="block text-sm font-medium text-gray-600 mb-2">Descripción</label>
         <textarea id="presupuesto-descripcion" rows="3" class="w-full px-4 py-2 border rounded-lg"></textarea>
       </div>
       
       <!-- TELAS -->
       <div class="border rounded-lg p-4 bg-gray-50">
         <div class="flex justify-between items-center mb-3">
-          <h4 class="font-semibold text-gray-300">🧵 Telas</h4>
-          <button type="button" onclick="addLineaTela()" class="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900">
+          <h4 class="font-semibold text-gray-600">🧵 Telas</h4>
+          <button type="button" onclick="addLineaTela()" class="text-sm bg-gray-800 text-black px-3 py-1 rounded hover:bg-gray-900">
             <i class="fas fa-plus mr-1"></i>Añadir
           </button>
         </div>
@@ -4636,8 +4636,8 @@ async function showPresupuestoForm(presupuestoId = null, preselectedClienteId = 
       <!-- MATERIALES -->
       <div class="border rounded-lg p-4 bg-gray-50">
         <div class="flex justify-between items-center mb-3">
-          <h4 class="font-semibold text-gray-300">🔩 Materiales</h4>
-          <button type="button" onclick="addLineaMaterial()" class="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900">
+          <h4 class="font-semibold text-gray-600">🔩 Materiales</h4>
+          <button type="button" onclick="addLineaMaterial()" class="text-sm bg-gray-800 text-black px-3 py-1 rounded hover:bg-gray-900">
             <i class="fas fa-plus mr-1"></i>Añadir
           </button>
         </div>
@@ -4647,8 +4647,8 @@ async function showPresupuestoForm(presupuestoId = null, preselectedClienteId = 
       <!-- CONFECCIÓN -->
       <div class="border rounded-lg p-4 bg-gray-50">
         <div class="flex justify-between items-center mb-3">
-          <h4 class="font-semibold text-gray-300">✂️ Confección</h4>
-          <button type="button" onclick="addLineaConfeccion()" class="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900">
+          <h4 class="font-semibold text-gray-600">✂️ Confección</h4>
+          <button type="button" onclick="addLineaConfeccion()" class="text-sm bg-gray-800 text-black px-3 py-1 rounded hover:bg-gray-900">
             <i class="fas fa-plus mr-1"></i>Añadir
           </button>
         </div>
@@ -4658,8 +4658,8 @@ async function showPresupuestoForm(presupuestoId = null, preselectedClienteId = 
       <!-- INSTALACIÓN -->
       <div class="border rounded-lg p-4 bg-gray-50">
         <div class="flex justify-between items-center mb-3">
-          <h4 class="font-semibold text-gray-300">🔧 Instalación</h4>
-          <button type="button" onclick="addLineaInstalacion()" class="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900">
+          <h4 class="font-semibold text-gray-600">🔧 Instalación</h4>
+          <button type="button" onclick="addLineaInstalacion()" class="text-sm bg-gray-800 text-black px-3 py-1 rounded hover:bg-gray-900">
             <i class="fas fa-plus mr-1"></i>Añadir
           </button>
         </div>
@@ -4670,55 +4670,55 @@ async function showPresupuestoForm(presupuestoId = null, preselectedClienteId = 
       <div class="border-t pt-4 space-y-2">
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Descuento (%)</label>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Descuento (%)</label>
             <input type="number" id="presupuesto-descuento" value="0" min="0" max="100" step="0.1" 
                    oninput="calcularTotalesPresupuesto()" class="w-full px-4 py-2 border rounded-lg">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">IVA (%)</label>
+            <label class="block text-sm font-medium text-gray-600 mb-2">IVA (%)</label>
             <input type="number" id="presupuesto-iva" value="21" min="0" max="100" step="0.1"
                    oninput="calcularTotalesPresupuesto()" class="w-full px-4 py-2 border rounded-lg">
           </div>
         </div>
         
         <div class="bg-green-50 p-4 rounded-lg">
-          <div class="flex justify-between text-gray-300">
+          <div class="flex justify-between text-gray-600">
             <span>Subtotal:</span>
             <span id="total-subtotal" class="font-semibold">€0.00</span>
           </div>
-          <div class="flex justify-between text-gray-300">
+          <div class="flex justify-between text-gray-600">
             <span>Descuento:</span>
             <span id="total-descuento" class="font-semibold text-red-600">€0.00</span>
           </div>
-          <div class="flex justify-between text-gray-300">
+          <div class="flex justify-between text-gray-600">
             <span>IVA:</span>
             <span id="total-iva" class="font-semibold">€0.00</span>
           </div>
           <div class="flex justify-between text-xl font-bold text-gray-900 border-t mt-2 pt-2">
             <span>TOTAL:</span>
-            <span id="total-final" class="text-white">€0.00</span>
+            <span id="total-final" class="text-black">€0.00</span>
           </div>
         </div>
       </div>
       
       <div>
-        <label class="block text-sm font-medium text-gray-300 mb-2">Forma de Pago</label>
+        <label class="block text-sm font-medium text-gray-600 mb-2">Forma de Pago</label>
         <input type="text" id="presupuesto-forma-pago" placeholder="Ej: 50% Señal + 50% Final" class="w-full px-4 py-2 border rounded-lg">
       </div>
       
       <div>
-        <label class="block text-sm font-medium text-gray-300 mb-2">Notas</label>
+        <label class="block text-sm font-medium text-gray-600 mb-2">Notas</label>
         <textarea id="presupuesto-notas" rows="2" class="w-full px-4 py-2 border rounded-lg"></textarea>
       </div>
       
       <div>
-        <label class="block text-sm font-medium text-gray-300 mb-2">Condiciones</label>
+        <label class="block text-sm font-medium text-gray-600 mb-2">Condiciones</label>
         <textarea id="presupuesto-condiciones" rows="3" class="w-full px-4 py-2 border rounded-lg"></textarea>
       </div>
       
       <div class="flex gap-3 justify-end">
         <button type="button" onclick="closeModal()" class="px-6 py-2 border rounded-lg hover:bg-gray-50">Cancelar</button>
-        <button type="submit" class="px-6 py-2 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-lg hover:shadow-lg">Guardar Presupuesto</button>
+        <button type="submit" class="px-6 py-2 bg-gradient-to-r from-gray-800 to-gray-900 text-black rounded-lg hover:shadow-lg">Guardar Presupuesto</button>
       </div>
     </form>
   `, 'max-w-6xl')
@@ -4745,13 +4745,13 @@ async function editPresupuesto(id) {
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Cliente *</label>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Cliente *</label>
             <select id="presupuesto-cliente" required class="w-full px-4 py-2 border rounded-lg">
               ${clientes.map(c => `<option value="${c.id}" ${c.id === presupuesto.cliente_id ? 'selected' : ''}>${c.nombre} ${c.apellidos}</option>`).join('')}
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Estado</label>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Estado</label>
             <select id="presupuesto-estado" class="w-full px-4 py-2 border rounded-lg">
               <option value="pendiente" ${presupuesto.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
               <option value="enviado" ${presupuesto.estado === 'enviado' ? 'selected' : ''}>Enviado</option>
@@ -4761,74 +4761,74 @@ async function editPresupuesto(id) {
           </div>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Título *</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Título *</label>
           <input type="text" id="presupuesto-titulo" required value="${presupuesto.titulo || ''}" class="w-full px-4 py-2 border rounded-lg">
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Descripción</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Descripción</label>
           <textarea id="presupuesto-descripcion" rows="3" class="w-full px-4 py-2 border rounded-lg">${presupuesto.descripcion || ''}</textarea>
         </div>
         <div class="border rounded-lg p-4 bg-gray-50">
           <div class="flex justify-between items-center mb-3">
-            <h4 class="font-semibold text-gray-300">🧵 Telas</h4>
-            <button type="button" onclick="addLineaTela()" class="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900"><i class="fas fa-plus mr-1"></i>Añadir</button>
+            <h4 class="font-semibold text-gray-600">🧵 Telas</h4>
+            <button type="button" onclick="addLineaTela()" class="text-sm bg-gray-800 text-black px-3 py-1 rounded hover:bg-gray-900"><i class="fas fa-plus mr-1"></i>Añadir</button>
           </div>
           <div id="telas-container"></div>
         </div>
         <div class="border rounded-lg p-4 bg-gray-50">
           <div class="flex justify-between items-center mb-3">
-            <h4 class="font-semibold text-gray-300">🔩 Materiales</h4>
-            <button type="button" onclick="addLineaMaterial()" class="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900"><i class="fas fa-plus mr-1"></i>Añadir</button>
+            <h4 class="font-semibold text-gray-600">🔩 Materiales</h4>
+            <button type="button" onclick="addLineaMaterial()" class="text-sm bg-gray-800 text-black px-3 py-1 rounded hover:bg-gray-900"><i class="fas fa-plus mr-1"></i>Añadir</button>
           </div>
           <div id="materiales-container"></div>
         </div>
         <div class="border rounded-lg p-4 bg-gray-50">
           <div class="flex justify-between items-center mb-3">
-            <h4 class="font-semibold text-gray-300">✂️ Confección</h4>
-            <button type="button" onclick="addLineaConfeccion()" class="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900"><i class="fas fa-plus mr-1"></i>Añadir</button>
+            <h4 class="font-semibold text-gray-600">✂️ Confección</h4>
+            <button type="button" onclick="addLineaConfeccion()" class="text-sm bg-gray-800 text-black px-3 py-1 rounded hover:bg-gray-900"><i class="fas fa-plus mr-1"></i>Añadir</button>
           </div>
           <div id="confeccion-container"></div>
         </div>
         <div class="border rounded-lg p-4 bg-gray-50">
           <div class="flex justify-between items-center mb-3">
-            <h4 class="font-semibold text-gray-300">🔧 Instalación</h4>
-            <button type="button" onclick="addLineaInstalacion()" class="text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900"><i class="fas fa-plus mr-1"></i>Añadir</button>
+            <h4 class="font-semibold text-gray-600">🔧 Instalación</h4>
+            <button type="button" onclick="addLineaInstalacion()" class="text-sm bg-gray-800 text-black px-3 py-1 rounded hover:bg-gray-900"><i class="fas fa-plus mr-1"></i>Añadir</button>
           </div>
           <div id="instalacion-container"></div>
         </div>
         <div class="border-t pt-4 space-y-2">
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-2">Descuento (%)</label>
+              <label class="block text-sm font-medium text-gray-600 mb-2">Descuento (%)</label>
               <input type="number" id="presupuesto-descuento" value="${presupuesto.descuento_porcentaje || 0}" min="0" max="100" step="0.1" oninput="calcularTotalesPresupuesto()" class="w-full px-4 py-2 border rounded-lg">
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-2">IVA (%)</label>
+              <label class="block text-sm font-medium text-gray-600 mb-2">IVA (%)</label>
               <input type="number" id="presupuesto-iva" value="${presupuesto.porcentaje_iva || 21}" min="0" max="100" step="0.1" oninput="calcularTotalesPresupuesto()" class="w-full px-4 py-2 border rounded-lg">
             </div>
           </div>
           <div class="bg-green-50 p-4 rounded-lg">
-            <div class="flex justify-between text-gray-300"><span>Subtotal:</span><span id="total-subtotal" class="font-semibold">€0.00</span></div>
-            <div class="flex justify-between text-gray-300"><span>Descuento:</span><span id="total-descuento" class="font-semibold text-red-600">€0.00</span></div>
-            <div class="flex justify-between text-gray-300"><span>IVA:</span><span id="total-iva" class="font-semibold">€0.00</span></div>
-            <div class="flex justify-between text-xl font-bold text-gray-900 border-t mt-2 pt-2"><span>TOTAL:</span><span id="total-final" class="text-white">€0.00</span></div>
+            <div class="flex justify-between text-gray-600"><span>Subtotal:</span><span id="total-subtotal" class="font-semibold">€0.00</span></div>
+            <div class="flex justify-between text-gray-600"><span>Descuento:</span><span id="total-descuento" class="font-semibold text-red-600">€0.00</span></div>
+            <div class="flex justify-between text-gray-600"><span>IVA:</span><span id="total-iva" class="font-semibold">€0.00</span></div>
+            <div class="flex justify-between text-xl font-bold text-gray-900 border-t mt-2 pt-2"><span>TOTAL:</span><span id="total-final" class="text-black">€0.00</span></div>
           </div>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Forma de Pago</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Forma de Pago</label>
           <input type="text" id="presupuesto-forma-pago" value="${presupuesto.forma_pago || ''}" placeholder="Ej: 50% Señal + 50% Final" class="w-full px-4 py-2 border rounded-lg">
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Notas</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Notas</label>
           <textarea id="presupuesto-notas" rows="2" class="w-full px-4 py-2 border rounded-lg">${presupuesto.notas || ''}</textarea>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Condiciones</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Condiciones</label>
           <textarea id="presupuesto-condiciones" rows="3" class="w-full px-4 py-2 border rounded-lg">${presupuesto.condiciones || ''}</textarea>
         </div>
         <div class="flex gap-3 justify-end">
           <button type="button" onclick="closeModal()" class="px-6 py-2 border rounded-lg hover:bg-gray-50">Cancelar</button>
-          <button type="submit" class="px-6 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-lg hover:shadow-lg"><i class="fas fa-save mr-2"></i>Actualizar Presupuesto</button>
+          <button type="submit" class="px-6 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-black rounded-lg hover:shadow-lg"><i class="fas fa-save mr-2"></i>Actualizar Presupuesto</button>
         </div>
       </form>
     `, 'max-w-6xl')
@@ -5180,45 +5180,45 @@ function showQuickClienteForm() {
       
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Nombre *</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Nombre *</label>
           <input type="text" id="quick-cliente-nombre" required class="w-full px-4 py-2 border rounded-lg">
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Apellidos *</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Apellidos *</label>
           <input type="text" id="quick-cliente-apellidos" required class="w-full px-4 py-2 border rounded-lg">
         </div>
       </div>
       
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Teléfono *</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Teléfono *</label>
           <input type="tel" id="quick-cliente-telefono" required class="w-full px-4 py-2 border rounded-lg">
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Email</label>
           <input type="email" id="quick-cliente-email" class="w-full px-4 py-2 border rounded-lg">
         </div>
       </div>
       
       <div>
-        <label class="block text-sm font-medium text-gray-300 mb-2">Dirección</label>
+        <label class="block text-sm font-medium text-gray-600 mb-2">Dirección</label>
         <input type="text" id="quick-cliente-direccion" class="w-full px-4 py-2 border rounded-lg">
       </div>
       
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Ciudad</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Ciudad</label>
           <input type="text" id="quick-cliente-ciudad" class="w-full px-4 py-2 border rounded-lg">
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Código Postal</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Código Postal</label>
           <input type="text" id="quick-cliente-cp" class="w-full px-4 py-2 border rounded-lg">
         </div>
       </div>
       
       <div class="flex gap-3 justify-end">
         <button type="button" onclick="closeModal(); showPresupuestoForm()" class="px-6 py-2 border rounded-lg hover:bg-gray-50">Cancelar</button>
-        <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+        <button type="submit" class="px-6 py-2 bg-green-600 text-black rounded-lg hover:bg-green-700">
           <i class="fas fa-save mr-2"></i>Crear y Seleccionar
         </button>
       </div>
@@ -5751,12 +5751,12 @@ async function showClientePresupuestos(clienteId) {
     }
     
     const html = `
-      <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) closeModal()">
+      <div id="modal-overlay" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) closeModal()">
         <div class="bg-white rounded-xl shadow-2xl p-8 max-w-5xl w-full max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-start mb-6">
             <div>
-              <h3 class="text-2xl font-bold text-white">
-                <i class="fas fa-file-alt text-white mr-2"></i>
+              <h3 class="text-2xl font-bold text-black">
+                <i class="fas fa-file-alt text-black mr-2"></i>
                 Presupuestos de ${cliente.nombre} ${cliente.apellidos}
               </h3>
               <p class="text-sm text-gray-600 mt-1">
@@ -5771,17 +5771,17 @@ async function showClientePresupuestos(clienteId) {
           
           ${presupuestos.length === 0 ? `
             <div class="text-center py-12">
-              <i class="fas fa-inbox text-gray-300 text-6xl mb-4"></i>
+              <i class="fas fa-inbox text-gray-600 text-6xl mb-4"></i>
               <p class="text-gray-400 text-lg mb-6">Este cliente no tiene presupuestos aún</p>
               <button onclick="closeModal(); showPresupuestoForm(null, ${clienteId})" 
-                      class="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-6 py-3 rounded-lg hover:shadow-lg">
+                      class="bg-gradient-to-r from-teal-500 to-teal-600 text-black px-6 py-3 rounded-lg hover:shadow-lg">
                 <i class="fas fa-plus mr-2"></i>Crear Primer Presupuesto
               </button>
             </div>
           ` : `
             <div class="mb-4">
               <button onclick="closeModal(); showPresupuestoForm(null, ${clienteId})" 
-                      class="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-4 py-2 rounded-lg hover:shadow-lg text-sm">
+                      class="bg-gradient-to-r from-teal-500 to-teal-600 text-black px-4 py-2 rounded-lg hover:shadow-lg text-sm">
                 <i class="fas fa-plus mr-2"></i>Nuevo Presupuesto
               </button>
             </div>
@@ -5804,7 +5804,7 @@ async function showClientePresupuestos(clienteId) {
                       <td class="px-4 py-3 text-sm font-medium text-gray-900">${p.numero_presupuesto}</td>
                       <td class="px-4 py-3 text-sm text-gray-900">${p.titulo}</td>
                       <td class="px-4 py-3 text-sm text-gray-400">${new Date(p.fecha_emision).toLocaleDateString()}</td>
-                      <td class="px-4 py-3 text-sm font-semibold text-white">€${parseFloat(p.total).toFixed(2)}</td>
+                      <td class="px-4 py-3 text-sm font-semibold text-black">€${parseFloat(p.total).toFixed(2)}</td>
                       <td class="px-4 py-3">
                         <span class="px-2 py-1 text-xs font-semibold rounded-full ${estadoColor[p.estado]}">${p.estado}</span>
                       </td>
@@ -5814,11 +5814,11 @@ async function showClientePresupuestos(clienteId) {
                           <i class="fas fa-eye"></i>
                         </button>
                         <button onclick="event.stopPropagation(); closeModal(); editPresupuesto(${p.id})" 
-                                class="text-white hover:text-orange-800" title="Editar">
+                                class="text-black hover:text-orange-800" title="Editar">
                           <i class="fas fa-edit"></i>
                         </button>
                         <button onclick="event.stopPropagation(); downloadPresupuestoPDF(${p.id})" 
-                                class="text-white hover:text-green-800" title="Descargar PDF">
+                                class="text-black hover:text-green-800" title="Descargar PDF">
                           <i class="fas fa-file-pdf"></i>
                         </button>
                       </td>
@@ -5828,20 +5828,20 @@ async function showClientePresupuestos(clienteId) {
               </table>
             </div>
             
-            <div class="mt-6 p-4 bg-zinc-800 border border-white rounded-lg">
+            <div class="mt-6 p-4 bg-zinc-800 border border-black rounded-lg">
               <div class="grid grid-cols-3 gap-4 text-center">
                 <div>
-                  <p class="text-2xl font-bold text-white">${presupuestos.length}</p>
+                  <p class="text-2xl font-bold text-black">${presupuestos.length}</p>
                   <p class="text-sm text-gray-600">Total Presupuestos</p>
                 </div>
                 <div>
-                  <p class="text-2xl font-bold text-white">
+                  <p class="text-2xl font-bold text-black">
                     €${presupuestos.reduce((sum, p) => sum + parseFloat(p.total), 0).toFixed(2)}
                   </p>
                   <p class="text-sm text-gray-600">Valor Total</p>
                 </div>
                 <div>
-                  <p class="text-2xl font-bold text-white">
+                  <p class="text-2xl font-bold text-black">
                     ${presupuestos.filter(p => p.estado === 'aceptado').length}
                   </p>
                   <p class="text-sm text-gray-600">Aceptados</p>
@@ -5871,10 +5871,10 @@ async function showClienteInfo(clienteId) {
     const presupuestos = presupuestosResponse.data
     
     const html = `
-      <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) closeModal()">
+      <div id="modal-overlay" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) closeModal()">
         <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-start mb-6">
-            <h3 class="text-2xl font-bold text-white">
+            <h3 class="text-2xl font-bold text-black">
               <i class="fas fa-user text-blue-600 mr-2"></i>
               Información del Cliente
             </h3>
@@ -5885,7 +5885,7 @@ async function showClienteInfo(clienteId) {
           
           <div class="space-y-4 mb-6">
             <div class="bg-gray-50 p-4 rounded-lg">
-              <h4 class="text-lg font-bold text-white mb-3">
+              <h4 class="text-lg font-bold text-black mb-3">
                 ${cliente.nombre} ${cliente.apellidos}
               </h4>
               <div class="space-y-2 text-sm">
@@ -5906,7 +5906,7 @@ async function showClienteInfo(clienteId) {
             
             ${cliente.notas ? `
               <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                <p class="text-sm font-medium text-gray-300 mb-1">
+                <p class="text-sm font-medium text-gray-600 mb-1">
                   <i class="fas fa-sticky-note text-yellow-600 mr-2"></i>Notas
                 </p>
                 <p class="text-sm text-gray-600">${cliente.notas}</p>
@@ -5914,16 +5914,16 @@ async function showClienteInfo(clienteId) {
             ` : ''}
             
             <div class="bg-teal-50 p-4 rounded-lg border border-teal-200">
-              <p class="text-sm font-medium text-gray-300 mb-2">
-                <i class="fas fa-chart-line text-gray-300 mr-2"></i>Resumen de Presupuestos
+              <p class="text-sm font-medium text-gray-600 mb-2">
+                <i class="fas fa-chart-line text-gray-600 mr-2"></i>Resumen de Presupuestos
               </p>
               <div class="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <p class="text-2xl font-bold text-white">${presupuestos.length}</p>
+                  <p class="text-2xl font-bold text-black">${presupuestos.length}</p>
                   <p class="text-xs text-gray-600">Total presupuestos</p>
                 </div>
                 <div>
-                  <p class="text-2xl font-bold text-white">${presupuestos.filter(p => p.estado === 'aceptado').length}</p>
+                  <p class="text-2xl font-bold text-black">${presupuestos.filter(p => p.estado === 'aceptado').length}</p>
                   <p class="text-xs text-gray-600">Aceptados</p>
                 </div>
               </div>
@@ -5932,11 +5932,11 @@ async function showClienteInfo(clienteId) {
           
           <div class="flex gap-3">
             <button onclick="closeModal(); showClientePresupuestos(${clienteId})" 
-                    class="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-lg hover:shadow-lg font-medium">
+                    class="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 text-black px-6 py-3 rounded-lg hover:shadow-lg font-medium">
               <i class="fas fa-file-alt mr-2"></i>Ver Todos los Presupuestos
             </button>
             <button onclick="closeModal(); showPresupuestoForm(null, ${clienteId})" 
-                    class="flex-1 bg-gradient-to-r from-teal-500 to-teal-600 text-white px-6 py-3 rounded-lg hover:shadow-lg font-medium">
+                    class="flex-1 bg-gradient-to-r from-teal-500 to-teal-600 text-black px-6 py-3 rounded-lg hover:shadow-lg font-medium">
               <i class="fas fa-plus mr-2"></i>Nuevo Presupuesto
             </button>
           </div>
@@ -6104,10 +6104,10 @@ async function showGestionCategorias() {
     <div class="space-y-6">
       <div class="flex justify-between items-center">
         <h3 class="text-xl font-bold">
-          <i class="fas fa-tags text-gray-300 mr-2"></i>
+          <i class="fas fa-tags text-gray-600 mr-2"></i>
           Gestión de Categorías
         </h3>
-        <button onclick="showCategoriaForm()" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">
+        <button onclick="showCategoriaForm()" class="px-4 py-2 bg-teal-600 text-black rounded-lg hover:bg-teal-700">
           <i class="fas fa-plus mr-2"></i>Nueva Categoría
         </button>
       </div>
@@ -6138,7 +6138,7 @@ async function showGestionCategorias() {
             
             <div class="mt-3 pt-3 border-t border-gray-200">
               <button onclick="closeModal(); setTimeout(() => showStockForm(null, ${cat.id}), 300)" 
-                      class="w-full px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors text-sm font-medium">
+                      class="w-full px-4 py-2 bg-gray-800 text-black rounded-lg hover:bg-gray-900 transition-colors text-sm font-medium">
                 <i class="fas fa-plus mr-2"></i>Añadir Artículo en ${cat.nombre}
               </button>
             </div>
@@ -6165,38 +6165,38 @@ async function showCategoriaForm(id = null) {
   
   showModal(`
     <h3 class="text-xl font-bold mb-6">
-      <i class="fas ${isEdit ? 'fa-edit' : 'fa-plus'} text-gray-300 mr-2"></i>
+      <i class="fas ${isEdit ? 'fa-edit' : 'fa-plus'} text-gray-600 mr-2"></i>
       ${isEdit ? 'Editar' : 'Nueva'} Categoría
     </h3>
     <form id="categoria-form" class="space-y-4">
       <div>
-        <label class="block text-sm font-medium text-gray-300 mb-1">Nombre *</label>
+        <label class="block text-sm font-medium text-gray-600 mb-1">Nombre *</label>
         <input type="text" name="nombre" value="${categoria.nombre}" required 
                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
       </div>
       
       <div>
-        <label class="block text-sm font-medium text-gray-300 mb-1">Descripción</label>
+        <label class="block text-sm font-medium text-gray-600 mb-1">Descripción</label>
         <textarea name="descripcion" rows="2" 
                   class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">${categoria.descripcion || ''}</textarea>
       </div>
       
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">Color</label>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Color</label>
           <input type="color" name="color" value="${categoria.color}" 
                  class="w-full h-10 px-2 py-1 border rounded-lg cursor-pointer">
         </div>
         
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">Orden</label>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Orden</label>
           <input type="number" name="orden" value="${categoria.orden}" min="0"
                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
         </div>
       </div>
       
       <div>
-        <label class="block text-sm font-medium text-gray-300 mb-2">Icono (FontAwesome)</label>
+        <label class="block text-sm font-medium text-gray-600 mb-2">Icono (FontAwesome)</label>
         <div class="grid grid-cols-6 gap-2">
           ${['fa-box', 'fa-cut', 'fa-grip-lines', 'fa-paperclip', 'fa-layer-group', 'fa-scissors', 
              'fa-tools', 'fa-ruler', 'fa-paint-brush', 'fa-store', 'fa-tag', 'fa-shopping-bag'].map(icon => `
@@ -6216,7 +6216,7 @@ async function showCategoriaForm(id = null) {
           Cancelar
         </button>
         <button type="submit" 
-                class="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">
+                class="px-6 py-2 bg-teal-600 text-black rounded-lg hover:bg-teal-700">
           <i class="fas ${isEdit ? 'fa-save' : 'fa-plus'} mr-2"></i>
           ${isEdit ? 'Guardar' : 'Crear'}
         </button>
@@ -6349,11 +6349,11 @@ function addMessageToChat(sender, text) {
   if (sender === 'user') {
     messageDiv.innerHTML = `
       <div class="flex items-start gap-3 justify-end">
-        <div class="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg p-4 shadow-sm max-w-xl">
-          <p class="text-white">${escapeHtml(text)}</p>
+        <div class="bg-gradient-to-r from-purple-600 to-blue-600 text-black rounded-lg p-4 shadow-sm max-w-xl">
+          <p class="text-black">${escapeHtml(text)}</p>
         </div>
         <div class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
-          <i class="fas fa-user text-white"></i>
+          <i class="fas fa-user text-black"></i>
         </div>
       </div>
     `
@@ -6364,7 +6364,7 @@ function addMessageToChat(sender, text) {
     messageDiv.innerHTML = `
       <div class="flex items-start gap-3">
         <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-          <i class="fas fa-robot text-white"></i>
+          <i class="fas fa-robot text-black"></i>
         </div>
         <div class="bg-white rounded-lg p-4 shadow-sm max-w-3xl">
           ${formattedText}
@@ -6386,7 +6386,7 @@ function addTypingIndicator() {
   typingDiv.innerHTML = `
     <div class="flex items-start gap-3">
       <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-        <i class="fas fa-robot text-white"></i>
+        <i class="fas fa-robot text-black"></i>
       </div>
       <div class="bg-white rounded-lg p-4 shadow-sm">
         <div class="flex gap-1">
@@ -6440,11 +6440,11 @@ function formatMarkdown(text) {
   html = html.replace(/\n/g, '<br>')
   
   // Enlaces: [texto](url)
-  html = html.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" class="text-white underline">$1</a>')
+  html = html.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" class="text-black underline">$1</a>')
   
   // Listas con viñetas: - item o * item
   html = html.replace(/^[\-\*] (.+)$/gm, '<li class="ml-4">$1</li>')
-  html = html.replace(/(<li.*<\/li>)/s, '<ul class="list-disc list-inside space-y-1 text-gray-300 my-2">$1</ul>')
+  html = html.replace(/(<li.*<\/li>)/s, '<ul class="list-disc list-inside space-y-1 text-gray-600 my-2">$1</ul>')
   
   // Listas numeradas: 1. item
   html = html.replace(/^\d+\. (.+)$/gm, '<li class="ml-4">$1</li>')
@@ -6453,11 +6453,11 @@ function formatMarkdown(text) {
   html = html.replace(/^## (.+)$/gm, '<h3 class="text-lg font-bold text-gray-900 mt-3 mb-2">$1</h3>')
   
   // Código inline: `código`
-  html = html.replace(/`(.+?)`/g, '<code class="bg-gray-100 px-2 py-1 rounded text-sm text-white">$1</code>')
+  html = html.replace(/`(.+?)`/g, '<code class="bg-gray-100 px-2 py-1 rounded text-sm text-black">$1</code>')
   
   // Emojis y iconos (mantener tal cual)
   
-  return '<div class="text-white">' + html + '</div>'
+  return '<div class="text-black">' + html + '</div>'
 }
 
 // ============================================
@@ -6500,7 +6500,7 @@ async function loadProyectosDiseño() {
     if (data.length === 0) {
       galeria.innerHTML = `
         <div class="col-span-3 text-center py-12">
-          <i class="fas fa-folder-open text-6xl text-gray-300 mb-4"></i>
+          <i class="fas fa-folder-open text-6xl text-gray-600 mb-4"></i>
           <p class="text-gray-400">No hay proyectos aún. ¡Crea el primero!</p>
         </div>
       `
@@ -6525,12 +6525,12 @@ async function loadProyectosDiseño() {
         <div class="relative">
           <div class="w-full aspect-video bg-gray-100 cursor-pointer" onclick="abrirProyecto(${p.id})">
             <img src="${imagenUrl}" alt="${p.nombre_proyecto}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/800x450/e5e7eb/9ca3af?text=En+Proceso'">
-            ${!tieneImagenValida ? '<div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center"><span class="text-white font-medium text-lg"><i class="fas fa-spinner fa-spin mr-2"></i>En Proceso</span></div>' : ''}
+            ${!tieneImagenValida ? '<div class="absolute inset-0 bg-white bg-opacity-40 flex items-center justify-center"><span class="text-black font-medium text-lg"><i class="fas fa-spinner fa-spin mr-2"></i>En Proceso</span></div>' : ''}
           </div>
           <!-- Botón eliminar (aparece al hover) -->
           <button 
             onclick="event.stopPropagation(); eliminarProyecto(${p.id})" 
-            class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 flex items-center justify-center z-10"
+            class="absolute top-2 right-2 bg-red-600 text-black w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 flex items-center justify-center z-10"
             title="Eliminar proyecto"
           >
             <i class="fas fa-trash text-sm"></i>
@@ -6538,13 +6538,13 @@ async function loadProyectosDiseño() {
         </div>
         <!-- Info del proyecto -->
         <div class="p-4 cursor-pointer" onclick="abrirProyecto(${p.id})">
-          <h3 class="font-semibold text-white truncate">${p.nombre_proyecto}</h3>
+          <h3 class="font-semibold text-black truncate">${p.nombre_proyecto}</h3>
           <p class="text-sm text-gray-400 truncate">${p.cliente_nombre || 'Sin cliente'}</p>
           <div class="flex justify-between items-center mt-2">
             <span class="text-xs px-2 py-1 rounded-full ${
               p.estado === 'presupuestado' ? 'bg-green-100 text-green-800' :
               p.estado === 'compartido' ? 'bg-blue-100 text-blue-800' :
-              'bg-gray-100 text-white'
+              'bg-gray-100 text-black'
             }">${p.estado}</span>
             <span class="text-sm text-gray-600">${new Date(p.created_at).toLocaleDateString()}</span>
           </div>
@@ -6776,7 +6776,7 @@ function mostrarAnalisis(analisis) {
         <p class="font-bold">${analisis.ventanas[0].ancho_aprox}m x ${analisis.ventanas[0].alto_aprox}m</p>
       </div>
       <div class="bg-purple-50 rounded-lg p-4">
-        <i class="fas fa-paint-brush text-white text-2xl mb-2"></i>
+        <i class="fas fa-paint-brush text-black text-2xl mb-2"></i>
         <p class="text-sm text-gray-600">Estilo</p>
         <p class="font-bold capitalize">${analisis.estilo}</p>
       </div>
@@ -6786,7 +6786,7 @@ function mostrarAnalisis(analisis) {
         <p class="font-bold capitalize">${analisis.luz_natural}</p>
       </div>
       <div class="bg-green-50 rounded-lg p-4">
-        <i class="fas fa-palette text-white text-2xl mb-2"></i>
+        <i class="fas fa-palette text-black text-2xl mb-2"></i>
         <p class="text-sm text-gray-600">Colores</p>
         <div class="flex gap-1 mt-1">
           ${analisis.colores.map(c => `<div class="w-6 h-6 rounded-full border" style="background-color: ${c}"></div>`).join('')}
@@ -6795,7 +6795,7 @@ function mostrarAnalisis(analisis) {
     </div>
     
     <div class="bg-purple-50 border-l-4 border-purple-600 p-4 mt-4">
-      <p class="text-sm text-gray-300 mb-2"><strong>💡 Recomendaciones de GALI:</strong></p>
+      <p class="text-sm text-gray-600 mb-2"><strong>💡 Recomendaciones de GALI:</strong></p>
       <p class="text-sm text-gray-600">
         Para un espacio ${analisis.estilo} con ${analisis.luz_natural} luz natural, te recomendamos: 
         <strong>${analisis.recomendaciones.join(', ')}</strong>
@@ -7073,7 +7073,7 @@ function renderCatalogoTelas(telas) {
         <p class="text-xs text-gray-400">${t.referencia}</p>
         <div class="flex justify-between items-center mt-2">
           <span class="text-xs px-2 py-1 rounded-full bg-gray-100">${t.opacidad}</span>
-          <span class="text-sm font-bold text-white">${t.precio_metro}€/m²</span>
+          <span class="text-sm font-bold text-black">${t.precio_metro}€/m²</span>
         </div>
       </div>
     </div>
@@ -7338,13 +7338,13 @@ async function compartirProyecto() {
     <div class="space-y-4">
       <h3 class="text-xl font-bold">Compartir Proyecto</h3>
       <div class="space-y-3">
-        <button onclick="compartirWhatsApp()" class="w-full bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600">
+        <button onclick="compartirWhatsApp()" class="w-full bg-green-500 text-black px-6 py-3 rounded-lg hover:bg-green-600">
           <i class="fab fa-whatsapp mr-2"></i>Compartir por WhatsApp
         </button>
-        <button onclick="compartirEmail()" class="w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600">
+        <button onclick="compartirEmail()" class="w-full bg-blue-500 text-black px-6 py-3 rounded-lg hover:bg-blue-600">
           <i class="fas fa-envelope mr-2"></i>Enviar por Email
         </button>
-        <button onclick="descargarImagen()" class="w-full bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600">
+        <button onclick="descargarImagen()" class="w-full bg-purple-500 text-black px-6 py-3 rounded-lg hover:bg-purple-600">
           <i class="fas fa-download mr-2"></i>Descargar Imagen
         </button>
       </div>
@@ -7517,13 +7517,13 @@ function agregarCheckboxTareas() {
     const filtroEstado = document.getElementById('filtro-estado-tareas')
     if (filtroEstado && filtroEstado.parentElement) {
       const checkboxContainer = document.createElement('div')
-      checkboxContainer.className = 'flex items-center gap-2 px-4 py-2 bg-zinc-800 border border-white rounded-lg border border-gray-200'
+      checkboxContainer.className = 'flex items-center gap-2 px-4 py-2 bg-zinc-800 border border-black rounded-lg border border-gray-200'
       checkboxContainer.innerHTML = `
         <input type="checkbox" 
                id="excluir-finalizadas-tareas" 
                onchange="aplicarFiltros()"
-               class="w-4 h-4 text-white bg-gray-100 border-gray-300 rounded focus:ring-purple-500 cursor-pointer">
-        <label for="excluir-finalizadas-tareas" class="text-sm font-medium text-gray-300 cursor-pointer select-none">
+               class="w-4 h-4 text-black bg-gray-100 border-gray-300 rounded focus:ring-purple-500 cursor-pointer">
+        <label for="excluir-finalizadas-tareas" class="text-sm font-medium text-gray-600 cursor-pointer select-none">
           <i class="fas fa-filter mr-1"></i>Excluir cancelados y finalizados
         </label>
       `
@@ -7629,7 +7629,7 @@ async function loadTareas() {
         'pendiente': '<span class="px-3 py-1 bg-orange-100 text-orange-800 text-sm rounded-full">⏳ Pendiente</span>',
         'en_proceso': '<span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">🔄 En Proceso</span>',
         'completada': '<span class="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">✅ Completada</span>',
-        'cancelada': '<span class="px-3 py-1 bg-gray-100 text-white text-sm rounded-full">❌ Cancelada</span>'
+        'cancelada': '<span class="px-3 py-1 bg-gray-100 text-black text-sm rounded-full">❌ Cancelada</span>'
       }
       
       // Colores de tarjeta según tipo (TODO el fondo)
@@ -7649,7 +7649,7 @@ async function loadTareas() {
         'medir': '<i class="fas fa-ruler text-yellow-700"></i>',
         'presupuesto': '<i class="fas fa-file-invoice-dollar text-purple-700"></i>',
         'pedidos': '<i class="fas fa-box text-red-700"></i>',
-        'varios': '<i class="fas fa-tasks text-gray-300"></i>'
+        'varios': '<i class="fas fa-tasks text-gray-600"></i>'
       }
       
       let detalleHTML = ''
@@ -7666,8 +7666,8 @@ async function loadTareas() {
                          onclick="event.stopPropagation(); toggleSeleccionTarea(${t.id})">
                 ` : ''}
                 <!-- Icono circular pequeño -->
-                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 border border-white shadow-sm flex items-center justify-center text-base">
-                  ${tipoIcon[t.tipo] || '<i class="fas fa-tasks text-gray-300"></i>'}
+                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 border border-black shadow-sm flex items-center justify-center text-base">
+                  ${tipoIcon[t.tipo] || '<i class="fas fa-tasks text-gray-600"></i>'}
                 </div>
                 <!-- Título y tipo -->
                 <div>
@@ -7708,7 +7708,7 @@ async function loadTareas() {
               ${t.fecha_limite ? `
                 <div class="flex items-center gap-2 text-sm">
                   <div class="w-7 h-7 rounded-full bg-orange-100 flex items-center justify-center">
-                    <i class="fas fa-clock text-white text-xs"></i>
+                    <i class="fas fa-clock text-black text-xs"></i>
                   </div>
                   <div>
                     <p class="text-xs text-gray-400">Fecha límite</p>
@@ -7720,7 +7720,7 @@ async function loadTareas() {
               ${t.nombre_proyecto ? `
                 <div class="flex items-center gap-2 text-sm col-span-2">
                   <div class="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center">
-                    <i class="fas fa-project-diagram text-white text-xs"></i>
+                    <i class="fas fa-project-diagram text-black text-xs"></i>
                   </div>
                   <div>
                     <p class="text-xs text-gray-400">Proyecto</p>
@@ -7732,7 +7732,7 @@ async function loadTareas() {
               ${t.cliente_nombre ? `
                 <div class="flex items-center gap-2 text-sm col-span-2">
                   <div class="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center">
-                    <i class="fas fa-user text-white text-xs"></i>
+                    <i class="fas fa-user text-black text-xs"></i>
                   </div>
                   <div>
                     <p class="text-xs text-gray-400">Cliente</p>
@@ -7754,13 +7754,13 @@ async function loadTareas() {
           <!-- Actions Footer Compacto -->
           ${!modoSeleccionMultiple ? `
             <div class="bg-gradient-to-r from-gray-50 to-slate-50 px-4 py-2.5 border-t border-gray-200 flex gap-2">
-              <button onclick="verDetallesTarea(${t.id})" class="flex-1 bg-white border-2 border-gray-200 text-gray-300 px-3 py-2 rounded-lg hover:border-gray-300 hover:shadow-md transition-all text-xs font-semibold">
+              <button onclick="verDetallesTarea(${t.id})" class="flex-1 bg-white border-2 border-gray-200 text-gray-600 px-3 py-2 rounded-lg hover:border-gray-300 hover:shadow-md transition-all text-xs font-semibold">
                 <i class="fas fa-eye mr-1"></i>Ver
               </button>
-              <button onclick="editarTarea(${t.id})" class="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-3 py-2 rounded-lg hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg transition-all text-xs font-semibold">
+              <button onclick="editarTarea(${t.id})" class="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-black px-3 py-2 rounded-lg hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg transition-all text-xs font-semibold">
                 <i class="fas fa-edit mr-1"></i>Editar
               </button>
-              <button onclick="confirmarEliminarTarea(${t.id})" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-3 py-2 rounded-lg hover:from-orange-600 hover:to-orange-700 hover:shadow-lg transition-all text-xs font-semibold">
+              <button onclick="confirmarEliminarTarea(${t.id})" class="bg-gradient-to-r from-orange-500 to-orange-600 text-black px-3 py-2 rounded-lg hover:from-orange-600 hover:to-orange-700 hover:shadow-lg transition-all text-xs font-semibold">
                 <i class="fas fa-trash mr-1"></i>Borrar
               </button>
             </div>
@@ -7873,21 +7873,21 @@ async function verDetallesTarea(tareaId) {
     }
     
     const html = `
-      <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onclick="closeModal()">
+      <div id="modal-overlay" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50 p-4" onclick="closeModal()">
         <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
           <!-- Header -->
-          <div class="bg-gradient-to-r from-gray-700 to-gray-800 text-white px-6 py-4 rounded-t-2xl">
+          <div class="bg-gradient-to-r from-gray-700 to-gray-800 text-black px-6 py-4 rounded-t-2xl">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                <div class="w-12 h-12 rounded-full bg-black/20 flex items-center justify-center">
                   <i class="fas fa-info-circle text-2xl"></i>
                 </div>
                 <div>
                   <h2 class="text-2xl font-bold">Detalles de la Tarea</h2>
-                  <p class="text-sm text-gray-300">Información completa</p>
+                  <p class="text-sm text-gray-600">Información completa</p>
                 </div>
               </div>
-              <button onclick="closeModal()" class="text-white hover:bg-white/20 w-8 h-8 rounded-full flex items-center justify-center transition-all">
+              <button onclick="closeModal()" class="text-black hover:bg-black/20 w-8 h-8 rounded-full flex items-center justify-center transition-all">
                 <i class="fas fa-times"></i>
               </button>
             </div>
@@ -7899,17 +7899,17 @@ async function verDetallesTarea(tareaId) {
             <div class="mb-6">
               <h3 class="text-2xl font-bold text-gray-900 mb-2">${tarea.titulo}</h3>
               <div class="flex gap-2">
-                <span class="px-3 py-1 bg-gray-100 text-white text-sm rounded-full">${tarea.tipo.replace(/_/g, ' ')}</span>
+                <span class="px-3 py-1 bg-gray-100 text-black text-sm rounded-full">${tarea.tipo.replace(/_/g, ' ')}</span>
                 <span class="px-3 py-1 ${tarea.prioridad === 1 ? 'bg-red-100 text-red-800' : tarea.prioridad === 2 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'} text-sm rounded-full">${prioridadText[tarea.prioridad]}</span>
-                <span class="px-3 py-1 ${tarea.estado === 'completada' ? 'bg-green-100 text-green-800' : tarea.estado === 'cancelada' ? 'bg-gray-100 text-white' : tarea.estado === 'en_proceso' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'} text-sm rounded-full">${estadoText[tarea.estado]}</span>
+                <span class="px-3 py-1 ${tarea.estado === 'completada' ? 'bg-green-100 text-green-800' : tarea.estado === 'cancelada' ? 'bg-gray-100 text-black' : tarea.estado === 'en_proceso' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'} text-sm rounded-full">${estadoText[tarea.estado]}</span>
               </div>
             </div>
             
             <!-- Descripción -->
             ${tarea.descripcion ? `
-              <div class="mb-6 p-4 bg-zinc-800 border border-white rounded-lg">
-                <p class="text-sm font-semibold text-gray-300 mb-2">Descripción:</p>
-                <p class="text-white leading-relaxed">${tarea.descripcion}</p>
+              <div class="mb-6 p-4 bg-zinc-800 border border-black rounded-lg">
+                <p class="text-sm font-semibold text-gray-600 mb-2">Descripción:</p>
+                <p class="text-black leading-relaxed">${tarea.descripcion}</p>
               </div>
             ` : ''}
             
@@ -7924,7 +7924,7 @@ async function verDetallesTarea(tareaId) {
               
               ${tarea.fecha_limite ? `
                 <div class="p-4 bg-orange-50 rounded-lg">
-                  <p class="text-xs text-white font-semibold mb-1">FECHA LÍMITE</p>
+                  <p class="text-xs text-black font-semibold mb-1">FECHA LÍMITE</p>
                   <p class="text-lg font-bold text-gray-900">${new Date(tarea.fecha_limite).toLocaleDateString('es-ES', {day: '2-digit', month: 'short', year: 'numeric'})}</p>
                 </div>
               ` : ''}
@@ -7938,7 +7938,7 @@ async function verDetallesTarea(tareaId) {
               
               ${tarea.nombre_proyecto ? `
                 <div class="p-4 bg-purple-50 rounded-lg col-span-2">
-                  <p class="text-xs text-white font-semibold mb-1">PROYECTO</p>
+                  <p class="text-xs text-black font-semibold mb-1">PROYECTO</p>
                   <p class="text-lg font-bold text-gray-900">${tarea.nombre_proyecto}</p>
                 </div>
               ` : ''}
@@ -7948,7 +7948,7 @@ async function verDetallesTarea(tareaId) {
             ${tarea.notas ? `
               <div class="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
                 <p class="text-sm font-semibold text-green-700 mb-2"><i class="fas fa-sticky-note mr-2"></i>Notas:</p>
-                <p class="text-white leading-relaxed">${tarea.notas}</p>
+                <p class="text-black leading-relaxed">${tarea.notas}</p>
               </div>
             ` : ''}
             
@@ -7961,10 +7961,10 @@ async function verDetallesTarea(tareaId) {
           
           <!-- Footer Actions -->
           <div class="bg-gray-50 px-6 py-4 border-t flex gap-3 rounded-b-2xl">
-            <button onclick="editarTarea(${tareaId})" class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all font-medium">
+            <button onclick="editarTarea(${tareaId})" class="flex-1 bg-blue-600 text-black px-6 py-3 rounded-lg hover:bg-blue-700 transition-all font-medium">
               <i class="fas fa-edit mr-2"></i>Editar
             </button>
-            <button onclick="closeModal()" class="flex-1 bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-all font-medium">
+            <button onclick="closeModal()" class="flex-1 bg-gray-500 text-black px-6 py-3 rounded-lg hover:bg-gray-600 transition-all font-medium">
               Cerrar
             </button>
           </div>
@@ -8055,16 +8055,16 @@ async function showNuevaTarea() {
   }
   
   const html = `
-    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="modal-overlay" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <h3 class="text-2xl font-bold mb-6">
-          <i class="fas fa-plus-circle text-gray-300 mr-2"></i>
+          <i class="fas fa-plus-circle text-gray-600 mr-2"></i>
           Nueva Tarea
         </h3>
         <form id="tarea-form" class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div class="col-span-2">
-              <label class="block text-sm font-medium text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-gray-600 mb-1">
                 Título <span class="text-gray-400">*</span>
               </label>
               <input type="text" name="titulo" required 
@@ -8073,14 +8073,14 @@ async function showNuevaTarea() {
             </div>
             
             <div class="col-span-2">
-              <label class="block text-sm font-medium text-gray-300 mb-1">Descripción</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Descripción</label>
               <textarea name="descripcion" rows="3"
                         class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500"
                         placeholder="Detalles adicionales de la tarea..."></textarea>
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Tipo</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Tipo</label>
               <select id="tipo-tarea-select" name="tipo" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
                 <option value="llamar">📞 Llamar</option>
                 <option value="instalar">🔧 Instalar</option>
@@ -8093,7 +8093,7 @@ async function showNuevaTarea() {
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-gray-600 mb-1">
                 Prioridad <span class="text-gray-400">*</span>
               </label>
               <select name="prioridad" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
@@ -8104,7 +8104,7 @@ async function showNuevaTarea() {
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Estado</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Estado</label>
               <select name="estado" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
                 <option value="pendiente" selected>⏳ Pendiente</option>
                 <option value="en_proceso">🔄 En Proceso</option>
@@ -8114,7 +8114,7 @@ async function showNuevaTarea() {
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Asignado a</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Asignado a</label>
               <select name="asignado_a" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
                 <option value="">Sin asignar</option>
                 <option value="Ana Ramos">Ana Ramos</option>
@@ -8124,7 +8124,7 @@ async function showNuevaTarea() {
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-gray-600 mb-1">
                 <i class="fas fa-briefcase mr-1"></i>Trabajo asociado
               </label>
               <select id="tarea-trabajo-selector" name="trabajo_id" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
@@ -8133,7 +8133,7 @@ async function showNuevaTarea() {
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-gray-600 mb-1">
                 <i class="fas fa-user mr-1"></i>Cliente asociado
               </label>
               <select name="cliente_id" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
@@ -8142,7 +8142,7 @@ async function showNuevaTarea() {
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-gray-600 mb-1">
                 <i class="fas fa-play mr-1 text-green-500"></i>Fecha Inicio
               </label>
               <input type="date" name="fecha_inicio"
@@ -8150,7 +8150,7 @@ async function showNuevaTarea() {
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-gray-600 mb-1">
                 <i class="fas fa-calendar-alt mr-1 text-red-500"></i>Fecha Límite
               </label>
               <input type="date" name="fecha_limite"
@@ -8158,7 +8158,7 @@ async function showNuevaTarea() {
             </div>
             
             <div class="col-span-2">
-              <label class="block text-sm font-medium text-gray-300 mb-1">Notas</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Notas</label>
               <textarea name="notas" rows="2"
                         class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500"
                         placeholder="Notas adicionales..."></textarea>
@@ -8166,10 +8166,10 @@ async function showNuevaTarea() {
           </div>
           
           <div class="flex space-x-3 pt-4 border-t">
-            <button type="submit" class="flex-1 bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-lg transition-all">
+            <button type="submit" class="flex-1 bg-gray-700 hover:bg-gray-800 text-black px-6 py-3 rounded-lg transition-all">
               <i class="fas fa-save mr-2"></i>Crear Tarea
             </button>
-            <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-all">
+            <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-black px-6 py-3 rounded-lg transition-all">
               Cancelar
             </button>
           </div>
@@ -8263,16 +8263,16 @@ async function editarTarea(tareaId) {
     }
     
     const html = `
-      <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div id="modal-overlay" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-xl shadow-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
           <h3 class="text-2xl font-bold mb-6">
-            <i class="fas fa-edit text-gray-300 mr-2"></i>
+            <i class="fas fa-edit text-gray-600 mr-2"></i>
             Editar Tarea
           </h3>
           <form id="tarea-form" class="space-y-4">
             <div class="grid grid-cols-2 gap-4">
               <div class="col-span-2">
-                <label class="block text-sm font-medium text-gray-300 mb-1">
+                <label class="block text-sm font-medium text-gray-600 mb-1">
                   Título <span class="text-gray-400">*</span>
                 </label>
                 <input type="text" name="titulo" required value="${tarea.titulo}"
@@ -8281,14 +8281,14 @@ async function editarTarea(tareaId) {
               </div>
               
               <div class="col-span-2">
-                <label class="block text-sm font-medium text-gray-300 mb-1">Descripción</label>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Descripción</label>
                 <textarea name="descripcion" rows="3"
                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500"
                           placeholder="Detalles adicionales de la tarea...">${tarea.descripcion || ''}</textarea>
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-1">Tipo</label>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Tipo</label>
                 <select id="tipo-tarea-select-edit" name="tipo" onchange="toggleTipoManual(this)" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
                   <option value="general" ${tarea.tipo === 'general' ? 'selected' : ''}>General</option>
                   <option value="seguimiento_cliente" ${tarea.tipo === 'seguimiento_cliente' ? 'selected' : ''}>Seguimiento Cliente</option>
@@ -8310,7 +8310,7 @@ async function editarTarea(tareaId) {
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-1">
+                <label class="block text-sm font-medium text-gray-600 mb-1">
                   Prioridad <span class="text-gray-400">*</span>
                 </label>
                 <select name="prioridad" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
@@ -8321,7 +8321,7 @@ async function editarTarea(tareaId) {
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-1">Estado</label>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Estado</label>
                 <select name="estado" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
                   <option value="pendiente" ${tarea.estado === 'pendiente' ? 'selected' : ''}>⏳ Pendiente</option>
                   <option value="en_proceso" ${tarea.estado === 'en_proceso' ? 'selected' : ''}>🔄 En Proceso</option>
@@ -8331,7 +8331,7 @@ async function editarTarea(tareaId) {
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-1">Asignado a</label>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Asignado a</label>
                 <select name="asignado_a" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
                   <option value="" ${!tarea.asignado_a ? 'selected' : ''}>Sin asignar</option>
                   <option value="Ana Ramos" ${tarea.asignado_a === 'Ana Ramos' ? 'selected' : ''}>Ana Ramos</option>
@@ -8341,7 +8341,7 @@ async function editarTarea(tareaId) {
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-1">
+                <label class="block text-sm font-medium text-gray-600 mb-1">
                   <i class="fas fa-briefcase mr-1"></i>Trabajo asociado
                 </label>
                 <select id="tarea-trabajo-selector" name="trabajo_id" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
@@ -8350,7 +8350,7 @@ async function editarTarea(tareaId) {
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-1">
+                <label class="block text-sm font-medium text-gray-600 mb-1">
                   <i class="fas fa-play mr-1 text-green-500"></i>Fecha Inicio
                 </label>
                 <input type="date" name="fecha_inicio" value="${tarea.fecha_inicio ? tarea.fecha_inicio.split('T')[0] : ''}"
@@ -8358,7 +8358,7 @@ async function editarTarea(tareaId) {
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-1">
+                <label class="block text-sm font-medium text-gray-600 mb-1">
                   <i class="fas fa-calendar-alt mr-1 text-red-500"></i>Fecha Límite
                 </label>
                 <input type="date" name="fecha_limite" value="${tarea.fecha_limite ? tarea.fecha_limite.split('T')[0] : ''}"
@@ -8366,7 +8366,7 @@ async function editarTarea(tareaId) {
               </div>
               
               <div class="col-span-2">
-                <label class="block text-sm font-medium text-gray-300 mb-1">Notas</label>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Notas</label>
                 <textarea name="notas" rows="2"
                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500"
                           placeholder="Notas adicionales...">${tarea.notas || ''}</textarea>
@@ -8374,10 +8374,10 @@ async function editarTarea(tareaId) {
             </div>
             
             <div class="flex space-x-3 pt-4 border-t">
-              <button type="submit" class="flex-1 bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-lg transition-all">
+              <button type="submit" class="flex-1 bg-gray-700 hover:bg-gray-800 text-black px-6 py-3 rounded-lg transition-all">
                 <i class="fas fa-save mr-2"></i>Guardar Cambios
               </button>
-              <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-all">
+              <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-black px-6 py-3 rounded-lg transition-all">
                 Cancelar
               </button>
             </div>
@@ -8495,8 +8495,8 @@ async function loadHistorial() {
         'editar': '<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">✏️ Editar</span>',
         'eliminar': '<span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">🗑️ Eliminar</span>',
         'login': '<span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">🔐 Login</span>',
-        'logout': '<span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-white">👋 Logout</span>'
-      }[m.accion] || `<span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-white">${m.accion}</span>`
+        'logout': '<span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-black">👋 Logout</span>'
+      }[m.accion] || `<span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-black">${m.accion}</span>`
       
       // Badge de rol
       const rolBadge = (m.usuario_rol === 'admin' || m.usuario_rol === 'duena')
@@ -8522,7 +8522,7 @@ async function loadHistorial() {
           </td>
           <td class="px-4 py-3 text-sm">${accionBadge}</td>
           <td class="px-4 py-3 text-sm">
-            <span class="font-medium text-gray-300">${m.seccion}</span>
+            <span class="font-medium text-gray-600">${m.seccion}</span>
             ${m.entidad_tipo ? `<div class="text-xs text-gray-400">${m.entidad_tipo} #${m.entidad_id || '-'}</div>` : ''}
           </td>
           <td class="px-4 py-3 text-xs">${detallesBtn}</td>
@@ -8572,19 +8572,19 @@ async function ajustarStock(id) {
   if (!stock) return
   
   const html = `
-    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) this.remove()">
+    <div id="modal-overlay" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) this.remove()">
       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full">
         <h3 class="text-2xl font-bold mb-6">
-          <i class="fas fa-exchange-alt text-white mr-2"></i>
+          <i class="fas fa-exchange-alt text-black mr-2"></i>
           Ajustar Stock
         </h3>
-        <div class="mb-4 p-4 bg-zinc-800 border border-white rounded-lg">
+        <div class="mb-4 p-4 bg-zinc-800 border border-black rounded-lg">
           <div class="font-medium text-gray-900">${stock.nombre}</div>
           <div class="text-sm text-gray-400">Stock actual: <span class="font-bold">${stock.cantidad_actual} ${stock.unidad}</span></div>
         </div>
         <form id="ajustar-form" class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Tipo de Movimiento *</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Tipo de Movimiento *</label>
             <select name="tipo" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">
               <option value="entrada">Entrada</option>
               <option value="salida">Salida</option>
@@ -8592,12 +8592,12 @@ async function ajustarStock(id) {
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Cantidad *</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Cantidad *</label>
             <input type="number" name="cantidad" required min="0" step="0.01"
                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Motivo</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Motivo</label>
             <textarea name="motivo" rows="2" 
                       class="w-full px-4 py-2 border rounded-lg" 
                       placeholder="Ej: Compra, Venta, Devolución, Inventario"></textarea>
@@ -8608,7 +8608,7 @@ async function ajustarStock(id) {
               Cancelar
             </button>
             <button type="submit"
-                    class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                    class="flex-1 px-4 py-2 bg-purple-600 text-black rounded-lg hover:bg-purple-700">
               <i class="fas fa-check mr-2"></i>Guardar
             </button>
           </div>
@@ -8646,13 +8646,13 @@ async function showMovimientos(id) {
     const stock = currentData.stock.find(s => s.id === id)
     
     const html = `
-      <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) this.remove()">
+      <div id="modal-overlay" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) this.remove()">
         <div class="bg-white rounded-xl shadow-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
           <h3 class="text-2xl font-bold mb-6">
-            <i class="fas fa-history text-white mr-2"></i>
+            <i class="fas fa-history text-black mr-2"></i>
             Historial de Movimientos
           </h3>
-          <div class="mb-6 p-4 bg-zinc-800 border border-white rounded-lg">
+          <div class="mb-6 p-4 bg-zinc-800 border border-black rounded-lg">
             <div class="font-medium text-gray-900">${stock.nombre}</div>
             <div class="text-sm text-gray-400">Código: ${stock.codigo || '-'}</div>
           </div>
@@ -8690,7 +8690,7 @@ async function showMovimientos(id) {
                         })}
                       </td>
                       <td class="px-4 py-3">
-                        <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full ${tipoColors[m.tipo] || 'bg-gray-100 text-white'}">
+                        <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full ${tipoColors[m.tipo] || 'bg-gray-100 text-black'}">
                           ${m.tipo.toUpperCase()}
                         </span>
                       </td>
@@ -8765,10 +8765,10 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
   let trabajosOptions = `<option value="${trabajoId}" selected>${nombreTrabajo}</option>`;
   
   const html = `
-    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="modal-overlay" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <h3 class="text-2xl font-bold mb-6">
-          <i class="fas fa-plus-circle text-gray-300 mr-2"></i>
+          <i class="fas fa-plus-circle text-gray-600 mr-2"></i>
           Nueva Tarea para: ${nombreTrabajo}
         </h3>
         <form id="tarea-trabajo-form" class="space-y-4">
@@ -8776,7 +8776,7 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
           
           <div class="grid grid-cols-2 gap-4">
             <div class="col-span-2">
-              <label class="block text-sm font-medium text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-gray-600 mb-1">
                 Título <span class="text-gray-400">*</span>
               </label>
               <input type="text" name="titulo" required 
@@ -8785,14 +8785,14 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
             </div>
             
             <div class="col-span-2">
-              <label class="block text-sm font-medium text-gray-300 mb-1">Descripción</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Descripción</label>
               <textarea name="descripcion" rows="3"
                         class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500"
                         placeholder="Detalles adicionales de la tarea..."></textarea>
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Tipo</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Tipo</label>
               <select id="tipo-tarea-select" name="tipo" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
                 <option value="llamar">📞 Llamar</option>
                 <option value="instalar">🔧 Instalar</option>
@@ -8805,7 +8805,7 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-gray-600 mb-1">
                 Prioridad <span class="text-gray-400">*</span>
               </label>
               <select name="prioridad" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
@@ -8816,7 +8816,7 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Estado</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Estado</label>
               <select name="estado" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
                 <option value="pendiente" selected>⏳ Pendiente</option>
                 <option value="en_proceso">🔄 En Proceso</option>
@@ -8826,7 +8826,7 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Asignado a</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Asignado a</label>
               <select name="asignado_a" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500">
                 <option value="">Sin asignar</option>
                 <option value="Ana Ramos">Ana Ramos</option>
@@ -8836,7 +8836,7 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-gray-600 mb-1">
                 <i class="fas fa-play mr-1 text-green-500"></i>Fecha Inicio
               </label>
               <input type="date" name="fecha_inicio"
@@ -8844,7 +8844,7 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">
+              <label class="block text-sm font-medium text-gray-600 mb-1">
                 <i class="fas fa-calendar-alt mr-1 text-red-500"></i>Fecha Límite
               </label>
               <input type="date" name="fecha_limite"
@@ -8852,7 +8852,7 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
             </div>
             
             <div class="col-span-2">
-              <label class="block text-sm font-medium text-gray-300 mb-1">Notas</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Notas</label>
               <textarea name="notas" rows="2"
                         class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-gray-500"
                         placeholder="Notas adicionales..."></textarea>
@@ -8860,10 +8860,10 @@ async function crearTareaParaTrabajo(trabajoId, nombreTrabajo) {
           </div>
           
           <div class="flex space-x-3 pt-4 border-t">
-            <button type="submit" class="flex-1 bg-gray-700 hover:bg-gray-800 text-white px-6 py-3 rounded-lg transition-all">
+            <button type="submit" class="flex-1 bg-gray-700 hover:bg-gray-800 text-black px-6 py-3 rounded-lg transition-all">
               <i class="fas fa-save mr-2"></i>Crear Tarea
             </button>
-            <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg transition-all">
+            <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-black px-6 py-3 rounded-lg transition-all">
               <i class="fas fa-times mr-2"></i>Cancelar
             </button>
           </div>
@@ -8935,7 +8935,7 @@ async function showImportarStock() {
   const { data: categorias } = await axios.get(`${API}/stock/categorias`)
   
   const html = `
-    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) this.remove()">
+    <div id="modal-overlay" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50" onclick="if(event.target===this) this.remove()">
       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <h3 class="text-2xl font-bold mb-6">
           <i class="fas fa-file-upload text-blue-600 mr-2"></i>
@@ -8954,14 +8954,14 @@ async function showImportarStock() {
         </div>
 
         <div class="mb-6">
-          <label class="block text-sm font-medium text-gray-300 mb-2">Seleccionar Archivo</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Seleccionar Archivo</label>
           <input type="file" id="file-upload" accept=".xlsx,.xls,.csv,.pdf" 
                  class="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 cursor-pointer">
           <p class="text-xs text-gray-400 mt-2">Arrastra y suelta o haz click para seleccionar</p>
         </div>
 
         <div class="mb-6">
-          <label class="block text-sm font-medium text-gray-300 mb-2">Categoría por Defecto *</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Categoría por Defecto *</label>
           <select id="import-categoria" class="w-full px-4 py-2 border rounded-lg">
             <option value="">Seleccionar categoría</option>
             ${categorias.map(cat => `
@@ -8984,7 +8984,7 @@ async function showImportarStock() {
             Cancelar
           </button>
           <button onclick="procesarImportacion()"
-                  class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                  class="flex-1 px-4 py-2 bg-blue-600 text-black rounded-lg hover:bg-blue-700">
             <i class="fas fa-upload mr-2"></i>Importar
           </button>
         </div>
@@ -9047,7 +9047,7 @@ async function showImportarStock() {
         const lines = text.split('\n').slice(0, 6)
         
         previewContent.innerHTML = `
-          <pre class="text-xs p-3 bg-zinc-800 border border-white rounded">${lines.join('\n')}</pre>
+          <pre class="text-xs p-3 bg-zinc-800 border border-black rounded">${lines.join('\n')}</pre>
           <p class="text-xs text-gray-400 mt-2 px-3">Vista previa del CSV</p>
         `
         previewSection.classList.remove('hidden')
@@ -9174,7 +9174,7 @@ async function cargarAvisos() {
     // Renderizar avisos
     lista.innerHTML = data.map(aviso => {
       const iconos = {
-        'stock_bajo': 'fa-exclamation-triangle text-white',
+        'stock_bajo': 'fa-exclamation-triangle text-black',
         'stock_agotado': 'fa-times-circle text-red-500',
         'pedido_sin_stock': 'fa-shopping-cart text-red-500'
       }
@@ -9194,7 +9194,7 @@ async function cargarAvisos() {
             <div class="flex-1">
               <div class="flex items-center mb-2">
                 <i class="fas ${icono} mr-2"></i>
-                <h4 class="font-semibold text-white">${aviso.titulo}</h4>
+                <h4 class="font-semibold text-black">${aviso.titulo}</h4>
               </div>
               <p class="text-sm text-gray-600 mb-2">${aviso.mensaje}</p>
               <p class="text-xs text-gray-400">
@@ -9271,10 +9271,10 @@ async function cargarAlertas() {
     if (panelAvisos) {
       panelAvisos.innerHTML = `
         <div class="p-6 text-center">
-          <div class="text-white text-5xl mb-3">⚠️</div>
-          <p class="text-gray-300 font-medium mb-2">No se pudieron cargar las alertas</p>
+          <div class="text-black text-5xl mb-3">⚠️</div>
+          <p class="text-gray-600 font-medium mb-2">No se pudieron cargar las alertas</p>
           <p class="text-sm text-gray-400">Por favor, recarga la página o intenta más tarde.</p>
-          <button onclick="cargarAlertas()" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">
+          <button onclick="cargarAlertas()" class="mt-4 bg-blue-500 hover:bg-blue-600 text-black px-4 py-2 rounded-lg text-sm">
             <i class="fas fa-sync mr-2"></i>Reintentar
           </button>
         </div>
@@ -9305,7 +9305,7 @@ function renderAlertasGrupo(tipo, tareas, color) {
            onclick="verDetallesTarea(${t.id})">
         <div class="flex items-start justify-between">
           <div class="flex-1">
-            <h5 class="font-medium text-white text-sm">${t.titulo}</h5>
+            <h5 class="font-medium text-black text-sm">${t.titulo}</h5>
             <p class="text-xs text-gray-600 mt-1">
               <i class="fas fa-calendar-alt mr-1"></i>${fechaLimite}
             </p>
@@ -9444,7 +9444,7 @@ function renderItemResumen(item, tipo) {
          onclick="${onclick}; cerrarResumenDiario()">
       <div class="flex items-start justify-between">
         <div class="flex-1">
-          <h5 class="font-medium text-white">${titulo}</h5>
+          <h5 class="font-medium text-black">${titulo}</h5>
           <p class="text-xs text-gray-600 mt-1">
             <i class="fas fa-calendar-alt mr-1"></i>${fechaLimite}
           </p>
@@ -9692,7 +9692,7 @@ function abrirModalSoporte() {
 
       <!-- Categoría -->
       <div>
-        <label class="block text-xs font-medium text-gray-300 mb-0.5">
+        <label class="block text-xs font-medium text-gray-600 mb-0.5">
           <i class="fas fa-tag mr-1 text-gray-400"></i>Categoría *
         </label>
         <select name="categoria" required class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
@@ -9707,7 +9707,7 @@ function abrirModalSoporte() {
 
       <!-- Prioridad -->
       <div>
-        <label class="block text-xs font-medium text-gray-300 mb-0.5">
+        <label class="block text-xs font-medium text-gray-600 mb-0.5">
           <i class="fas fa-flag mr-1 text-gray-400"></i>Prioridad *
         </label>
         <select name="prioridad" required class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500">
@@ -9720,7 +9720,7 @@ function abrirModalSoporte() {
 
       <!-- Asunto -->
       <div>
-        <label class="block text-xs font-medium text-gray-300 mb-0.5">
+        <label class="block text-xs font-medium text-gray-600 mb-0.5">
           <i class="fas fa-heading mr-1 text-gray-400"></i>Asunto *
         </label>
         <input type="text" name="asunto" required maxlength="100" placeholder="Ej: No puedo editar tarea"
@@ -9729,7 +9729,7 @@ function abrirModalSoporte() {
 
       <!-- Descripción -->
       <div>
-        <label class="block text-xs font-medium text-gray-300 mb-0.5">
+        <label class="block text-xs font-medium text-gray-600 mb-0.5">
           <i class="fas fa-align-left mr-1 text-gray-400"></i>Descripción *
         </label>
         <textarea name="descripcion" required rows="3" maxlength="500" placeholder="Describe el problema..."
@@ -9750,11 +9750,11 @@ function abrirModalSoporte() {
       <!-- Botones -->
       <div class="flex gap-2 pt-1">
         <button type="button" onclick="closeModal()" 
-                class="flex-1 px-3 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 text-gray-300 rounded transition-all">
+                class="flex-1 px-3 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 rounded transition-all">
           <i class="fas fa-times mr-1"></i>Cancelar
         </button>
         <button type="submit" 
-                class="flex-1 px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-all font-medium">
+                class="flex-1 px-3 py-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-black rounded transition-all font-medium">
           <i class="fas fa-paper-plane mr-1"></i>Enviar
         </button>
       </div>
@@ -9847,8 +9847,8 @@ async function loadNotas() {
           <i class="fas fa-trash text-sm"></i>
         </button>
         
-        <h3 class="font-bold text-white mb-3 pr-8">${nota.titulo}</h3>
-        <p class="text-gray-300 text-sm whitespace-pre-wrap line-clamp-6">${nota.contenido}</p>
+        <h3 class="font-bold text-black mb-3 pr-8">${nota.titulo}</h3>
+        <p class="text-gray-600 text-sm whitespace-pre-wrap line-clamp-6">${nota.contenido}</p>
         
         <div class="mt-4 pt-4 border-t border-gray-400/30 text-xs text-gray-600">
           <i class="far fa-clock mr-1"></i>
@@ -9881,37 +9881,37 @@ function nuevaNota() {
   `).join('')
   
   const html = `
-    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div id="modal-overlay" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <h3 class="text-2xl font-bold mb-6">
-          <i class="fas fa-sticky-note text-white mr-2"></i>
+          <i class="fas fa-sticky-note text-black mr-2"></i>
           Nueva Nota
         </h3>
         <form id="nota-form" class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Título</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Título</label>
             <input type="text" name="titulo" required 
                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500">
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Contenido</label>
+            <label class="block text-sm font-medium text-gray-600 mb-1">Contenido</label>
             <textarea name="contenido" rows="8" required
                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500"></textarea>
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Color</label>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Color</label>
             <div class="space-y-2">
               ${coloresHtml}
             </div>
           </div>
           
           <div class="flex space-x-3">
-            <button type="submit" class="flex-1 bg-yellow-500 hover:bg-white text-white px-6 py-3 rounded-lg">
+            <button type="submit" class="flex-1 bg-yellow-500 hover:bg-white text-black px-6 py-3 rounded-lg">
               <i class="fas fa-save mr-2"></i>Guardar Nota
             </button>
-            <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg">
+            <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-black px-6 py-3 rounded-lg">
               Cancelar
             </button>
           </div>
@@ -9971,37 +9971,37 @@ async function editarNota(id) {
     `).join('')
     
     const html = `
-      <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div id="modal-overlay" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
           <h3 class="text-2xl font-bold mb-6">
-            <i class="fas fa-edit text-white mr-2"></i>
+            <i class="fas fa-edit text-black mr-2"></i>
             Editar Nota
           </h3>
           <form id="nota-form" class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Título</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Título</label>
               <input type="text" name="titulo" value="${nota.titulo}" required 
                      class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500">
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-1">Contenido</label>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Contenido</label>
               <textarea name="contenido" rows="8" required
                         class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500">${nota.contenido}</textarea>
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-2">Color</label>
+              <label class="block text-sm font-medium text-gray-600 mb-2">Color</label>
               <div class="space-y-2">
                 ${coloresHtml}
               </div>
             </div>
             
             <div class="flex space-x-3">
-              <button type="submit" class="flex-1 bg-yellow-500 hover:bg-white text-white px-6 py-3 rounded-lg">
+              <button type="submit" class="flex-1 bg-yellow-500 hover:bg-white text-black px-6 py-3 rounded-lg">
                 <i class="fas fa-save mr-2"></i>Actualizar
               </button>
-              <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg">
+              <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-black px-6 py-3 rounded-lg">
                 Cancelar
               </button>
             </div>
@@ -10076,15 +10076,15 @@ function abrirNotasFlotante() {
   // Panel horizontal más alto: 70vh para que no se corten las notas
   panel.className = 'fixed bottom-0 left-0 right-0 h-[70vh] bg-white shadow-2xl z-40 flex flex-col overflow-hidden border-t-4 border-yellow-400'
   panel.innerHTML = `
-    <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white px-6 py-3 flex items-center justify-between">
+    <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black px-6 py-3 flex items-center justify-between">
       <h3 class="text-lg font-bold">
         <i class="fas fa-sticky-note mr-2"></i>Notas Rápidas
       </h3>
       <div class="flex items-center space-x-2">
-        <button onclick="nuevaNota()" class="hover:bg-white/20 px-3 py-1 rounded transition-all" title="Nueva nota">
+        <button onclick="nuevaNota()" class="hover:bg-black/20 px-3 py-1 rounded transition-all" title="Nueva nota">
           <i class="fas fa-plus mr-1"></i>Nueva
         </button>
-        <button onclick="abrirNotasFlotante()" class="hover:bg-white/20 p-2 rounded transition-all" title="Cerrar">
+        <button onclick="abrirNotasFlotante()" class="hover:bg-black/20 p-2 rounded transition-all" title="Cerrar">
           <i class="fas fa-times"></i>
         </button>
       </div>
@@ -10127,7 +10127,7 @@ async function cargarNotasEnPanel() {
         <div class="text-center py-12 text-gray-400">
           <i class="fas fa-sticky-note text-6xl mb-4 opacity-30"></i>
           <p class="text-lg">No hay notas guardadas</p>
-          <button onclick="nuevaNota()" class="mt-4 bg-yellow-500 hover:bg-white text-white px-4 py-2 rounded-lg transition-all">
+          <button onclick="nuevaNota()" class="mt-4 bg-yellow-500 hover:bg-white text-black px-4 py-2 rounded-lg transition-all">
             <i class="fas fa-plus mr-2"></i>Crear primera nota
           </button>
         </div>
@@ -10147,8 +10147,8 @@ async function cargarNotasEnPanel() {
               <i class="fas fa-trash text-xs"></i>
             </button>
             
-            <h4 class="font-bold text-white mb-2 pr-6 text-sm">${nota.titulo}</h4>
-            <p class="text-gray-300 text-xs whitespace-pre-wrap flex-1 overflow-auto">${nota.contenido}</p>
+            <h4 class="font-bold text-black mb-2 pr-6 text-sm">${nota.titulo}</h4>
+            <p class="text-gray-600 text-xs whitespace-pre-wrap flex-1 overflow-auto">${nota.contenido}</p>
             
             <div class="mt-auto pt-2 border-t border-gray-400/30 text-xs text-gray-600">
               <i class="far fa-clock mr-1"></i>
@@ -10215,22 +10215,22 @@ function cambiarVistaTareas(vista) {
   
   // Actualizar botones
   document.querySelectorAll('.vista-tareas-btn').forEach(btn => {
-    btn.classList.remove('bg-gray-700', 'text-white')
-    btn.classList.add('bg-gray-200', 'text-gray-300')
+    btn.classList.remove('bg-gray-700', 'text-black')
+    btn.classList.add('bg-gray-200', 'text-gray-600')
   })
   
   if (vista === 'lista') {
-    document.getElementById('vista-lista-btn').classList.remove('bg-gray-200', 'text-gray-300')
-    document.getElementById('vista-lista-btn').classList.add('bg-gray-700', 'text-white')
+    document.getElementById('vista-lista-btn').classList.remove('bg-gray-200', 'text-gray-600')
+    document.getElementById('vista-lista-btn').classList.add('bg-gray-700', 'text-black')
   } else if (vista === 'miniatura') {
-    document.getElementById('vista-miniatura-btn').classList.remove('bg-gray-200', 'text-gray-300')
-    document.getElementById('vista-miniatura-btn').classList.add('bg-gray-700', 'text-white')
+    document.getElementById('vista-miniatura-btn').classList.remove('bg-gray-200', 'text-gray-600')
+    document.getElementById('vista-miniatura-btn').classList.add('bg-gray-700', 'text-black')
   } else if (vista === 'kanban') {
-    document.getElementById('vista-kanban-btn').classList.remove('bg-gray-200', 'text-gray-300')
-    document.getElementById('vista-kanban-btn').classList.add('bg-gray-700', 'text-white')
+    document.getElementById('vista-kanban-btn').classList.remove('bg-gray-200', 'text-gray-600')
+    document.getElementById('vista-kanban-btn').classList.add('bg-gray-700', 'text-black')
   } else if (vista === 'calendario') {
-    document.getElementById('vista-calendario-btn').classList.remove('bg-gray-200', 'text-gray-300')
-    document.getElementById('vista-calendario-btn').classList.add('bg-gray-700', 'text-white')
+    document.getElementById('vista-calendario-btn').classList.remove('bg-gray-200', 'text-gray-600')
+    document.getElementById('vista-calendario-btn').classList.add('bg-gray-700', 'text-black')
   }
   
   // Mostrar/ocultar vistas
@@ -10325,7 +10325,7 @@ async function loadTareasKanban() {
           'medir': '<i class="fas fa-ruler text-yellow-700"></i>',
           'presupuesto': '<i class="fas fa-file-invoice-dollar text-purple-700"></i>',
           'pedidos': '<i class="fas fa-box text-red-700"></i>',
-          'varios': '<i class="fas fa-tasks text-gray-300"></i>'
+          'varios': '<i class="fas fa-tasks text-gray-600"></i>'
         }
         
         return `
@@ -10335,27 +10335,27 @@ async function loadTareasKanban() {
                data-estado="${tarea.estado}">
             <div class="flex items-start justify-between mb-2">
               <div class="flex items-center gap-2 flex-1">
-                <span class="text-lg">${tipoIcon[tarea.tipo] || '<i class="fas fa-tasks text-gray-300"></i>'}</span>
+                <span class="text-lg">${tipoIcon[tarea.tipo] || '<i class="fas fa-tasks text-gray-600"></i>'}</span>
                 <h4 class="font-semibold text-gray-900 text-sm">${tarea.titulo}</h4>
               </div>
               <span class="text-lg">${prioridadIcono}</span>
             </div>
             <div class="mb-2">
-              <span class="text-xs px-2 py-1 rounded-full bg-white/50 text-white font-medium">${tarea.tipo.replace(/_/g, ' ').toUpperCase()}</span>
+              <span class="text-xs px-2 py-1 rounded-full bg-white/50 text-black font-medium">${tarea.tipo.replace(/_/g, ' ').toUpperCase()}</span>
             </div>
-            ${tarea.descripcion ? `<p class="text-xs text-gray-300 mb-3">${tarea.descripcion.substring(0, 80)}${tarea.descripcion.length > 80 ? '...' : ''}</p>` : ''}
+            ${tarea.descripcion ? `<p class="text-xs text-gray-600 mb-3">${tarea.descripcion.substring(0, 80)}${tarea.descripcion.length > 80 ? '...' : ''}</p>` : ''}
             <div class="flex items-center justify-between text-xs text-gray-600 mb-3">
               <span><i class="far fa-calendar mr-1"></i>${fechaTexto}</span>
               ${tarea.asignado_a ? `<span><i class="far fa-user mr-1"></i>${tarea.asignado_a}</span>` : ''}
             </div>
             <div class="flex gap-1 pt-2 border-t border-gray-200/50">
-              <button onclick="event.stopPropagation(); verDetallesTarea(${tarea.id})" class="flex-1 bg-white/70 text-gray-300 px-2 py-1.5 rounded text-xs hover:bg-white transition-all" title="Ver detalles">
+              <button onclick="event.stopPropagation(); verDetallesTarea(${tarea.id})" class="flex-1 bg-white/70 text-gray-600 px-2 py-1.5 rounded text-xs hover:bg-white transition-all" title="Ver detalles">
                 <i class="fas fa-eye"></i>
               </button>
-              <button onclick="event.stopPropagation(); editarTarea(${tarea.id})" class="flex-1 bg-white/70 text-gray-300 px-2 py-1.5 rounded text-xs hover:bg-white transition-all" title="Editar">
+              <button onclick="event.stopPropagation(); editarTarea(${tarea.id})" class="flex-1 bg-white/70 text-gray-600 px-2 py-1.5 rounded text-xs hover:bg-white transition-all" title="Editar">
                 <i class="fas fa-edit"></i>
               </button>
-              <button onclick="event.stopPropagation(); confirmarEliminarTarea(${tarea.id})" class="flex-1 bg-white/70 text-gray-300 px-2 py-1.5 rounded text-xs hover:bg-white transition-all" title="Borrar">
+              <button onclick="event.stopPropagation(); confirmarEliminarTarea(${tarea.id})" class="flex-1 bg-white/70 text-gray-600 px-2 py-1.5 rounded text-xs hover:bg-white transition-all" title="Borrar">
                 <i class="fas fa-trash"></i>
               </button>
             </div>
@@ -10437,9 +10437,9 @@ async function loadTareasMiniatura() {
     // Mapeo de tipos a iconos y colores
     const tipoConfig = {
       'llamar': { icon: '📞', color: 'text-blue-600', bg: 'bg-blue-50' },
-      'instalar': { icon: '🔧', color: 'text-white', bg: 'bg-green-50' },
+      'instalar': { icon: '🔧', color: 'text-black', bg: 'bg-green-50' },
       'medir': { icon: '📏', color: 'text-yellow-600', bg: 'bg-yellow-50' },
-      'presupuesto': { icon: '💰', color: 'text-white', bg: 'bg-purple-50' },
+      'presupuesto': { icon: '💰', color: 'text-black', bg: 'bg-purple-50' },
       'pedidos': { icon: '📦', color: 'text-red-600', bg: 'bg-red-50' },
       'varios': { icon: '📋', color: 'text-gray-600', bg: 'bg-gray-50' }
     }
@@ -10448,7 +10448,7 @@ async function loadTareasMiniatura() {
       'pendiente': { text: 'Pendiente', color: 'bg-orange-100 text-orange-800' },
       'en_proceso': { text: 'En Proceso', color: 'bg-blue-100 text-blue-800' },
       'completada': { text: 'Completada', color: 'bg-green-100 text-green-800' },
-      'cancelada': { text: 'Cancelada', color: 'bg-gray-100 text-white' }
+      'cancelada': { text: 'Cancelada', color: 'bg-gray-100 text-black' }
     }
     
     const prioridadConfig = {
@@ -10476,10 +10476,10 @@ async function loadTareasMiniatura() {
             <div class="font-medium text-gray-900">${t.titulo}</div>
             ${t.descripcion ? `<div class="text-xs text-gray-400 truncate max-w-xs">${t.descripcion}</div>` : ''}
           </td>
-          <td class="px-4 py-3 text-gray-300">
+          <td class="px-4 py-3 text-gray-600">
             ${t.cliente_nombre ? `<i class="fas fa-user mr-1 text-gray-400"></i>${t.cliente_nombre}` : '-'}
           </td>
-          <td class="px-4 py-3 text-gray-300">
+          <td class="px-4 py-3 text-gray-600">
             ${fecha !== '-' ? `<i class="far fa-calendar mr-1 text-gray-400"></i>${fecha}` : '-'}
           </td>
           <td class="px-4 py-3">
@@ -10492,7 +10492,7 @@ async function loadTareasMiniatura() {
               ${prioridad.icon} ${prioridad.text}
             </span>
           </td>
-          <td class="px-4 py-3 text-gray-300">
+          <td class="px-4 py-3 text-gray-600">
             ${t.asignado_a || '-'}
           </td>
           <td class="px-4 py-3">
@@ -10502,7 +10502,7 @@ async function loadTareasMiniatura() {
                 <i class="fas fa-edit"></i>
               </button>
               <button onclick="event.stopPropagation(); verDetallesTarea(${t.id})" 
-                      class="text-gray-600 hover:text-white p-1" title="Ver detalles">
+                      class="text-gray-600 hover:text-black p-1" title="Ver detalles">
                 <i class="fas fa-eye"></i>
               </button>
             </div>
@@ -10608,7 +10608,7 @@ async function cargarCalendarioTareas() {
     // Días vacíos al inicio
     for (let i = 0; i < primerDiaSemana; i++) {
       const div = document.createElement('div')
-      div.className = 'aspect-square bg-zinc-800 border border-white rounded-lg'
+      div.className = 'aspect-square bg-zinc-800 border border-black rounded-lg'
       grid.appendChild(div)
     }
     
@@ -10624,7 +10624,7 @@ async function cargarCalendarioTareas() {
       }`
       div.onclick = () => mostrarTareasDia(fecha)
       
-      let html = `<div class="text-right mb-1"><span class="text-sm font-medium ${esHoy ? 'text-red-600' : 'text-gray-300'}">${dia}</span></div>`
+      let html = `<div class="text-right mb-1"><span class="text-sm font-medium ${esHoy ? 'text-red-600' : 'text-gray-600'}">${dia}</span></div>`
       
       if (datosDia && datosDia.total > 0) {
         html += `
@@ -10688,7 +10688,7 @@ async function mostrarTareasDia(fecha) {
           'pendiente': 'bg-yellow-100 text-yellow-700',
           'en_proceso': 'bg-blue-100 text-blue-700',
           'completada': 'bg-green-100 text-green-700'
-        }[tarea.estado] || 'bg-gray-100 text-gray-300'
+        }[tarea.estado] || 'bg-gray-100 text-gray-600'
         
         return `
           <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all">
@@ -10696,7 +10696,7 @@ async function mostrarTareasDia(fecha) {
               <div class="flex-1">
                 <div class="flex items-center gap-2 mb-2">
                   <span>${prioridadIcono}</span>
-                  <h4 class="font-medium text-white">${tarea.titulo}</h4>
+                  <h4 class="font-medium text-black">${tarea.titulo}</h4>
                   <span class="text-xs px-2 py-1 rounded-full ${estadoColor}">${tarea.estado}</span>
                 </div>
                 ${tarea.descripcion ? `<p class="text-sm text-gray-600 mb-2">${tarea.descripcion}</p>` : ''}
@@ -10710,7 +10710,7 @@ async function mostrarTareasDia(fecha) {
                   <i class="fas fa-edit"></i>
                 </button>
                 ${tarea.estado !== 'completada' ? `
-                  <button onclick="cambiarEstadoTareaRapido(${tarea.id}, 'completada')" class="text-white hover:text-green-700">
+                  <button onclick="cambiarEstadoTareaRapido(${tarea.id}, 'completada')" class="text-black hover:text-green-700">
                     <i class="fas fa-check"></i>
                   </button>
                 ` : ''}
@@ -11046,7 +11046,7 @@ async function cargarCalendarioGlobal() {
     
     // Días vacíos del mes anterior
     for (let i = 0; i < diaSemana; i++) {
-      grid.innerHTML += '<div class="h-24 bg-zinc-800 border border-white rounded-lg"></div>'
+      grid.innerHTML += '<div class="h-24 bg-zinc-800 border border-black rounded-lg"></div>'
     }
     
     // Días del mes
@@ -11079,7 +11079,7 @@ async function cargarCalendarioGlobal() {
       
       grid.innerHTML += `
         <div data-fecha="${fechaStr}" class="calendario-dia h-24 border-2 ${esHoy ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200 bg-white'} rounded-lg p-2 cursor-pointer hover:shadow-lg hover:border-yellow-400 transition-all">
-          <div class="font-bold text-white mb-1">${dia}</div>
+          <div class="font-bold text-black mb-1">${dia}</div>
           ${totalEventos > 0 ? `
             <div class="space-y-1">
               ${tareasDia.slice(0, 2).map(t => {
@@ -11089,10 +11089,10 @@ async function cargarCalendarioGlobal() {
                   'medir': 'bg-yellow-200 text-yellow-800',
                   'presupuesto': 'bg-purple-200 text-purple-800',
                   'pedidos': 'bg-red-200 text-red-800',
-                  'varios': 'bg-gray-200 text-white'
+                  'varios': 'bg-gray-200 text-black'
                 }
                 return `
-                  <div class="text-xs px-2 py-1 rounded ${tipoColor[t.tipo] || 'bg-gray-200 text-white'} truncate" title="${t.titulo}">
+                  <div class="text-xs px-2 py-1 rounded ${tipoColor[t.tipo] || 'bg-gray-200 text-black'} truncate" title="${t.titulo}">
                     📋 ${t.titulo.substring(0, 10)}${t.titulo.length > 10 ? '...' : ''}
                   </div>
                 `
@@ -11207,7 +11207,7 @@ async function cargarDiarioDia(fechaStr) {
           <i class="fas fa-chevron-left text-xl"></i>
         </button>
         <div class="text-center flex-1">
-          <h3 class="text-2xl font-bold text-white capitalize">${fechaTitulo}</h3>
+          <h3 class="text-2xl font-bold text-black capitalize">${fechaTitulo}</h3>
           <p class="text-sm text-gray-400 mt-1">${tareasDia.length + trabajosDia.length} eventos programados</p>
         </div>
         <button onclick="cambiarDiaDiario(1)" 
@@ -11237,8 +11237,8 @@ async function cargarDiarioDia(fechaStr) {
     if (tareasDia.length > 0) {
       lista.innerHTML += `
         <div class="mb-6">
-          <h4 class="text-xl font-bold text-white mb-4 flex items-center gap-2 border-b-2 border-orange-200 pb-2">
-            <i class="fas fa-clipboard-list text-white"></i>
+          <h4 class="text-xl font-bold text-black mb-4 flex items-center gap-2 border-b-2 border-orange-200 pb-2">
+            <i class="fas fa-clipboard-list text-black"></i>
             Tareas del Día (${tareasDia.length})
           </h4>
         </div>
@@ -11252,7 +11252,7 @@ async function cargarDiarioDia(fechaStr) {
           'medir': { bg: 'bg-yellow-100', border: 'border-yellow-300', icon: 'fa-ruler', color: 'text-yellow-700' },
           'presupuesto': { bg: 'bg-purple-100', border: 'border-purple-300', icon: 'fa-file-invoice-dollar', color: 'text-purple-700' },
           'pedidos': { bg: 'bg-red-100', border: 'border-red-300', icon: 'fa-box', color: 'text-red-700' },
-          'varios': { bg: 'bg-gray-50', border: 'border-gray-300', icon: 'fa-tasks', color: 'text-gray-300' }
+          'varios': { bg: 'bg-gray-50', border: 'border-gray-300', icon: 'fa-tasks', color: 'text-gray-600' }
         }
         
         const tipo = tipoColor[t.tipo] || tipoColor['varios']
@@ -11267,7 +11267,7 @@ async function cargarDiarioDia(fechaStr) {
         const prioridadIcon = {
           'alta': '<span class="text-red-600 font-bold">🔥 Alta</span>',
           'media': '<span class="text-yellow-600 font-bold">🟡 Media</span>',
-          'baja': '<span class="text-white font-bold">🟢 Baja</span>'
+          'baja': '<span class="text-black font-bold">🟢 Baja</span>'
         }
         
         lista.innerHTML += `
@@ -11287,26 +11287,26 @@ async function cargarDiarioDia(fechaStr) {
             <!-- Descripción -->
             ${t.descripcion ? `
               <div class="bg-white/70 rounded-lg p-3 mb-3">
-                <p class="text-sm text-gray-300 leading-relaxed">${t.descripcion}</p>
+                <p class="text-sm text-gray-600 leading-relaxed">${t.descripcion}</p>
               </div>
             ` : ''}
             
             <!-- Información detallada -->
             <div class="grid grid-cols-2 gap-3 text-sm mb-3">
-              <div class="flex items-center gap-2 text-gray-300">
+              <div class="flex items-center gap-2 text-gray-600">
                 <i class="fas fa-flag text-gray-400"></i>
                 <span><strong>Prioridad:</strong> ${prioridadIcon[t.prioridad] || 'Media'}</span>
               </div>
               
               ${t.asignado_a ? `
-                <div class="flex items-center gap-2 text-gray-300">
+                <div class="flex items-center gap-2 text-gray-600">
                   <i class="fas fa-user text-gray-400"></i>
                   <span><strong>Asignado:</strong> ${t.asignado_a}</span>
                 </div>
               ` : ''}
               
               ${t.cliente_nombre ? `
-                <div class="flex items-center gap-2 text-gray-300">
+                <div class="flex items-center gap-2 text-gray-600">
                   <i class="fas fa-user-tie text-gray-400"></i>
                   <span><strong>Cliente:</strong> ${t.cliente_nombre}</span>
                 </div>
@@ -11316,11 +11316,11 @@ async function cargarDiarioDia(fechaStr) {
             <!-- Acciones -->
             <div class="flex items-center gap-2 pt-3 border-t border-gray-300/50">
               <button onclick="editarTarea(${t.id})" 
-                      class="flex-1 bg-white hover:bg-gray-50 text-gray-300 px-4 py-2 rounded-lg transition-all text-sm font-medium border border-gray-300">
+                      class="flex-1 bg-white hover:bg-gray-50 text-gray-600 px-4 py-2 rounded-lg transition-all text-sm font-medium border border-gray-300">
                 <i class="fas fa-edit mr-2"></i>Editar
               </button>
               <button onclick="verDetallesTarea(${t.id})" 
-                      class="flex-1 bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-all text-sm font-medium">
+                      class="flex-1 bg-orange-600 hover:bg-orange-700 text-black px-4 py-2 rounded-lg transition-all text-sm font-medium">
                 <i class="fas fa-eye mr-2"></i>Ver Completo
               </button>
             </div>
@@ -11333,8 +11333,8 @@ async function cargarDiarioDia(fechaStr) {
     if (trabajosDia.length > 0) {
       lista.innerHTML += `
         <div class="mt-8 mb-6">
-          <h4 class="text-xl font-bold text-white mb-4 flex items-center gap-2 border-b-2 border-gray-300 pb-2">
-            <i class="fas fa-briefcase text-gray-300"></i>
+          <h4 class="text-xl font-bold text-black mb-4 flex items-center gap-2 border-b-2 border-gray-300 pb-2">
+            <i class="fas fa-briefcase text-gray-600"></i>
             Trabajos del Día (${trabajosDia.length})
           </h4>
         </div>
@@ -11353,7 +11353,7 @@ async function cargarDiarioDia(fechaStr) {
             <!-- Header -->
             <div class="flex items-start justify-between mb-3">
               <div class="flex items-center gap-3">
-                <i class="fas fa-briefcase text-gray-300 text-2xl"></i>
+                <i class="fas fa-briefcase text-gray-600 text-2xl"></i>
                 <div>
                   <h5 class="text-lg font-bold text-gray-900">${t.cliente_nombre || 'Sin nombre'} ${t.cliente_apellidos || ''}</h5>
                   <span class="text-xs text-gray-600 font-semibold uppercase">${(t.tipo_servicio || 'Sin tipo').replace(/_/g, ' ')}</span>
@@ -11364,41 +11364,41 @@ async function cargarDiarioDia(fechaStr) {
             
             <!-- Descripción -->
             ${t.descripcion ? `
-              <div class="bg-zinc-800 border border-white rounded-lg p-3 mb-3">
-                <p class="text-sm text-gray-300 leading-relaxed">${t.descripcion}</p>
+              <div class="bg-zinc-800 border border-black rounded-lg p-3 mb-3">
+                <p class="text-sm text-gray-600 leading-relaxed">${t.descripcion}</p>
               </div>
             ` : ''}
             
             <!-- Información detallada -->
             <div class="grid grid-cols-2 gap-3 text-sm mb-3">
-              <div class="flex items-center gap-2 text-gray-300">
+              <div class="flex items-center gap-2 text-gray-600">
                 <i class="fas fa-calendar text-gray-400"></i>
                 <span><strong>Fecha:</strong> ${new Date(t.fecha_programada).toLocaleDateString('es-ES')}</span>
               </div>
               
               ${t.duracion_estimada ? `
-                <div class="flex items-center gap-2 text-gray-300">
+                <div class="flex items-center gap-2 text-gray-600">
                   <i class="fas fa-hourglass-half text-gray-400"></i>
                   <span><strong>Duración:</strong> ${t.duracion_estimada} min</span>
                 </div>
               ` : ''}
               
               ${t.nombre_empleada ? `
-                <div class="flex items-center gap-2 text-gray-300">
+                <div class="flex items-center gap-2 text-gray-600">
                   <i class="fas fa-user text-gray-400"></i>
                   <span><strong>Empleada:</strong> ${t.nombre_empleada}</span>
                 </div>
               ` : ''}
               
               ${t.precio_cliente ? `
-                <div class="flex items-center gap-2 text-gray-300">
+                <div class="flex items-center gap-2 text-gray-600">
                   <i class="fas fa-euro-sign text-gray-400"></i>
                   <span><strong>Precio:</strong> ${t.precio_cliente.toFixed(2)}€</span>
                 </div>
               ` : ''}
               
               ${t.direccion ? `
-                <div class="col-span-2 flex items-center gap-2 text-gray-300">
+                <div class="col-span-2 flex items-center gap-2 text-gray-600">
                   <i class="fas fa-map-marker-alt text-gray-400"></i>
                   <span><strong>Dirección:</strong> ${t.direccion}</span>
                 </div>
@@ -11409,12 +11409,12 @@ async function cargarDiarioDia(fechaStr) {
             <div class="flex items-center gap-2 pt-3 border-t border-gray-300/50">
               ${!esTienda ? `
               <button onclick="editTrabajo(${t.id})" 
-                      class="flex-1 bg-white hover:bg-gray-50 text-gray-300 px-4 py-2 rounded-lg transition-all text-sm font-medium border border-gray-300">
+                      class="flex-1 bg-white hover:bg-gray-50 text-gray-600 px-4 py-2 rounded-lg transition-all text-sm font-medium border border-gray-300">
                 <i class="fas fa-edit mr-2"></i>Editar
               </button>
               ` : ''}
               <button onclick="viewTrabajo(${t.id})" 
-                      class="${esTienda ? 'w-full' : 'flex-1'} bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition-all text-sm font-medium">
+                      class="${esTienda ? 'w-full' : 'flex-1'} bg-gray-700 hover:bg-gray-800 text-black px-4 py-2 rounded-lg transition-all text-sm font-medium">
                 <i class="fas fa-eye mr-2"></i>Ver Completo
               </button>
             </div>
@@ -11471,7 +11471,7 @@ function abrirSoporteModal() {
       <form id="form-soporte" class="space-y-3">
         <!-- Categoría -->
         <div>
-          <label class="block text-xs font-medium text-gray-300 mb-1">
+          <label class="block text-xs font-medium text-gray-600 mb-1">
             <i class="fas fa-tag mr-1"></i>Categoría *
           </label>
           <select id="soporte-categoria" required 
@@ -11487,7 +11487,7 @@ function abrirSoporteModal() {
 
         <!-- Prioridad -->
         <div>
-          <label class="block text-xs font-medium text-gray-300 mb-1">
+          <label class="block text-xs font-medium text-gray-600 mb-1">
             <i class="fas fa-flag mr-1"></i>Prioridad *
           </label>
           <select id="soporte-prioridad" required 
@@ -11501,7 +11501,7 @@ function abrirSoporteModal() {
 
         <!-- Asunto -->
         <div>
-          <label class="block text-xs font-medium text-gray-300 mb-1">
+          <label class="block text-xs font-medium text-gray-600 mb-1">
             <i class="fas fa-heading mr-1"></i>Asunto *
           </label>
           <input type="text" id="soporte-asunto" required maxlength="100" placeholder="Ej: No puedo editar una tarea"
@@ -11510,7 +11510,7 @@ function abrirSoporteModal() {
 
         <!-- Descripción -->
         <div>
-          <label class="block text-xs font-medium text-gray-300 mb-1">
+          <label class="block text-xs font-medium text-gray-600 mb-1">
             <i class="fas fa-align-left mr-1"></i>Descripción del problema *
           </label>
           <textarea id="soporte-descripcion" required rows="4" maxlength="500" placeholder="Describe el problema con el mayor detalle posible. Si es un error, dinos qué estabas haciendo cuando ocurrió."
@@ -11534,8 +11534,8 @@ function abrirSoporteModal() {
         </div>
 
         <!-- Datos adicionales (opcional) -->
-        <details class="bg-zinc-800 border border-white rounded-lg">
-          <summary class="cursor-pointer px-3 py-2 text-xs font-medium text-gray-300 hover:bg-gray-100 rounded-lg">
+        <details class="bg-zinc-800 border border-black rounded-lg">
+          <summary class="cursor-pointer px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg">
             <i class="fas fa-phone mr-1"></i>Teléfono de contacto (opcional)
           </summary>
           <div class="p-3 space-y-2 border-t border-gray-200">
@@ -11550,11 +11550,11 @@ function abrirSoporteModal() {
         <!-- Botones -->
         <div class="flex gap-2 pt-2">
           <button type="button" onclick="closeModal()" 
-                  class="flex-1 px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-300 rounded-lg transition-all">
+                  class="flex-1 px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-all">
             <i class="fas fa-times mr-1"></i>Cancelar
           </button>
           <button type="submit" 
-                  class="flex-1 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all font-medium">
+                  class="flex-1 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-black rounded-lg transition-all font-medium">
             <i class="fas fa-paper-plane mr-1"></i>Enviar Ticket
           </button>
         </div>
@@ -11650,21 +11650,21 @@ async function viewCliente(id) {
     const formatMoneda = (valor) => valor ? `${parseFloat(valor).toFixed(2)}€` : '-'
     
     const html = `
-      <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div id="modal-overlay" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
           <!-- Header -->
-          <div class="sticky top-0 bg-gradient-to-r from-gray-800 to-gray-900 text-white p-6 rounded-t-xl z-10">
+          <div class="sticky top-0 bg-gradient-to-r from-gray-800 to-gray-900 text-black p-6 rounded-t-xl z-10">
             <div class="flex justify-between items-center">
               <div>
                 <h3 class="text-2xl font-bold">${cliente.nombre} ${cliente.apellidos}</h3>
-                <div class="flex gap-4 mt-2 text-sm text-gray-300">
+                <div class="flex gap-4 mt-2 text-sm text-gray-600">
                   <span><i class="fas fa-tag mr-2"></i>${cliente.numero_cliente}</span>
                   <span><i class="fas fa-calendar mr-2"></i>Desde ${formatFecha(cliente.fecha_registro)}</span>
                   <span class="px-2 py-1 bg-blue-600 rounded">${cliente.tipo_cliente}</span>
                   <span class="px-2 py-1 bg-purple-600 rounded">${cliente.estado_negocio}</span>
                 </div>
               </div>
-              <button onclick="closeModal()" class="text-white hover:text-gray-300">
+              <button onclick="closeModal()" class="text-black hover:text-gray-600">
                 <i class="fas fa-times text-2xl"></i>
               </button>
             </div>
@@ -11676,7 +11676,7 @@ async function viewCliente(id) {
             <div class="grid grid-cols-3 gap-6 mb-6">
               <!-- Información Personal -->
               <div class="bg-gray-50 p-4 rounded-lg">
-                <h4 class="font-semibold text-gray-300 mb-3 flex items-center border-b pb-2">
+                <h4 class="font-semibold text-gray-600 mb-3 flex items-center border-b pb-2">
                   <i class="fas fa-user text-blue-500 mr-2"></i>Información Personal
                 </h4>
                 <div class="space-y-2 text-sm">
@@ -11691,7 +11691,7 @@ async function viewCliente(id) {
               
               <!-- Información Comercial -->
               <div class="bg-blue-50 p-4 rounded-lg">
-                <h4 class="font-semibold text-gray-300 mb-3 flex items-center border-b pb-2">
+                <h4 class="font-semibold text-gray-600 mb-3 flex items-center border-b pb-2">
                   <i class="fas fa-briefcase text-blue-500 mr-2"></i>Info Comercial
                 </h4>
                 <div class="space-y-2 text-sm">
@@ -11707,7 +11707,7 @@ async function viewCliente(id) {
               
               <!-- Información de Seguimiento -->
               <div class="bg-purple-50 p-4 rounded-lg">
-                <h4 class="font-semibold text-gray-300 mb-3 flex items-center border-b pb-2">
+                <h4 class="font-semibold text-gray-600 mb-3 flex items-center border-b pb-2">
                   <i class="fas fa-tasks text-purple-500 mr-2"></i>Seguimiento
                 </h4>
                 <div class="space-y-2 text-sm">
@@ -11724,7 +11724,7 @@ async function viewCliente(id) {
             <!-- Presupuesto y Servicios -->
             <div class="grid grid-cols-2 gap-6 mb-6">
               <div class="bg-green-50 p-4 rounded-lg">
-                <h4 class="font-semibold text-gray-300 mb-3 flex items-center border-b pb-2">
+                <h4 class="font-semibold text-gray-600 mb-3 flex items-center border-b pb-2">
                   <i class="fas fa-file-invoice-dollar text-green-500 mr-2"></i>Presupuesto
                 </h4>
                 <div class="space-y-2 text-sm">
@@ -11736,8 +11736,8 @@ async function viewCliente(id) {
               </div>
               
               <div class="bg-yellow-50 p-4 rounded-lg">
-                <h4 class="font-semibold text-gray-300 mb-3 flex items-center border-b pb-2">
-                  <i class="fas fa-star text-white mr-2"></i>Preferencias y Servicios
+                <h4 class="font-semibold text-gray-600 mb-3 flex items-center border-b pb-2">
+                  <i class="fas fa-star text-black mr-2"></i>Preferencias y Servicios
                 </h4>
                 <div class="space-y-2 text-sm">
                   <p><span class="font-medium text-gray-600">Servicios de interés:</span> ${cliente.servicios_interes || '-'}</p>
@@ -11751,7 +11751,7 @@ async function viewCliente(id) {
             
             <!-- Notas -->
             <div class="bg-gray-50 p-4 rounded-lg mb-6">
-              <h4 class="font-semibold text-gray-300 mb-3 flex items-center border-b pb-2">
+              <h4 class="font-semibold text-gray-600 mb-3 flex items-center border-b pb-2">
                 <i class="fas fa-sticky-note text-gray-400 mr-2"></i>Notas
                 <button onclick="toggleEditarNotas(${id})" class="ml-auto text-blue-600 hover:text-blue-800 text-sm">
                   <i class="fas fa-edit mr-1"></i>Editar
@@ -11765,10 +11765,10 @@ async function viewCliente(id) {
                 <textarea id="notas-textarea-${id}" class="w-full px-3 py-2 border rounded-lg text-sm" rows="3" placeholder="Notas generales...">${cliente.notas || ''}</textarea>
                 <textarea id="notas-comerciales-textarea-${id}" class="w-full px-3 py-2 border rounded-lg text-sm mt-2" rows="2" placeholder="Notas comerciales...">${cliente.notas_comerciales || ''}</textarea>
                 <div class="flex gap-2 mt-2">
-                  <button onclick="guardarNotasCliente(${id})" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">
+                  <button onclick="guardarNotasCliente(${id})" class="bg-blue-600 text-black px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">
                     <i class="fas fa-save mr-1"></i>Guardar
                   </button>
-                  <button onclick="toggleEditarNotas(${id})" class="bg-gray-300 text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400 text-sm">
+                  <button onclick="toggleEditarNotas(${id})" class="bg-gray-300 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-400 text-sm">
                     Cancelar
                   </button>
                 </div>
@@ -11778,7 +11778,7 @@ async function viewCliente(id) {
             <!-- Trabajos -->
             ${trabajos.length > 0 ? `
               <div class="border-t pt-6 mb-6">
-                <h4 class="font-semibold text-gray-300 mb-3 flex items-center">
+                <h4 class="font-semibold text-gray-600 mb-3 flex items-center">
                   <i class="fas fa-hammer text-orange-500 mr-2"></i>Trabajos (${trabajos.length})
                 </h4>
                 <div class="space-y-2">
@@ -11798,10 +11798,10 @@ async function viewCliente(id) {
             <!-- Sección de Archivos -->
             <div class="border-t pt-6">
               <div class="flex justify-between items-center mb-4">
-                <h4 class="font-semibold text-gray-300 flex items-center">
+                <h4 class="font-semibold text-gray-600 flex items-center">
                   <i class="fas fa-paperclip text-gray-400 mr-2"></i>Archivos Adjuntos (${archivos.length})
                 </h4>
-                <button onclick="subirArchivoCliente(${id})" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                <button onclick="subirArchivoCliente(${id})" class="bg-blue-600 text-black px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                   <i class="fas fa-upload mr-2"></i>Subir Archivo
                 </button>
               </div>
@@ -11827,7 +11827,7 @@ async function viewCliente(id) {
                       </div>
                       
                       <!-- Nombre del archivo -->
-                      <p class="text-xs font-medium text-gray-300 truncate mb-2" title="${archivo.nombre_archivo}">
+                      <p class="text-xs font-medium text-gray-600 truncate mb-2" title="${archivo.nombre_archivo}">
                         ${archivo.nombre_archivo}
                       </p>
                       
@@ -11864,7 +11864,7 @@ async function viewCliente(id) {
             <!-- Botones de acción -->
             <div class="flex gap-3 mt-6 pt-6 border-t">
               ${!esTienda ? `
-              <button onclick="editCliente(${id}); closeModal();" class="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+              <button onclick="editCliente(${id}); closeModal();" class="flex-1 bg-green-600 text-black px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
                 <i class="fas fa-edit mr-2"></i>Editar Cliente
               </button>
               ` : ''}
@@ -11887,7 +11887,7 @@ async function viewCliente(id) {
 // Subir archivo para un cliente
 async function subirArchivoCliente(clienteId) {
   const html = `
-    <div id="modal-archivo" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+    <div id="modal-archivo" class="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-[60] p-4">
       <div class="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div class="p-6">
           <h3 class="text-xl font-bold mb-4">
@@ -11897,20 +11897,20 @@ async function subirArchivoCliente(clienteId) {
           <form id="upload-form">
             <!-- Opciones de subida -->
             <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-300 mb-3">
+              <label class="block text-sm font-medium text-gray-600 mb-3">
                 Selecciona una opción:
               </label>
               
               <!-- Botón para tomar foto -->
               <button type="button" id="btn-camera" 
-                      class="w-full mb-3 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+                      class="w-full mb-3 bg-blue-600 text-black px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
                 <i class="fas fa-camera text-xl"></i>
                 <span>Tomar Foto con Cámara</span>
               </button>
               
               <!-- Botón para seleccionar archivo -->
               <label for="file-input" 
-                     class="w-full bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 cursor-pointer block">
+                     class="w-full bg-green-600 text-black px-4 py-3 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 cursor-pointer block">
                 <i class="fas fa-folder-open text-xl"></i>
                 <span>Seleccionar Archivo</span>
               </label>
@@ -11926,7 +11926,7 @@ async function subirArchivoCliente(clienteId) {
             
             <!-- Preview -->
             <div id="preview-container" class="mb-4 hidden">
-              <label class="block text-sm font-medium text-gray-300 mb-2">
+              <label class="block text-sm font-medium text-gray-600 mb-2">
                 Vista previa:
               </label>
               <div class="border rounded-lg p-3 bg-gray-50">
@@ -11936,7 +11936,7 @@ async function subirArchivoCliente(clienteId) {
             </div>
             
             <div class="flex gap-3">
-              <button type="submit" id="btn-upload" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
+              <button type="submit" id="btn-upload" class="flex-1 bg-blue-600 text-black px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
                 <i class="fas fa-upload mr-2"></i>Subir
               </button>
               <button type="button" onclick="document.getElementById('modal-archivo').remove()" 
@@ -11974,17 +11974,17 @@ async function subirArchivoCliente(clienteId) {
       // Abrir modal de cámara
       const cameraModal = document.createElement('div')
       cameraModal.id = 'camera-modal'
-      cameraModal.className = 'fixed inset-0 bg-black z-[70] flex flex-col'
+      cameraModal.className = 'fixed inset-0 bg-white z-[70] flex flex-col'
       cameraModal.innerHTML = `
         <div class="flex-1 relative">
           <video id="camera-video" autoplay playsinline class="w-full h-full object-cover"></video>
           <canvas id="camera-canvas" class="hidden"></canvas>
         </div>
         <div class="p-4 bg-gray-900 flex justify-center gap-4">
-          <button id="btn-capture" class="bg-blue-600 text-white px-8 py-4 rounded-full hover:bg-blue-700 transition-colors">
+          <button id="btn-capture" class="bg-blue-600 text-black px-8 py-4 rounded-full hover:bg-blue-700 transition-colors">
             <i class="fas fa-camera text-2xl"></i>
           </button>
-          <button id="btn-cancel-camera" class="bg-red-600 text-white px-8 py-4 rounded-full hover:bg-red-700 transition-colors">
+          <button id="btn-cancel-camera" class="bg-red-600 text-black px-8 py-4 rounded-full hover:bg-red-700 transition-colors">
             <i class="fas fa-times text-2xl"></i>
           </button>
         </div>
@@ -12120,18 +12120,18 @@ function verArchivoCompleto(clienteId, archivoId, tipoArchivo, nombreArchivo) {
   const url = `${API}/clientes/${clienteId}/archivos/${archivoId}/url`
   
   const html = `
-    <div id="modal-preview" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[70]">
+    <div id="modal-preview" class="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-[70]">
       <div class="w-full h-full p-4 flex flex-col">
         <!-- Header -->
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-white text-xl font-semibold">${nombreArchivo}</h3>
+          <h3 class="text-black text-xl font-semibold">${nombreArchivo}</h3>
           <div class="flex gap-3">
             <button onclick="descargarArchivo(${clienteId}, ${archivoId}, '${nombreArchivo}')" 
-                    class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                    class="bg-green-600 text-black px-4 py-2 rounded-lg hover:bg-green-700">
               <i class="fas fa-download mr-2"></i>Descargar
             </button>
             <button onclick="document.getElementById('modal-preview').remove()" 
-                    class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">
+                    class="bg-red-600 text-black px-4 py-2 rounded-lg hover:bg-red-700">
               <i class="fas fa-times mr-2"></i>Cerrar
             </button>
           </div>
@@ -12256,7 +12256,7 @@ function mostrarArchivosCliente(archivos, clienteId) {
           </div>
           
           <!-- Nombre del archivo (truncado) -->
-          <p class="text-xs text-gray-300 font-medium truncate mb-1" title="${archivo.nombre_archivo}">
+          <p class="text-xs text-gray-600 font-medium truncate mb-1" title="${archivo.nombre_archivo}">
             ${archivo.nombre_archivo}
           </p>
           
@@ -12269,20 +12269,20 @@ function mostrarArchivosCliente(archivos, clienteId) {
           <div class="flex gap-1">
             <button 
               onclick="verArchivoCliente(${clienteId}, ${archivo.id}, '${archivo.tipo_archivo}')"
-              class="flex-1 bg-blue-500 text-white text-xs py-1 px-2 rounded hover:bg-blue-600 transition-colors"
+              class="flex-1 bg-blue-500 text-black text-xs py-1 px-2 rounded hover:bg-blue-600 transition-colors"
               title="Ver archivo">
               <i class="fas fa-eye"></i>
             </button>
             <button 
               onclick="descargarArchivoCliente(${clienteId}, ${archivo.id}, '${archivo.nombre_archivo}')"
-              class="flex-1 bg-green-500 text-white text-xs py-1 px-2 rounded hover:bg-green-600 transition-colors"
+              class="flex-1 bg-green-500 text-black text-xs py-1 px-2 rounded hover:bg-green-600 transition-colors"
               title="Descargar">
               <i class="fas fa-download"></i>
             </button>
             ${esAdmin ? `
               <button 
                 onclick="borrarArchivoCliente(${clienteId}, ${archivo.id})"
-                class="flex-1 bg-red-500 text-white text-xs py-1 px-2 rounded hover:bg-red-600 transition-colors"
+                class="flex-1 bg-red-500 text-black text-xs py-1 px-2 rounded hover:bg-red-600 transition-colors"
                 title="Borrar (solo admin)">
                 <i class="fas fa-trash"></i>
               </button>
@@ -12300,7 +12300,7 @@ async function verArchivoCliente(clienteId, archivoId, tipoArchivo) {
   
   // Crear modal de vista previa
   const modal = document.createElement('div')
-  modal.className = 'fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4'
+  modal.className = 'fixed inset-0 bg-white bg-opacity-75 z-50 flex items-center justify-center p-4'
   modal.onclick = (e) => {
     if (e.target === modal) modal.remove()
   }
@@ -12309,7 +12309,7 @@ async function verArchivoCliente(clienteId, archivoId, tipoArchivo) {
     <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-auto">
       <div class="sticky top-0 bg-white border-b px-4 py-3 flex justify-between items-center">
         <h3 class="font-bold text-lg">Vista Previa</h3>
-        <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-300">
+        <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
           <i class="fas fa-times text-xl"></i>
         </button>
       </div>
@@ -12321,7 +12321,7 @@ async function verArchivoCliente(clienteId, archivoId, tipoArchivo) {
             : `<div class="text-center py-12">
                  <i class="fas fa-file text-gray-400 text-6xl mb-4"></i>
                  <p class="text-gray-600 mb-4">No se puede mostrar vista previa de este archivo</p>
-                 <a href="${url}" download class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                 <a href="${url}" download class="bg-blue-500 text-black px-4 py-2 rounded hover:bg-blue-600">
                    <i class="fas fa-download mr-2"></i>Descargar
                  </a>
                </div>`
@@ -12474,18 +12474,18 @@ function renderInventario() {
   container.innerHTML = `
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-white">
+        <h2 class="text-2xl font-bold text-black">
           <i class="fas fa-boxes mr-2 text-orange-500"></i>
           Control de Inventario
         </h2>
         <div class="flex gap-2">
-          <button onclick="showImportarFacturaModal()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all">
+          <button onclick="showImportarFacturaModal()" class="px-4 py-2 bg-purple-600 text-black rounded-lg hover:bg-purple-700 transition-all">
             <i class="fas fa-file-invoice mr-2"></i>Importar Factura
           </button>
-          <button onclick="showProveedoresModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all">
+          <button onclick="showProveedoresModal()" class="px-4 py-2 bg-blue-600 text-black rounded-lg hover:bg-blue-700 transition-all">
             <i class="fas fa-truck mr-2"></i>Proveedores
           </button>
-          <button onclick="showProductoForm()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all">
+          <button onclick="showProductoForm()" class="px-4 py-2 bg-green-600 text-black rounded-lg hover:bg-green-700 transition-all">
             <i class="fas fa-plus mr-2"></i>Nuevo Producto
           </button>
         </div>
@@ -12513,10 +12513,10 @@ function renderInventario() {
           </select>
         </div>
         <div class="flex gap-1">
-          <button id="btn-vista-grid" onclick="cambiarVistaInventario('grid')" class="px-3 py-2 bg-gray-300 text-gray-300 rounded-lg hover:bg-gray-400" title="Vista en tarjetas">
+          <button id="btn-vista-grid" onclick="cambiarVistaInventario('grid')" class="px-3 py-2 bg-gray-300 text-gray-600 rounded-lg hover:bg-gray-400" title="Vista en tarjetas">
             <i class="fas fa-th"></i>
           </button>
-          <button id="btn-vista-lista" onclick="cambiarVistaInventario('lista')" class="px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700" title="Vista en lista">
+          <button id="btn-vista-lista" onclick="cambiarVistaInventario('lista')" class="px-3 py-2 bg-orange-600 text-black rounded-lg hover:bg-orange-700" title="Vista en lista">
             <i class="fas fa-list"></i>
           </button>
         </div>
@@ -12538,9 +12538,9 @@ function renderProductosGrid() {
   if (inventarioData.productos.length === 0) {
     return `
       <div class="col-span-full text-center py-12">
-        <i class="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
+        <i class="fas fa-box-open text-6xl text-gray-600 mb-4"></i>
         <p class="text-gray-400 text-lg">No hay productos en el inventario</p>
-        <button onclick="showProductoForm()" class="mt-4 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+        <button onclick="showProductoForm()" class="mt-4 px-6 py-2 bg-green-600 text-black rounded-lg hover:bg-green-700">
           <i class="fas fa-plus mr-2"></i>Crear primer producto
         </button>
       </div>
@@ -12552,7 +12552,7 @@ function renderProductosGrid() {
       <div class="p-4">
         <div class="flex items-start justify-between mb-2">
           <div class="flex-1">
-            <h3 class="font-bold text-white text-lg leading-tight">${producto.nombre}</h3>
+            <h3 class="font-bold text-black text-lg leading-tight">${producto.nombre}</h3>
             ${producto.codigo_producto ? `
               <p class="text-xs font-mono text-blue-600 mt-1">${producto.codigo_producto}</p>
             ` : ''}
@@ -12573,30 +12573,30 @@ function renderProductosGrid() {
             <p class="text-xs text-purple-800 font-semibold mb-1">
               <i class="fas fa-cubes mr-1"></i>Producto con variantes
             </p>
-            <p class="text-xs text-white">Haz clic para ver detalles</p>
+            <p class="text-xs text-black">Haz clic para ver detalles</p>
           </div>
         ` : `
           <div class="grid grid-cols-2 gap-2 mb-3">
-            <div class="bg-zinc-800 border border-white rounded-lg p-2">
+            <div class="bg-zinc-800 border border-black rounded-lg p-2">
               <p class="text-xs text-gray-600">Stock</p>
               <p class="font-bold text-gray-900">${producto.stock_actual || 0} ${producto.unidad || ''}</p>
             </div>
-            <div class="bg-zinc-800 border border-white rounded-lg p-2">
+            <div class="bg-zinc-800 border border-black rounded-lg p-2">
               <p class="text-xs text-gray-600">Precio</p>
-              <p class="font-bold text-white">${producto.precio_base ? producto.precio_base.toFixed(2) + '€' : '-'}</p>
+              <p class="font-bold text-black">${producto.precio_base ? producto.precio_base.toFixed(2) + '€' : '-'}</p>
             </div>
           </div>
         `}
         
         <div class="flex gap-2 pt-3 border-t">
-          <button onclick="viewProducto(${producto.id})" class="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-all">
+          <button onclick="viewProducto(${producto.id})" class="flex-1 px-3 py-2 bg-blue-600 text-black text-sm rounded-lg hover:bg-blue-700 transition-all">
             <i class="fas fa-eye mr-1"></i>Ver
           </button>
           ${!esTienda ? `
-            <button onclick="editProducto(${producto.id})" class="flex-1 px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-all">
+            <button onclick="editProducto(${producto.id})" class="flex-1 px-3 py-2 bg-green-600 text-black text-sm rounded-lg hover:bg-green-700 transition-all">
               <i class="fas fa-edit"></i>
             </button>
-            <button onclick="deleteProducto(${producto.id})" class="flex-1 px-3 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-all">
+            <button onclick="deleteProducto(${producto.id})" class="flex-1 px-3 py-2 bg-red-600 text-black text-sm rounded-lg hover:bg-red-700 transition-all">
               <i class="fas fa-trash"></i>
             </button>
           ` : ''}
@@ -12613,9 +12613,9 @@ function renderProductosLista() {
   if (inventarioData.productos.length === 0) {
     return `
       <div class="text-center py-12">
-        <i class="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
+        <i class="fas fa-box-open text-6xl text-gray-600 mb-4"></i>
         <p class="text-gray-400 text-lg">No hay productos en el inventario</p>
-        <button onclick="showProductoForm()" class="mt-4 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+        <button onclick="showProductoForm()" class="mt-4 px-6 py-2 bg-green-600 text-black rounded-lg hover:bg-green-700">
           <i class="fas fa-plus mr-2"></i>Crear primer producto
         </button>
       </div>
@@ -12629,7 +12629,7 @@ function renderProductosLista() {
       <div class="bg-white rounded-lg shadow hover:shadow-md transition-all p-4 flex items-center gap-4">
         <!-- Nombre y categoría -->
         <div class="flex-1">
-          <h4 class="font-semibold text-white">${producto.nombre}</h4>
+          <h4 class="font-semibold text-black">${producto.nombre}</h4>
           <p class="text-sm text-gray-400">${producto.categoria_nombre || 'Sin categoría'}</p>
           ${producto.codigo_producto ? `<p class="text-xs text-gray-400">Código: ${producto.codigo_producto}</p>` : ''}
         </div>
@@ -12642,12 +12642,12 @@ function renderProductosLista() {
               type="number" 
               id="stock-${producto.id}" 
               value="${producto.stock_actual || 0}" 
-              class="w-16 px-2 py-1 text-center border rounded ${stockBajo ? 'border-red-400 text-red-600' : 'border-green-400 text-white'} font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400"
+              class="w-16 px-2 py-1 text-center border rounded ${stockBajo ? 'border-red-400 text-red-600' : 'border-green-400 text-black'} font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400"
               min="0"
             />
             <button 
               onclick="actualizarStockRapido(${producto.id}, document.getElementById('stock-${producto.id}').value)"
-              class="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+              class="px-2 py-1 bg-blue-600 text-black text-xs rounded hover:bg-blue-700"
               title="Guardar stock"
             >
               <i class="fas fa-save"></i>
@@ -12670,14 +12670,14 @@ function renderProductosLista() {
         
         <!-- Acciones -->
         <div class="flex gap-2">
-          <button onclick="viewProducto(${producto.id})" class="px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700" title="Ver detalles">
+          <button onclick="viewProducto(${producto.id})" class="px-3 py-2 bg-blue-600 text-black text-sm rounded-lg hover:bg-blue-700" title="Ver detalles">
             <i class="fas fa-eye"></i>
           </button>
           ${!esTienda ? `
-            <button onclick="editProducto(${producto.id})" class="px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700" title="Editar">
+            <button onclick="editProducto(${producto.id})" class="px-3 py-2 bg-green-600 text-black text-sm rounded-lg hover:bg-green-700" title="Editar">
               <i class="fas fa-edit"></i>
             </button>
-            <button onclick="deleteProducto(${producto.id})" class="px-3 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700" title="Eliminar">
+            <button onclick="deleteProducto(${producto.id})" class="px-3 py-2 bg-red-600 text-black text-sm rounded-lg hover:bg-red-700" title="Eliminar">
               <i class="fas fa-trash"></i>
             </button>
           ` : ''}
@@ -12787,11 +12787,11 @@ function renderProductoForm(producto = null) {
   const modalContent = `
     <div class="max-w-4xl mx-auto">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-white">
+        <h2 class="text-2xl font-bold text-black">
           <i class="fas fa-${isEdit ? 'edit' : 'plus-circle'} mr-2 text-orange-500"></i>
           ${isEdit ? 'Editar Producto' : 'Nuevo Producto'}
         </h2>
-        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-300">
+        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
           <i class="fas fa-times text-2xl"></i>
         </button>
       </div>
@@ -12799,7 +12799,7 @@ function renderProductoForm(producto = null) {
       <form id="form-producto" onsubmit="guardarProducto(event)">
         <!-- PASO 1: Categoría -->
         <div class="mb-6 p-4 bg-orange-50 rounded-lg border-2 border-orange-200">
-          <label class="block text-sm font-bold text-gray-300 mb-2">
+          <label class="block text-sm font-bold text-gray-600 mb-2">
             <i class="fas fa-tag mr-2"></i>1. Selecciona la categoría *
           </label>
           <select 
@@ -12822,12 +12822,12 @@ function renderProductoForm(producto = null) {
         ${inventarioData.categoriaSeleccionada ? `
           <!-- PASO 2: Datos básicos -->
           <div class="mb-6">
-            <h3 class="font-bold text-gray-300 mb-4">
+            <h3 class="font-bold text-gray-600 mb-4">
               <i class="fas fa-clipboard mr-2"></i>2. Datos básicos
             </h3>
             
             <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-300 mb-2">Nombre del producto *</label>
+              <label class="block text-sm font-medium text-gray-600 mb-2">Nombre del producto *</label>
               <input 
                 type="text" 
                 name="nombre" 
@@ -12839,7 +12839,7 @@ function renderProductoForm(producto = null) {
             </div>
             
             <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-300 mb-2">Descripción</label>
+              <label class="block text-sm font-medium text-gray-600 mb-2">Descripción</label>
               <textarea 
                 name="descripcion" 
                 rows="3"
@@ -12849,7 +12849,7 @@ function renderProductoForm(producto = null) {
             </div>
             
             <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-300 mb-2">Notas internas</label>
+              <label class="block text-sm font-medium text-gray-600 mb-2">Notas internas</label>
               <textarea 
                 name="notas" 
                 rows="2"
@@ -12861,13 +12861,13 @@ function renderProductoForm(producto = null) {
           
           <!-- INFORMACIÓN DE COMPRA -->
           <div class="mb-6 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
-            <h3 class="font-bold text-gray-300 mb-4">
+            <h3 class="font-bold text-gray-600 mb-4">
               <i class="fas fa-shopping-cart mr-2 text-blue-600"></i>Información de Compra (opcional)
             </h3>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">
+                <label class="block text-sm font-medium text-gray-600 mb-2">
                   <i class="fas fa-truck mr-1"></i>Proveedor
                 </label>
                 <select 
@@ -12885,7 +12885,7 @@ function renderProductoForm(producto = null) {
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">
+                <label class="block text-sm font-medium text-gray-600 mb-2">
                   <i class="fas fa-tag mr-1"></i>Código del proveedor
                 </label>
                 <input 
@@ -12899,7 +12899,7 @@ function renderProductoForm(producto = null) {
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">
+                <label class="block text-sm font-medium text-gray-600 mb-2">
                   <i class="fas fa-barcode mr-1"></i>Código de barras / EAN
                 </label>
                 <input 
@@ -12913,7 +12913,7 @@ function renderProductoForm(producto = null) {
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">
+                <label class="block text-sm font-medium text-gray-600 mb-2">
                   <i class="fas fa-euro-sign mr-1"></i>Coste base (lo que TE cuesta)
                 </label>
                 <input 
@@ -12928,8 +12928,8 @@ function renderProductoForm(producto = null) {
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">
-                  <i class="fas fa-tags mr-1 text-white"></i>Precio de venta (PVP)
+                <label class="block text-sm font-medium text-gray-600 mb-2">
+                  <i class="fas fa-tags mr-1 text-black"></i>Precio de venta (PVP)
                 </label>
                 <input 
                   type="number" 
@@ -12958,13 +12958,13 @@ function renderProductoForm(producto = null) {
             <button 
               type="button" 
               onclick="closeModal()" 
-              class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-300 rounded-lg hover:bg-gray-50 font-medium"
+              class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 font-medium"
             >
               Cancelar
             </button>
             <button 
               type="submit" 
-              class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+              class="flex-1 px-6 py-3 bg-green-600 text-black rounded-lg hover:bg-green-700 font-medium"
             >
               <i class="fas fa-save mr-2"></i>
               ${isEdit ? 'Actualizar Producto' : 'Crear Producto'}
@@ -12989,13 +12989,13 @@ function renderFormularioDinamico(categoriaInfo, producto = null) {
     return `
       <div class="mb-6">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="font-bold text-gray-300">
+          <h3 class="font-bold text-gray-600">
             <i class="fas fa-cubes mr-2"></i>3. Variantes del producto
           </h3>
           <button 
             type="button" 
             onclick="showAddVarianteModal()" 
-            class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm"
+            class="px-4 py-2 bg-purple-600 text-black rounded-lg hover:bg-purple-700 text-sm"
           >
             <i class="fas fa-plus mr-2"></i>Añadir variante
           </button>
@@ -13008,7 +13008,7 @@ function renderFormularioDinamico(categoriaInfo, producto = null) {
         ${inventarioData.variantesTemporales.length === 0 ? `
           <div class="text-center py-8 bg-purple-50 rounded-lg border-2 border-dashed border-purple-300">
             <i class="fas fa-cubes text-4xl text-purple-300 mb-2"></i>
-            <p class="text-white font-medium">Sin variantes</p>
+            <p class="text-black font-medium">Sin variantes</p>
             <p class="text-sm text-purple-500">Añade variantes por medida, color, etc.</p>
           </div>
         ` : ''}
@@ -13018,13 +13018,13 @@ function renderFormularioDinamico(categoriaInfo, producto = null) {
     // Si NO permite variantes, mostrar campos directos
     return `
       <div class="mb-6">
-        <h3 class="font-bold text-gray-300 mb-4">
+        <h3 class="font-bold text-gray-600 mb-4">
           <i class="fas fa-dollar-sign mr-2"></i>3. Precio y stock
         </h3>
         
         <div class="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Precio unitario *</label>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Precio unitario *</label>
             <input 
               type="number" 
               step="0.01" 
@@ -13037,7 +13037,7 @@ function renderFormularioDinamico(categoriaInfo, producto = null) {
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Unidad *</label>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Unidad *</label>
             <select 
               name="unidad" 
               required 
@@ -13054,7 +13054,7 @@ function renderFormularioDinamico(categoriaInfo, producto = null) {
         
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Stock actual</label>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Stock actual</label>
             <input 
               type="number" 
               step="0.01" 
@@ -13066,7 +13066,7 @@ function renderFormularioDinamico(categoriaInfo, producto = null) {
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Stock mínimo</label>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Stock mínimo</label>
             <input 
               type="number" 
               step="0.01" 
@@ -13086,7 +13086,7 @@ function renderVariantesList() {
   return inventarioData.variantesTemporales.map((variante, index) => `
     <div class="flex items-center gap-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
       <div class="flex-1">
-        <p class="font-medium text-white">${variante.medida_texto || variante.nombre_variante || 'Variante ' + (index + 1)}</p>
+        <p class="font-medium text-black">${variante.medida_texto || variante.nombre_variante || 'Variante ' + (index + 1)}</p>
         <p class="text-sm text-gray-600">
           Precio: <span class="font-semibold">${variante.precio}€</span> | 
           Stock: <span class="font-semibold">${variante.stock_actual} ${variante.unidad}</span>
@@ -13123,17 +13123,17 @@ function showAddVarianteModal(varianteIndex = null) {
   
   const modalOverlay = document.createElement('div')
   modalOverlay.id = 'modal-variante-overlay'
-  modalOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4'
+  modalOverlay.className = 'fixed inset-0 bg-white bg-opacity-50 z-[60] flex items-center justify-center p-4'
   modalOverlay.innerHTML = `
     <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-      <h3 class="text-xl font-bold text-white mb-4">
-        <i class="fas fa-cube mr-2 text-white"></i>
+      <h3 class="text-xl font-bold text-black mb-4">
+        <i class="fas fa-cube mr-2 text-black"></i>
         ${isEdit ? 'Editar Variante' : 'Nueva Variante'}
       </h3>
       
       <form id="form-variante" onsubmit="guardarVariante(event, ${varianteIndex})">
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-300 mb-2">Medida (ancho x alto)</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Medida (ancho x alto)</label>
           <div class="grid grid-cols-2 gap-2">
             <input 
               type="number" 
@@ -13153,7 +13153,7 @@ function showAddVarianteModal(varianteIndex = null) {
         </div>
         
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-300 mb-2">o Descripción personalizada</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">o Descripción personalizada</label>
           <input 
             type="text" 
             name="nombre_variante" 
@@ -13165,7 +13165,7 @@ function showAddVarianteModal(varianteIndex = null) {
         
         <div class="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Precio *</label>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Precio *</label>
             <input 
               type="number" 
               step="0.01" 
@@ -13178,7 +13178,7 @@ function showAddVarianteModal(varianteIndex = null) {
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Unidad *</label>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Unidad *</label>
             <select 
               name="unidad" 
               required 
@@ -13195,7 +13195,7 @@ function showAddVarianteModal(varianteIndex = null) {
         
         <div class="grid grid-cols-2 gap-4 mb-6">
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Stock actual</label>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Stock actual</label>
             <input 
               type="number" 
               step="0.01" 
@@ -13207,7 +13207,7 @@ function showAddVarianteModal(varianteIndex = null) {
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Stock mínimo</label>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Stock mínimo</label>
             <input 
               type="number" 
               step="0.01" 
@@ -13219,7 +13219,7 @@ function showAddVarianteModal(varianteIndex = null) {
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">
+            <label class="block text-sm font-medium text-gray-600 mb-2">
               <i class="fas fa-euro-sign mr-1 text-blue-600"></i>
               Coste unitario (lo que TE cuesta)
             </label>
@@ -13239,13 +13239,13 @@ function showAddVarianteModal(varianteIndex = null) {
           <button 
             type="button" 
             onclick="closeVarianteModal()" 
-            class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-300 rounded-lg hover:bg-gray-50"
+            class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50"
           >
             Cancelar
           </button>
           <button 
             type="submit" 
-            class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+            class="flex-1 px-4 py-2 bg-purple-600 text-black rounded-lg hover:bg-purple-700"
           >
             <i class="fas fa-save mr-2"></i>
             ${isEdit ? 'Actualizar' : 'Añadir'}
@@ -13407,7 +13407,7 @@ async function viewProducto(productoId) {
       
       const content = `
         <div class="flex items-center justify-between mb-6">
-          <h2 class="text-2xl font-bold text-white">
+          <h2 class="text-2xl font-bold text-black">
             <i class="fas fa-eye mr-2 text-blue-600"></i>
             ${producto.nombre}
           </h2>
@@ -13453,7 +13453,7 @@ async function viewProducto(productoId) {
                     </p>
                     ${v.color && v.color !== 'undefined' ? `<p class="text-xs text-gray-400">Color: ${v.color}</p>` : ''}
                   </div>
-                  <p class="font-bold text-white">${v.precio}€</p>
+                  <p class="font-bold text-black">${v.precio}€</p>
                 </div>
               `).join('')}
             </div>
@@ -13467,7 +13467,7 @@ async function viewProducto(productoId) {
             </div>
             <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
               <p class="text-xs text-gray-600 mb-1">Precio base</p>
-              <p class="font-bold text-white text-lg">${producto.precio_base || 0}€</p>
+              <p class="font-bold text-black text-lg">${producto.precio_base || 0}€</p>
             </div>
           </div>
         `}
@@ -13488,7 +13488,7 @@ async function viewProducto(productoId) {
             </p>
             ${producto.codigos_externos.map(ce => `
               <div class="flex items-center justify-between text-sm py-1">
-                <span class="text-gray-300">${ce.proveedor_nombre}</span>
+                <span class="text-gray-600">${ce.proveedor_nombre}</span>
                 <span class="font-mono font-semibold text-gray-900">${ce.codigo_proveedor}</span>
               </div>
               ${ce.ean ? `<p class="text-xs text-gray-400">EAN: ${ce.ean}</p>` : ''}
@@ -13505,20 +13505,20 @@ async function viewProducto(productoId) {
           ${!esTienda ? `
             <button 
               onclick="editProducto(${productoId})" 
-              class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              class="flex-1 px-6 py-3 bg-green-600 text-black rounded-lg hover:bg-green-700"
             >
               <i class="fas fa-edit mr-2"></i>Editar
             </button>
             <button 
               onclick="verHistorialProducto(${productoId})" 
-              class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              class="flex-1 px-6 py-3 bg-blue-600 text-black rounded-lg hover:bg-blue-700"
             >
               <i class="fas fa-history mr-2"></i>Historial
             </button>
           ` : ''}
           <button 
             onclick="closeModal()" 
-            class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-300 rounded-lg hover:bg-gray-50"
+            class="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50"
           >
             Cerrar
           </button>
@@ -13577,18 +13577,18 @@ function showProveedoresModal() {
   const modalContent = `
     <div class="max-w-2xl mx-auto">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-white">
+        <h2 class="text-2xl font-bold text-black">
           <i class="fas fa-truck mr-2 text-blue-600"></i>
           Gestión de Proveedores
         </h2>
-        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-300">
+        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
           <i class="fas fa-times text-2xl"></i>
         </button>
       </div>
       
       <button 
         onclick="showNuevoProveedorForm()" 
-        class="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mb-4"
+        class="w-full px-4 py-3 bg-blue-600 text-black rounded-lg hover:bg-blue-700 mb-4"
       >
         <i class="fas fa-plus mr-2"></i>Añadir Proveedor
       </button>
@@ -13619,18 +13619,18 @@ function showNuevoProveedorForm() {
   const modalContent = `
     <div class="max-w-md mx-auto">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl font-bold text-white">
+        <h2 class="text-xl font-bold text-black">
           <i class="fas fa-truck mr-2 text-blue-600"></i>
           Nuevo Proveedor
         </h2>
-        <button onclick="showProveedoresModal()" class="text-gray-400 hover:text-gray-300">
+        <button onclick="showProveedoresModal()" class="text-gray-400 hover:text-gray-600">
           <i class="fas fa-arrow-left text-xl"></i>
         </button>
       </div>
       
       <form onsubmit="guardarProveedor(event)">
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-300 mb-2">Nombre *</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Nombre *</label>
           <input 
             type="text" 
             name="nombre" 
@@ -13641,7 +13641,7 @@ function showNuevoProveedorForm() {
         </div>
         
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-300 mb-2">Persona de contacto</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Persona de contacto</label>
           <input 
             type="text" 
             name="contacto" 
@@ -13651,7 +13651,7 @@ function showNuevoProveedorForm() {
         </div>
         
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-300 mb-2">Teléfono</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Teléfono</label>
           <input 
             type="tel" 
             name="telefono" 
@@ -13661,7 +13661,7 @@ function showNuevoProveedorForm() {
         </div>
         
         <div class="mb-6">
-          <label class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+          <label class="block text-sm font-medium text-gray-600 mb-2">Email</label>
           <input 
             type="email" 
             name="email" 
@@ -13674,13 +13674,13 @@ function showNuevoProveedorForm() {
           <button 
             type="button" 
             onclick="showProveedoresModal()" 
-            class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-300 rounded-lg hover:bg-gray-50"
+            class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50"
           >
             Cancelar
           </button>
           <button 
             type="submit" 
-            class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            class="flex-1 px-4 py-2 bg-blue-600 text-black rounded-lg hover:bg-blue-700"
           >
             <i class="fas fa-save mr-2"></i>Guardar
           </button>
@@ -13805,17 +13805,17 @@ function showImportarFacturaModal() {
   showModal(`
     <div class="space-y-6">
       <div class="text-center">
-        <div class="w-20 h-20 bg-white/20 border border-white rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="fas fa-file-invoice text-4xl text-white"></i>
+        <div class="w-20 h-20 bg-black/20 border border-black rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-file-invoice text-4xl text-black"></i>
         </div>
-        <h3 class="text-2xl font-bold text-white mb-2">Importar Factura</h3>
+        <h3 class="text-2xl font-bold text-black mb-2">Importar Factura</h3>
         <p class="text-gray-600">Sube tu factura y deja que la IA extraiga los datos automáticamente</p>
       </div>
       
       <form onsubmit="procesarFactura(event)" class="space-y-4">
         <!-- Proveedor -->
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">
+          <label class="block text-sm font-medium text-gray-600 mb-2">
             Proveedor *
           </label>
           <select 
@@ -13834,7 +13834,7 @@ function showImportarFacturaModal() {
         
         <!-- Subir archivo -->
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">
+          <label class="block text-sm font-medium text-gray-600 mb-2">
             Archivo de factura *
           </label>
           <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-400 transition-all">
@@ -13852,8 +13852,8 @@ function showImportarFacturaModal() {
             </label>
             <div id="archivo-seleccionado" class="mt-4 hidden">
               <div class="inline-flex items-center px-4 py-2 bg-purple-50 rounded-lg">
-                <i class="fas fa-file text-white mr-2"></i>
-                <span id="nombre-archivo" class="text-sm text-gray-300"></span>
+                <i class="fas fa-file text-black mr-2"></i>
+                <span id="nombre-archivo" class="text-sm text-gray-600"></span>
                 <button type="button" onclick="limpiarArchivoSeleccionado()" class="ml-3 text-red-500 hover:text-red-700">
                   <i class="fas fa-times"></i>
                 </button>
@@ -13866,14 +13866,14 @@ function showImportarFacturaModal() {
           <button 
             type="button" 
             onclick="closeModal()" 
-            class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-300 rounded-lg hover:bg-gray-50"
+            class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50"
           >
             Cancelar
           </button>
           <button 
             type="button"
             onclick="event.preventDefault(); const prov = document.getElementById('importar-proveedor-select').value; if (!prov) { showToast('⚠️ Selecciona un proveedor', 'warning'); return; } importarManualmente(parseInt(prov))"
-            class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            class="flex-1 px-4 py-2 bg-blue-600 text-black rounded-lg hover:bg-blue-700"
           >
             <i class="fas fa-keyboard mr-2"></i>Importar Factura
           </button>
@@ -13915,7 +13915,7 @@ function importarManualmente(proveedor_id) {
     <div class="max-w-4xl">
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h2 class="text-2xl font-bold text-white">
+          <h2 class="text-2xl font-bold text-black">
             <i class="fas fa-keyboard mr-2 text-blue-600"></i>Importar Factura Manualmente
           </h2>
           <p class="text-sm text-gray-600 mt-1">Proveedor: ${proveedor.nombre}</p>
@@ -13946,13 +13946,13 @@ function importarManualmente(proveedor_id) {
       <div class="flex gap-3 pt-4 border-t">
         <button 
           onclick="closeModal()" 
-          class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-300 rounded-lg hover:bg-gray-50"
+          class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50"
         >
           Cancelar
         </button>
         <button 
           onclick="procesarImportacionManual(${proveedor_id})"
-          class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          class="flex-1 px-4 py-2 bg-blue-600 text-black rounded-lg hover:bg-blue-700"
         >
           <i class="fas fa-check mr-2"></i>Continuar con Revisión
         </button>
@@ -13978,7 +13978,7 @@ function añadirLineaManual() {
   const lineaHTML = `
     <div class="bg-white border rounded-lg p-4" id="linea-manual-${contadorLineasManuales}">
       <div class="flex items-center justify-between mb-3">
-        <h4 class="font-semibold text-gray-300">Producto #${contadorLineasManuales}</h4>
+        <h4 class="font-semibold text-gray-600">Producto #${contadorLineasManuales}</h4>
         <button 
           onclick="eliminarLineaManual(${contadorLineasManuales})"
           class="text-red-500 hover:text-red-700"
@@ -13989,7 +13989,7 @@ function añadirLineaManual() {
       
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">Código del proveedor</label>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Código del proveedor</label>
           <input 
             type="text" 
             name="codigo_proveedor_${contadorLineasManuales}"
@@ -13998,7 +13998,7 @@ function añadirLineaManual() {
           >
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">Descripción</label>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Descripción</label>
           <input 
             type="text" 
             name="descripcion_${contadorLineasManuales}"
@@ -14008,7 +14008,7 @@ function añadirLineaManual() {
           >
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">Cantidad</label>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Cantidad</label>
           <input 
             type="number" 
             step="0.01"
@@ -14019,7 +14019,7 @@ function añadirLineaManual() {
           >
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-300 mb-1">Precio Unitario (€)</label>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Precio Unitario (€)</label>
           <input 
             type="number" 
             step="0.01"
@@ -14233,8 +14233,8 @@ function mostrarVistaPreviaImportacionFactura(data) {
         <div class="flex items-start justify-between mb-3">
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-1">
-              ${esCoincidencia ? '<i class="fas fa-check-circle text-white"></i>' : esResuelto ? '<i class="fas fa-link text-blue-600"></i>' : '<i class="fas fa-exclamation-triangle text-yellow-600"></i>'}
-              <span class="font-semibold text-white">${linea.descripcion}</span>
+              ${esCoincidencia ? '<i class="fas fa-check-circle text-black"></i>' : esResuelto ? '<i class="fas fa-link text-blue-600"></i>' : '<i class="fas fa-exclamation-triangle text-yellow-600"></i>'}
+              <span class="font-semibold text-black">${linea.descripcion}</span>
             </div>
             <div class="text-sm text-gray-600">
               <span class="font-mono bg-gray-200 px-2 py-1 rounded">${linea.codigo_proveedor}</span>
@@ -14245,7 +14245,7 @@ function mostrarVistaPreviaImportacionFactura(data) {
             </div>
           </div>
           <div class="text-right">
-            <div class="text-lg font-bold text-white">€${linea.precio_total.toFixed(2)}</div>
+            <div class="text-lg font-bold text-black">€${linea.precio_total.toFixed(2)}</div>
           </div>
         </div>
         
@@ -14286,13 +14286,13 @@ function mostrarVistaPreviaImportacionFactura(data) {
             <div class="flex gap-2 mt-2">
               <button 
                 onclick="buscarProductoManual(${index})"
-                class="flex-1 px-3 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600"
+                class="flex-1 px-3 py-1 bg-blue-500 text-black text-sm rounded hover:bg-blue-600"
               >
                 <i class="fas fa-search mr-1"></i>Buscar
               </button>
               <button 
                 onclick="crearProductoNuevo(${index})"
-                class="flex-1 px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600"
+                class="flex-1 px-3 py-1 bg-green-500 text-black text-sm rounded hover:bg-green-600"
               >
                 <i class="fas fa-plus mr-1"></i>Crear nuevo
               </button>
@@ -14311,10 +14311,10 @@ function mostrarVistaPreviaImportacionFactura(data) {
     <div class="space-y-6 max-w-4xl">
       <!-- Header -->
       <div class="text-center">
-        <div class="w-20 h-20 bg-white/20 border border-white rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="fas fa-file-invoice-dollar text-4xl text-white"></i>
+        <div class="w-20 h-20 bg-black/20 border border-black rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-file-invoice-dollar text-4xl text-black"></i>
         </div>
-        <h3 class="text-2xl font-bold text-white mb-2">Vista Previa de Importación</h3>
+        <h3 class="text-2xl font-bold text-black mb-2">Vista Previa de Importación</h3>
         <p class="text-gray-600">Proveedor: <span class="font-semibold">${proveedor?.nombre || 'Desconocido'}</span></p>
       </div>
       
@@ -14325,7 +14325,7 @@ function mostrarVistaPreviaImportacionFactura(data) {
           <div class="text-sm text-gray-600">Total líneas</div>
         </div>
         <div class="bg-green-50 rounded-lg p-4 text-center">
-          <div class="text-3xl font-bold text-white">${totalCoincidencias}</div>
+          <div class="text-3xl font-bold text-black">${totalCoincidencias}</div>
           <div class="text-sm text-gray-600">Coincidencias</div>
         </div>
         <div class="bg-yellow-50 rounded-lg p-4 text-center">
@@ -14343,13 +14343,13 @@ function mostrarVistaPreviaImportacionFactura(data) {
       <div class="flex gap-3 pt-4 border-t">
         <button 
           onclick="cancelarImportacion()" 
-          class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-300 rounded-lg hover:bg-gray-50"
+          class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50"
         >
           <i class="fas fa-times mr-2"></i>Cancelar
         </button>
         <button 
           onclick="confirmarImportacion()"
-          ${totalPendientes > 0 ? 'disabled class="flex-1 px-4 py-2 bg-gray-300 text-gray-400 rounded-lg cursor-not-allowed"' : 'class="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"'}
+          ${totalPendientes > 0 ? 'disabled class="flex-1 px-4 py-2 bg-gray-300 text-gray-400 rounded-lg cursor-not-allowed"' : 'class="flex-1 px-4 py-2 bg-purple-600 text-black rounded-lg hover:bg-purple-700"'}
         >
           <i class="fas fa-check mr-2"></i>
           Confirmar y Actualizar Stock
@@ -14444,7 +14444,7 @@ async function buscarProductoManual(lineaIndex) {
         </button>
         <button 
           onclick="confirmarVinculacionManual(${lineaIndex})" 
-          class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg"
+          class="flex-1 px-4 py-2 bg-blue-600 text-black rounded-lg"
         >
           Vincular
         </button>
@@ -14571,10 +14571,10 @@ function mostrarModalCrearProveedor(data) {
   showModal(`
     <div class="space-y-6">
       <div class="text-center">
-        <div class="w-20 h-20 bg-white/20 border border-white rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="fas fa-exclamation-triangle text-4xl text-white"></i>
+        <div class="w-20 h-20 bg-black/20 border border-black rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-exclamation-triangle text-4xl text-black"></i>
         </div>
-        <h3 class="text-2xl font-bold text-white mb-2">Proveedor No Encontrado</h3>
+        <h3 class="text-2xl font-bold text-black mb-2">Proveedor No Encontrado</h3>
         <p class="text-gray-600">La IA detectó el proveedor en la factura pero NO existe en tu base de datos</p>
       </div>
       
@@ -14589,14 +14589,14 @@ function mostrarModalCrearProveedor(data) {
       </div>
       
       <div class="bg-white border rounded-lg p-6">
-        <h4 class="font-bold text-white mb-4">
-          <i class="fas fa-plus-circle mr-2 text-white"></i>
+        <h4 class="font-bold text-black mb-4">
+          <i class="fas fa-plus-circle mr-2 text-black"></i>
           Crear este proveedor ahora
         </h4>
         
         <form onsubmit="crearProveedorYContinuar(event, ${JSON.stringify(data).replace(/"/g, '&quot;')})">
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-300 mb-2">Nombre del proveedor *</label>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Nombre del proveedor *</label>
             <input 
               type="text" 
               name="nombre" 
@@ -14607,7 +14607,7 @@ function mostrarModalCrearProveedor(data) {
           </div>
           
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-300 mb-2">Persona de contacto</label>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Persona de contacto</label>
             <input 
               type="text" 
               name="contacto" 
@@ -14618,7 +14618,7 @@ function mostrarModalCrearProveedor(data) {
           
           <div class="grid grid-cols-2 gap-4 mb-6">
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-2">Teléfono</label>
+              <label class="block text-sm font-medium text-gray-600 mb-2">Teléfono</label>
               <input 
                 type="tel" 
                 name="telefono" 
@@ -14627,7 +14627,7 @@ function mostrarModalCrearProveedor(data) {
               >
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+              <label class="block text-sm font-medium text-gray-600 mb-2">Email</label>
               <input 
                 type="email" 
                 name="email" 
@@ -14641,13 +14641,13 @@ function mostrarModalCrearProveedor(data) {
             <button 
               type="button" 
               onclick="cancelarImportacion()" 
-              class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-300 rounded-lg hover:bg-gray-50"
+              class="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50"
             >
               Cancelar todo
             </button>
             <button 
               type="submit" 
-              class="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              class="flex-1 px-4 py-2 bg-green-600 text-black rounded-lg hover:bg-green-700"
             >
               <i class="fas fa-save mr-2"></i>Crear y Continuar
             </button>
@@ -14816,11 +14816,11 @@ window.cambiarVistaInventario = function(vista) {
   const btnLista = document.getElementById('btn-vista-lista')
   
   if (vista === 'grid') {
-    btnGrid.className = 'px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700'
-    btnLista.className = 'px-3 py-2 bg-gray-300 text-gray-300 rounded-lg hover:bg-gray-400'
+    btnGrid.className = 'px-3 py-2 bg-orange-600 text-black rounded-lg hover:bg-orange-700'
+    btnLista.className = 'px-3 py-2 bg-gray-300 text-gray-600 rounded-lg hover:bg-gray-400'
   } else {
-    btnGrid.className = 'px-3 py-2 bg-gray-300 text-gray-300 rounded-lg hover:bg-gray-400'
-    btnLista.className = 'px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700'
+    btnGrid.className = 'px-3 py-2 bg-gray-300 text-gray-600 rounded-lg hover:bg-gray-400'
+    btnLista.className = 'px-3 py-2 bg-orange-600 text-black rounded-lg hover:bg-orange-700'
   }
   
   // Renderizar productos
@@ -14850,14 +14850,14 @@ window.verHistorialProducto = async function(productoId) {
       
       let content = `
         <div>
-          <h2 class="text-2xl font-bold text-white mb-4">
+          <h2 class="text-2xl font-bold text-black mb-4">
             <i class="fas fa-history mr-2 text-blue-600"></i>
             Historial de Modificaciones
           </h2>
           
           ${historial.length === 0 ? `
-            <div class="text-center py-12 bg-zinc-800 border border-white rounded-lg">
-              <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+            <div class="text-center py-12 bg-zinc-800 border border-black rounded-lg">
+              <i class="fas fa-inbox text-6xl text-gray-600 mb-4"></i>
               <p class="text-gray-400 text-lg">No hay modificaciones registradas</p>
               <p class="text-gray-400 text-sm mt-2">Los cambios de stock se registrarán a partir de ahora</p>
             </div>
@@ -14867,7 +14867,7 @@ window.verHistorialProducto = async function(productoId) {
                 const fecha = new Date(h.fecha_modificacion)
                 const diferencia = h.diferencia || 0
                 const diferenciaIcon = diferencia > 0 ? '📈' : diferencia < 0 ? '📉' : '➡️'
-                const diferenciaColor = diferencia > 0 ? 'text-white' : diferencia < 0 ? 'text-red-600' : 'text-gray-600'
+                const diferenciaColor = diferencia > 0 ? 'text-black' : diferencia < 0 ? 'text-red-600' : 'text-gray-600'
                 const diferenciaLabel = diferencia > 0 ? 'Incremento' : diferencia < 0 ? 'Disminución' : 'Sin cambio'
                 
                 // Determinar icono de usuario por rol
@@ -14906,7 +14906,7 @@ window.verHistorialProducto = async function(productoId) {
                       <div class="flex items-center justify-between">
                         <div class="flex-1">
                           <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Modificación</p>
-                          <p class="text-sm font-medium text-gray-300">
+                          <p class="text-sm font-medium text-gray-600">
                             <i class="fas fa-box mr-1"></i>
                             Actualización de Stock
                           </p>
@@ -14916,7 +14916,7 @@ window.verHistorialProducto = async function(productoId) {
                           <div class="flex items-center gap-2">
                             <span class="text-base font-bold text-gray-400">${h.stock_anterior || 0}</span>
                             <i class="fas fa-long-arrow-alt-right text-gray-400"></i>
-                            <span class="text-xl font-bold ${diferencia > 0 ? 'text-white' : diferencia < 0 ? 'text-red-600' : 'text-gray-900'}">${h.stock_nuevo || 0}</span>
+                            <span class="text-xl font-bold ${diferencia > 0 ? 'text-black' : diferencia < 0 ? 'text-red-600' : 'text-gray-900'}">${h.stock_nuevo || 0}</span>
                           </div>
                           ${diferencia !== 0 ? `
                             <div class="mt-1 flex items-center justify-end gap-1">
@@ -14941,7 +14941,7 @@ window.verHistorialProducto = async function(productoId) {
           <div class="flex gap-3 pt-4 mt-4 border-t">
             <button 
               onclick="closeModal()" 
-              class="flex-1 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+              class="flex-1 px-6 py-3 bg-gray-600 text-black rounded-lg hover:bg-gray-700"
             >
               Cerrar
             </button>
