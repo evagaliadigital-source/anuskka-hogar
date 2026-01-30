@@ -432,14 +432,24 @@ app.post('/api/personal', async (c) => {
       }, 400)
     }
     
+    // Asegurar valores por defecto para campos NOT NULL
+    const fecha_contratacion = data.fecha_contratacion || new Date().toISOString().split('T')[0]
+    const salario_hora = data.salario_hora || 0
+    
     const result = await c.env.DB.prepare(`
       INSERT INTO empleadas (nombre, apellidos, telefono, email, dni, fecha_contratacion, 
                             salario_hora, especialidades, notas)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
-      data.nombre, data.apellidos, data.telefono, data.email || null, data.dni || null,
-      data.fecha_contratacion || null, data.salario_hora || null, 
-      JSON.stringify(data.especialidades || []), data.notas || null
+      data.nombre, 
+      data.apellidos, 
+      data.telefono, 
+      data.email || null, 
+      data.dni || null,
+      fecha_contratacion,
+      salario_hora, 
+      JSON.stringify(data.especialidades || []), 
+      data.notas || null
     ).run()
     
     console.log('✅ Personal creado con ID:', result.meta.last_row_id)
@@ -470,15 +480,24 @@ app.put('/api/personal/:id', async (c) => {
       }, 400)
     }
     
+    // Asegurar valores por defecto para campos NOT NULL
+    const salario_hora = data.salario_hora || 0
+    
     await c.env.DB.prepare(`
       UPDATE empleadas 
       SET nombre = ?, apellidos = ?, telefono = ?, email = ?, dni = ?,
           salario_hora = ?, especialidades = ?, notas = ?
       WHERE id = ?
     `).bind(
-      data.nombre, data.apellidos, data.telefono, data.email || null, data.dni || null,
-      data.salario_hora || null, JSON.stringify(data.especialidades || []), 
-      data.notas || null, id
+      data.nombre, 
+      data.apellidos, 
+      data.telefono, 
+      data.email || null, 
+      data.dni || null,
+      salario_hora, 
+      JSON.stringify(data.especialidades || []), 
+      data.notas || null, 
+      id
     ).run()
     
     console.log('✅ Personal actualizado ID:', id)
