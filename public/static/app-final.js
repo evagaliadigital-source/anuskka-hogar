@@ -2233,7 +2233,7 @@ async function showPersonalFormInContainer() {
       </div>
       
       <div class="flex gap-3 pt-4">
-        <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-black px-6 py-3 rounded-lg font-medium hover:shadow-lg">
+        <button type="submit" class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg">
           <i class="fas fa-save mr-2"></i>Guardar Personal
         </button>
         <button type="button" onclick="showPersonalFormInContainer()" class="px-6 py-3 border rounded-lg hover:bg-gray-50">
@@ -3874,8 +3874,8 @@ window.viewPersonal = async (id) => {
     }
     
     modalContainer.innerHTML = `
-      <div class="fixed inset-0 bg-white/80 flex items-center justify-center z-50 p-4" onclick="closeModal()">
-        <div class="bg-white border-2 border-gray-300 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      <div id="modal-overlay-personal" class="fixed inset-0 bg-white/80 flex items-center justify-center z-50 p-4">
+        <div id="modal-content-personal" class="bg-white border-2 border-gray-300 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
           
           <!-- Header -->
           <div class="bg-gray-800 p-6 text-white border-b-2 border-gray-700">
@@ -3897,7 +3897,7 @@ window.viewPersonal = async (id) => {
                   </div>
                 </div>
               </div>
-              <button onclick="closeModal()" class="text-white hover:bg-white/20 p-3 rounded-full transition-all border border-gray-400">
+              <button id="btn-close-header-personal" class="text-white hover:bg-white/20 p-3 rounded-full transition-all border border-gray-400">
                 <i class="fas fa-times text-2xl"></i>
               </button>
             </div>
@@ -4057,10 +4057,10 @@ window.viewPersonal = async (id) => {
           
           <!-- Footer -->
           <div class="bg-white border-t border-gray-200 p-6 flex justify-end gap-3">
-            <button onclick="closeModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium">
+            <button id="btn-close-footer-personal" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium">
               <i class="fas fa-times mr-2"></i>Cerrar
             </button>
-            <button onclick="closeModal(); showPersonalForm(${id})" class="px-6 py-3 bg-blue-600 text-black rounded-lg hover:bg-blue-700 transition-colors font-medium">
+            <button id="btn-edit-personal" data-id="${id}" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
               <i class="fas fa-edit mr-2"></i>Editar
             </button>
           </div>
@@ -4068,6 +4068,42 @@ window.viewPersonal = async (id) => {
         </div>
       </div>
     `
+    
+    // AGREGAR EVENT LISTENERS DESPUÉS DE INYECTAR HTML
+    setTimeout(() => {
+      // Overlay - cerrar al hacer clic fuera
+      const overlay = document.getElementById('modal-overlay-personal')
+      if (overlay) {
+        overlay.addEventListener('click', (e) => {
+          if (e.target.id === 'modal-overlay-personal') {
+            closeModal()
+          }
+        })
+      }
+      
+      // Botón X del header
+      const btnCloseHeader = document.getElementById('btn-close-header-personal')
+      if (btnCloseHeader) {
+        btnCloseHeader.addEventListener('click', closeModal)
+      }
+      
+      // Botón Cerrar del footer
+      const btnCloseFooter = document.getElementById('btn-close-footer-personal')
+      if (btnCloseFooter) {
+        btnCloseFooter.addEventListener('click', closeModal)
+      }
+      
+      // Botón Editar
+      const btnEdit = document.getElementById('btn-edit-personal')
+      if (btnEdit) {
+        btnEdit.addEventListener('click', () => {
+          const personalId = btnEdit.getAttribute('data-id')
+          closeModal()
+          setTimeout(() => showPersonalForm(personalId), 100)
+        })
+      }
+    }, 50)
+    
   } catch (error) {
     console.error('Error cargando empleado:', error)
     showToast('❌ Error al cargar información del empleado', 'error')
