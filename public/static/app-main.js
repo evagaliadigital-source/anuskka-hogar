@@ -2,7 +2,7 @@
 const API = '/api'
 
 // TEST: Verificar que el archivo JS carga
-console.log('✅ app-final.js CARGADO correctamente')
+console.log('✅ app-main.js v2026-01-30 CARGADO correctamente')
 console.log('🕒 Timestamp:', new Date().toISOString())
 
 // Estado global
