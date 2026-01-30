@@ -634,7 +634,7 @@ function renderTopEmpleadas(data) {
           ${index + 1}
         </div>
         <div>
-          <p class="font-semibold text-black">${e.nombre} ${e.apellidos}</p>
+          <p class="font-semibold text-gray-800">${e.nombre} ${e.apellidos}</p>
           <p class="text-sm text-gray-600">${e.trabajos_completados} trabajos completados</p>
         </div>
       </div>
@@ -1253,7 +1253,7 @@ async function viewTrabajo(id) {
                 <div class="text-xs text-gray-400 mb-1">
                   <i class="fas fa-user mr-1"></i>CLIENTE
                 </div>
-                <div class="font-semibold text-black">
+                <div class="font-semibold text-gray-800">
                   ${trabajo.cliente_nombre} ${trabajo.cliente_apellidos}
                 </div>
               </div>
@@ -1263,7 +1263,7 @@ async function viewTrabajo(id) {
                 <div class="text-xs text-gray-400 mb-1">
                   <i class="fas fa-tag mr-1"></i>TIPO DE SERVICIO
                 </div>
-                <div class="font-semibold text-black">
+                <div class="font-semibold text-gray-800">
                   ${trabajo.tipo_servicio.replace(/_/g, ' ').toUpperCase()}
                 </div>
               </div>
@@ -1283,7 +1283,7 @@ async function viewTrabajo(id) {
                 <div class="text-xs text-gray-400 mb-1">
                   <i class="fas fa-user-tie mr-1"></i>EMPLEADA ASIGNADA
                 </div>
-                <div class="font-semibold text-black">
+                <div class="font-semibold text-gray-800">
                   ${trabajo.nombre_empleada || '<span class="text-gray-400 italic">Sin asignar</span>'}
                 </div>
               </div>
@@ -1293,7 +1293,7 @@ async function viewTrabajo(id) {
                 <div class="text-xs text-gray-400 mb-1">
                   <i class="fas fa-map-marker-alt mr-1"></i>DIRECCIÓN
                 </div>
-                <div class="font-semibold text-black">
+                <div class="font-semibold text-gray-800">
                   ${trabajo.direccion || '<span class="text-gray-400 italic">Sin dirección</span>'}
                 </div>
               </div>
@@ -1354,7 +1354,7 @@ async function viewTrabajo(id) {
                   <div class="text-xs text-gray-400 mb-1">
                     <i class="fas fa-tools mr-1"></i>COSTE MATERIALES
                   </div>
-                  <div class="font-semibold text-black">
+                  <div class="font-semibold text-gray-800">
                     €${trabajo.coste_materiales ? trabajo.coste_materiales.toFixed(2) : '0.00'}
                   </div>
                 </div>
@@ -1363,7 +1363,7 @@ async function viewTrabajo(id) {
                   <div class="text-xs text-gray-400 mb-1">
                     <i class="fas fa-user-clock mr-1"></i>COSTE MANO DE OBRA
                   </div>
-                  <div class="font-semibold text-black">
+                  <div class="font-semibold text-gray-800">
                     €${trabajo.coste_mano_obra ? trabajo.coste_mano_obra.toFixed(2) : '0.00'}
                   </div>
                 </div>
@@ -1584,7 +1584,7 @@ async function viewTrabajo(id) {
             </div>
             <div class="bg-gray-50 p-4 rounded-lg">
               <p class="text-sm text-gray-600 mb-1">Precio Cliente</p>
-              <p class="font-semibold text-black text-xl">€${trabajo.precio_cliente ? trabajo.precio_cliente.toFixed(2) : '0.00'}</p>
+              <p class="font-semibold text-gray-800 text-xl">€${trabajo.precio_cliente ? trabajo.precio_cliente.toFixed(2) : '0.00'}</p>
             </div>
           </div>
           
@@ -2862,7 +2862,7 @@ async function loadFacturas() {
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${new Date(f.fecha_emision).toLocaleDateString('es-ES')}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">€${parseFloat(f.subtotal || 0).toFixed(2)}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">€${parseFloat(f.importe_iva || f.iva || 0).toFixed(2)}</td>
-              <td class="px-6 py-4 whitespace-nowrap font-semibold text-black">€${parseFloat(f.total).toFixed(2)}</td>
+              <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-800">€${parseFloat(f.total).toFixed(2)}</td>
               <td class="px-6 py-4 whitespace-nowrap">
                 ${getEstadoFacturaBadge(f.estado)}
               </td>
@@ -3004,14 +3004,14 @@ async function viewFactura(id) {
             
             ${factura.notas ? `
               <div class="mt-4">
-                <p class="text-gray-600 text-sm">Notas:</p>
+                <p class="text-gray-300 text-sm">Notas:</p>
                 <p class="text-sm">${factura.notas}</p>
               </div>
             ` : ''}
             
             ${factura.condiciones ? `
               <div class="mt-4">
-                <p class="text-gray-600 text-sm">Condiciones:</p>
+                <p class="text-gray-300 text-sm">Condiciones:</p>
                 <p class="text-sm">${factura.condiciones}</p>
               </div>
             ` : ''}
@@ -3736,7 +3736,7 @@ async function loadReporte() {
       <div class="space-y-6">
         <!-- Resumen Financiero -->
         <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6">
-          <h3 class="text-xl font-bold text-black mb-4">📊 Resumen Financiero</h3>
+          <h3 class="text-xl font-bold text-gray-800 mb-4">📊 Resumen Financiero</h3>
           <div class="grid grid-cols-3 gap-4">
             <div class="bg-white rounded-lg p-4">
               <p class="text-sm text-gray-600">Total Facturas</p>
@@ -3755,7 +3755,7 @@ async function loadReporte() {
         
         <!-- Trabajos -->
         <div class="bg-white rounded-xl shadow-md p-6">
-          <h3 class="text-xl font-bold text-black mb-4">🛠️ Trabajos Realizados</h3>
+          <h3 class="text-xl font-bold text-gray-800 mb-4">🛠️ Trabajos Realizados</h3>
           <div class="grid grid-cols-3 gap-4">
             <div class="text-center p-4 bg-blue-50 rounded-lg">
               <p class="text-sm text-gray-600">Total</p>
@@ -3774,7 +3774,7 @@ async function loadReporte() {
         
         <!-- Horas Trabajadas por Empleada -->
         <div class="bg-white rounded-xl shadow-md p-6">
-          <h3 class="text-xl font-bold text-black mb-4">👷 Horas Trabajadas</h3>
+          <h3 class="text-xl font-bold text-gray-800 mb-4">👷 Horas Trabajadas</h3>
           <div class="space-y-3">
             ${data.horas.map(h => `
               <div class="flex items-center justify-between p-3 bg-zinc-800 border border-black rounded-lg">
@@ -3787,7 +3787,7 @@ async function loadReporte() {
         
         <!-- Servicios Más Demandados -->
         <div class="bg-white rounded-xl shadow-md p-6">
-          <h3 class="text-xl font-bold text-black mb-4">🔥 Servicios Más Demandados</h3>
+          <h3 class="text-xl font-bold text-gray-800 mb-4">🔥 Servicios Más Demandados</h3>
           <table class="min-w-full">
             <thead class="bg-gray-50">
               <tr>
@@ -3801,7 +3801,7 @@ async function loadReporte() {
                 <tr class="border-t">
                   <td class="px-4 py-2 text-black">${s.tipo_servicio.replace('_', ' ')}</td>
                   <td class="px-4 py-2 font-semibold text-blue-600">${s.total}</td>
-                  <td class="px-4 py-2 font-semibold text-black">€${(s.ingresos || 0).toFixed(2)}</td>
+                  <td class="px-4 py-2 font-semibold text-gray-800">€${(s.ingresos || 0).toFixed(2)}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -3875,29 +3875,29 @@ window.viewPersonal = async (id) => {
     
     modalContainer.innerHTML = `
       <div class="fixed inset-0 bg-white/80 flex items-center justify-center z-50 p-4" onclick="closeModal()">
-        <div class="bg-white border-2 border-black rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+        <div class="bg-white border-2 border-gray-300 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
           
           <!-- Header -->
-          <div class="bg-gradient-to-r bg-white p-6 text-black border-b-2 border-black">
+          <div class="bg-gray-800 p-6 text-white border-b-2 border-gray-700">
             <div class="flex items-start justify-between">
               <div class="flex items-center gap-4">
-                <div class="w-20 h-20 bg-black rounded-full flex items-center justify-center text-4xl font-bold text-black shadow-lg border-2 border-black">
+                <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-4xl font-bold text-gray-800 shadow-lg border-2 border-gray-300">
                   ${p.nombre.charAt(0)}${p.apellidos.charAt(0)}
                 </div>
                 <div>
-                  <h2 class="text-3xl font-bold text-black">${p.nombre} ${p.apellidos}</h2>
+                  <h2 class="text-3xl font-bold text-white">${p.nombre} ${p.apellidos}</h2>
                   <div class="flex items-center gap-4 mt-2">
                     ${p.calificacion ? `<div class="flex items-center gap-1">
-                      <i class="fas fa-star text-gray-600"></i>
-                      <span class="font-semibold text-gray-600">${p.calificacion.toFixed(1)}</span>
+                      <i class="fas fa-star text-yellow-400"></i>
+                      <span class="font-semibold text-gray-200">${p.calificacion.toFixed(1)}</span>
                     </div>` : ''}
-                    <span class="bg-black/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm border border-black text-gray-600">
+                    <span class="bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full text-sm border border-gray-400 text-gray-200">
                       <i class="fas fa-briefcase mr-1"></i>${trabajos.length} trabajos
                     </span>
                   </div>
                 </div>
               </div>
-              <button onclick="closeModal()" class="text-black hover:bg-black/20 p-3 rounded-full transition-all border border-black">
+              <button onclick="closeModal()" class="text-white hover:bg-white/20 p-3 rounded-full transition-all border border-gray-400">
                 <i class="fas fa-times text-2xl"></i>
               </button>
             </div>
@@ -3907,8 +3907,8 @@ window.viewPersonal = async (id) => {
           <div class="p-6">
             
             <!-- Información de Contacto -->
-            <div class="bg-zinc-800 border border-black rounded-xl p-6 mb-6">
-              <h3 class="text-xl font-bold text-black mb-4 flex items-center gap-2">
+            <div class="bg-gray-50 border border-gray-300 rounded-xl p-6 mb-6">
+              <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <i class="fas fa-address-card text-black"></i>
                 Información de Contacto
               </h3>
@@ -3918,8 +3918,8 @@ window.viewPersonal = async (id) => {
                     <i class="fas fa-phone text-black"></i>
                   </div>
                   <div>
-                    <p class="text-sm text-gray-400">Teléfono</p>
-                    <p class="font-semibold text-black">${p.telefono || 'No registrado'}</p>
+                    <p class="text-sm text-gray-600">Teléfono</p>
+                    <p class="font-semibold text-gray-800">${p.telefono || 'No registrado'}</p>
                   </div>
                 </div>
                 
@@ -3928,8 +3928,8 @@ window.viewPersonal = async (id) => {
                     <i class="fas fa-envelope text-black"></i>
                   </div>
                   <div>
-                    <p class="text-sm text-gray-400">Email</p>
-                    <p class="font-semibold text-black">${p.email || 'No registrado'}</p>
+                    <p class="text-sm text-gray-600">Email</p>
+                    <p class="font-semibold text-gray-800">${p.email || 'No registrado'}</p>
                   </div>
                 </div>
                 
@@ -3938,8 +3938,8 @@ window.viewPersonal = async (id) => {
                     <i class="fas fa-id-card text-black"></i>
                   </div>
                   <div>
-                    <p class="text-sm text-gray-400">DNI</p>
-                    <p class="font-semibold text-black">${p.dni || 'No registrado'}</p>
+                    <p class="text-sm text-gray-600">DNI</p>
+                    <p class="font-semibold text-gray-800">${p.dni || 'No registrado'}</p>
                   </div>
                 </div>
                 
@@ -3948,8 +3948,8 @@ window.viewPersonal = async (id) => {
                     <i class="fas fa-calendar text-black"></i>
                   </div>
                   <div>
-                    <p class="text-sm text-gray-400">Fecha de Contratación</p>
-                    <p class="font-semibold text-black">${p.fecha_contratacion ? new Date(p.fecha_contratacion).toLocaleDateString('es-ES') : 'No registrada'}</p>
+                    <p class="text-sm text-gray-600">Fecha de Contratación</p>
+                    <p class="font-semibold text-gray-800">${p.fecha_contratacion ? new Date(p.fecha_contratacion).toLocaleDateString('es-ES') : 'No registrada'}</p>
                   </div>
                 </div>
                 
@@ -3958,8 +3958,8 @@ window.viewPersonal = async (id) => {
                     <i class="fas fa-euro-sign text-black"></i>
                   </div>
                   <div>
-                    <p class="text-sm text-gray-400">Salario por Hora</p>
-                    <p class="font-semibold text-black">${p.salario_hora ? `${p.salario_hora.toFixed(2)} €` : 'No registrado'}</p>
+                    <p class="text-sm text-gray-600">Salario por Hora</p>
+                    <p class="font-semibold text-gray-800">${p.salario_hora ? `${p.salario_hora.toFixed(2)} €` : 'No registrado'}</p>
                   </div>
                 </div>
               </div>
@@ -3967,7 +3967,7 @@ window.viewPersonal = async (id) => {
             
             <!-- Especialidades -->
             <div class="bg-purple-50 rounded-xl p-6 mb-6">
-              <h3 class="text-xl font-bold text-black mb-4 flex items-center gap-2">
+              <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <i class="fas fa-certificate text-black"></i>
                 Especialidades
               </h3>
@@ -3978,30 +3978,30 @@ window.viewPersonal = async (id) => {
             
             <!-- Estadísticas -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div class="bg-gradient-to-br from-gray-800 to-black border-2 border-black rounded-xl p-6 text-black">
+              <div class="bg-gradient-to-br from-gray-700 to-gray-900 border-2 border-gray-600 rounded-xl p-6 text-black">
                 <div class="flex items-center justify-between">
                   <div>
-                    <p class="text-gray-600 text-sm mb-1">Trabajos Activos</p>
+                    <p class="text-gray-300 text-sm mb-1">Trabajos Activos</p>
                     <p class="text-4xl font-bold">${trabajosActivos}</p>
                   </div>
                   <i class="fas fa-tasks text-5xl text-black/30"></i>
                 </div>
               </div>
               
-              <div class="bg-gradient-to-br from-gray-800 to-black border-2 border-black rounded-xl p-6 text-black">
+              <div class="bg-gradient-to-br from-gray-700 to-gray-900 border-2 border-gray-600 rounded-xl p-6 text-black">
                 <div class="flex items-center justify-between">
                   <div>
-                    <p class="text-gray-600 text-sm mb-1">Completados</p>
+                    <p class="text-gray-300 text-sm mb-1">Completados</p>
                     <p class="text-4xl font-bold">${trabajosCompletados}</p>
                   </div>
                   <i class="fas fa-check-circle text-5xl text-black/30"></i>
                 </div>
               </div>
               
-              <div class="bg-gradient-to-br from-gray-800 to-black border-2 border-black rounded-xl p-6 text-black">
+              <div class="bg-gradient-to-br from-gray-700 to-gray-900 border-2 border-gray-600 rounded-xl p-6 text-black">
                 <div class="flex items-center justify-between">
                   <div>
-                    <p class="text-gray-600 text-sm mb-1">Horas Totales</p>
+                    <p class="text-gray-300 text-sm mb-1">Horas Totales</p>
                     <p class="text-4xl font-bold">${totalHoras.toFixed(1)}</p>
                   </div>
                   <i class="fas fa-clock text-5xl text-black/30"></i>
@@ -4012,7 +4012,7 @@ window.viewPersonal = async (id) => {
             <!-- Trabajos Recientes -->
             ${trabajos.length > 0 ? `
               <div class="bg-zinc-800 border border-black rounded-xl p-6 mb-6">
-                <h3 class="text-xl font-bold text-black mb-4 flex items-center gap-2">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                   <i class="fas fa-briefcase text-blue-600"></i>
                   Trabajos Recientes
                 </h3>
@@ -4021,7 +4021,7 @@ window.viewPersonal = async (id) => {
                     <div class="bg-white rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow">
                       <div class="flex items-center justify-between">
                         <div class="flex-1">
-                          <p class="font-semibold text-black">${t.cliente_nombre || 'Sin cliente'}</p>
+                          <p class="font-semibold text-gray-800">${t.cliente_nombre || 'Sin cliente'}</p>
                           <p class="text-sm text-gray-400">${t.tipo_servicio || 'Sin tipo'}</p>
                           <p class="text-xs text-gray-400 mt-1">
                             <i class="fas fa-calendar mr-1"></i>${t.fecha_programada ? new Date(t.fecha_programada).toLocaleDateString('es-ES') : 'Sin fecha'}
@@ -4045,7 +4045,7 @@ window.viewPersonal = async (id) => {
             <!-- Notas -->
             ${p.notas ? `
               <div class="bg-yellow-50 rounded-xl p-6">
-                <h3 class="text-xl font-bold text-black mb-3 flex items-center gap-2">
+                <h3 class="text-xl font-bold text-gray-800 mb-3 flex items-center gap-2">
                   <i class="fas fa-sticky-note text-yellow-600"></i>
                   Notas
                 </h3>
@@ -4056,7 +4056,7 @@ window.viewPersonal = async (id) => {
           </div>
           
           <!-- Footer -->
-          <div class="bg-gray-50 p-6 flex justify-end gap-3 border-t">
+          <div class="bg-white border-t border-gray-200 p-6 flex justify-end gap-3 border-t">
             <button onclick="closeModal()" class="px-6 py-3 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 transition-colors font-medium">
               <i class="fas fa-times mr-2"></i>Cerrar
             </button>
@@ -4220,7 +4220,7 @@ async function sendMessageModal() {
         </div>
         <div class="bg-white rounded-xl p-4 shadow-md">
           <i class="fas fa-circle-notch fa-spin text-black"></i>
-          <span class="text-gray-600 text-sm ml-2">Escribiendo...</span>
+          <span class="text-gray-300 text-sm ml-2">Escribiendo...</span>
         </div>
       </div>
     </div>
@@ -4428,7 +4428,7 @@ async function loadPresupuestos() {
               </td>
               <td class="px-6 py-4 text-sm text-gray-900">${p.titulo}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400">${new Date(p.fecha_emision).toLocaleDateString()}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-black">€${parseFloat(p.total).toFixed(2)}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">€${parseFloat(p.total).toFixed(2)}</td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <select onchange="cambiarEstadoPresupuesto(${p.id}, this.value, ${p.cliente_id}, '${p.titulo.replace(/'/g, "\\'")}', ${p.total})" class="px-2 py-1 text-xs font-semibold rounded-full border-0 ${estadoColor[p.estado]} cursor-pointer">
                   <option value="pendiente" ${p.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
@@ -4530,7 +4530,7 @@ async function viewPresupuesto(id) {
           <h3 class="text-2xl font-bold text-black">${data.numero_presupuesto}</h3>
           <p class="text-gray-600">${data.titulo}</p>
           <p class="text-sm text-gray-400 mt-2">Cliente: ${data.cliente_nombre} ${data.cliente_apellidos}</p>
-          <p class="text-sm text-gray-400">Fecha: ${new Date(data.fecha_emision).toLocaleDateString()}</p>
+          <p class="text-sm text-gray-600">Fecha: ${new Date(data.fecha_emision).toLocaleDateString()}</p>
         </div>
         
         ${data.descripcion ? `<p class="text-gray-600">${data.descripcion}</p>` : ''}
@@ -5804,7 +5804,7 @@ async function showClientePresupuestos(clienteId) {
                       <td class="px-4 py-3 text-sm font-medium text-gray-900">${p.numero_presupuesto}</td>
                       <td class="px-4 py-3 text-sm text-gray-900">${p.titulo}</td>
                       <td class="px-4 py-3 text-sm text-gray-400">${new Date(p.fecha_emision).toLocaleDateString()}</td>
-                      <td class="px-4 py-3 text-sm font-semibold text-black">€${parseFloat(p.total).toFixed(2)}</td>
+                      <td class="px-4 py-3 text-sm font-semibold text-gray-800">€${parseFloat(p.total).toFixed(2)}</td>
                       <td class="px-4 py-3">
                         <span class="px-2 py-1 text-xs font-semibold rounded-full ${estadoColor[p.estado]}">${p.estado}</span>
                       </td>
@@ -6538,7 +6538,7 @@ async function loadProyectosDiseño() {
         </div>
         <!-- Info del proyecto -->
         <div class="p-4 cursor-pointer" onclick="abrirProyecto(${p.id})">
-          <h3 class="font-semibold text-black truncate">${p.nombre_proyecto}</h3>
+          <h3 class="font-semibold text-gray-800 truncate">${p.nombre_proyecto}</h3>
           <p class="text-sm text-gray-400 truncate">${p.cliente_nombre || 'Sin cliente'}</p>
           <div class="flex justify-between items-center mt-2">
             <span class="text-xs px-2 py-1 rounded-full ${
@@ -7711,7 +7711,7 @@ async function loadTareas() {
                     <i class="fas fa-clock text-black text-xs"></i>
                   </div>
                   <div>
-                    <p class="text-xs text-gray-400">Fecha límite</p>
+                    <p class="text-xs text-gray-600">Fecha límite</p>
                     <p class="text-xs font-semibold text-gray-900">${new Date(t.fecha_limite).toLocaleDateString('es-ES')}</p>
                   </div>
                 </div>
@@ -9194,7 +9194,7 @@ async function cargarAvisos() {
             <div class="flex-1">
               <div class="flex items-center mb-2">
                 <i class="fas ${icono} mr-2"></i>
-                <h4 class="font-semibold text-black">${aviso.titulo}</h4>
+                <h4 class="font-semibold text-gray-800">${aviso.titulo}</h4>
               </div>
               <p class="text-sm text-gray-600 mb-2">${aviso.mensaje}</p>
               <p class="text-xs text-gray-400">
@@ -9848,7 +9848,7 @@ async function loadNotas() {
         </button>
         
         <h3 class="font-bold text-black mb-3 pr-8">${nota.titulo}</h3>
-        <p class="text-gray-600 text-sm whitespace-pre-wrap line-clamp-6">${nota.contenido}</p>
+        <p class="text-gray-300 text-sm whitespace-pre-wrap line-clamp-6">${nota.contenido}</p>
         
         <div class="mt-4 pt-4 border-t border-gray-400/30 text-xs text-gray-600">
           <i class="far fa-clock mr-1"></i>
@@ -12629,7 +12629,7 @@ function renderProductosLista() {
       <div class="bg-white rounded-lg shadow hover:shadow-md transition-all p-4 flex items-center gap-4">
         <!-- Nombre y categoría -->
         <div class="flex-1">
-          <h4 class="font-semibold text-black">${producto.nombre}</h4>
+          <h4 class="font-semibold text-gray-800">${producto.nombre}</h4>
           <p class="text-sm text-gray-400">${producto.categoria_nombre || 'Sin categoría'}</p>
           ${producto.codigo_producto ? `<p class="text-xs text-gray-400">Código: ${producto.codigo_producto}</p>` : ''}
         </div>
@@ -13126,7 +13126,7 @@ function showAddVarianteModal(varianteIndex = null) {
   modalOverlay.className = 'fixed inset-0 bg-white bg-opacity-50 z-[60] flex items-center justify-center p-4'
   modalOverlay.innerHTML = `
     <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-      <h3 class="text-xl font-bold text-black mb-4">
+      <h3 class="text-xl font-bold text-gray-800 mb-4">
         <i class="fas fa-cube mr-2 text-black"></i>
         ${isEdit ? 'Editar Variante' : 'Nueva Variante'}
       </h3>
@@ -14234,7 +14234,7 @@ function mostrarVistaPreviaImportacionFactura(data) {
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-1">
               ${esCoincidencia ? '<i class="fas fa-check-circle text-black"></i>' : esResuelto ? '<i class="fas fa-link text-blue-600"></i>' : '<i class="fas fa-exclamation-triangle text-yellow-600"></i>'}
-              <span class="font-semibold text-black">${linea.descripcion}</span>
+              <span class="font-semibold text-gray-800">${linea.descripcion}</span>
             </div>
             <div class="text-sm text-gray-600">
               <span class="font-mono bg-gray-200 px-2 py-1 rounded">${linea.codigo_proveedor}</span>
