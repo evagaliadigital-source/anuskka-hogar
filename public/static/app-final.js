@@ -2136,8 +2136,10 @@ function showPersonalSubTab(subtab) {
 
 // Cargar pestaña Personal (llamada desde showTab)
 async function loadPersonal() {
-  // Cargar directamente la lista de personal (Gestión de Empleados)
-  loadPersonalLista()
+  // Dar tiempo al navegador para renderizar el tab antes de inyectar contenido
+  setTimeout(() => {
+    loadPersonalLista()
+  }, 50)
 }
 
 // Mostrar formulario en el contenedor de Nuevo Personal
